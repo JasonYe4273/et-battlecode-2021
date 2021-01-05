@@ -32,3 +32,4 @@ battlecode-scaffold.iws
 .settings/
 
 access.txt
+src/.DS_Store
