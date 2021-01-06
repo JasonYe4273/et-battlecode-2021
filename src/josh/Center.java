@@ -29,11 +29,11 @@ public class Center extends Robot {
 				}
 			}
 		}
-		System.out.println("p = "+politicians+" s="+slanderers);
-		if(politicians > slanderers) {
-			build(RobotType.SLANDERER, rc.getInfluence()/20);
+		//System.out.println("p = "+politicians+" s="+slanderers);
+		if((politicians > slanderers || politicians > 5 )&& rc.getInfluence()<0x00ffffff) {
+			build(RobotType.SLANDERER, 20*(rc.getInfluence()/20));
 		} else {
-			build(RobotType.POLITICIAN, 30);
+			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), 30 + rc.getInfluence()/2));
 		}
 	}
 	private void build(RobotType t, int influence) throws GameActionException {

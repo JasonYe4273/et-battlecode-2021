@@ -28,7 +28,7 @@ public class Politician extends Robot {
 		for(int i=0;i<8;i++) {
 			if(rc.canMove(directions[i])) {
 				adj[i] = rc.getLocation().add(directions[i]);
-				h[i] += Math.random() * 10;
+				h[i] = Math.random() * 10 + 4*home.distanceSquaredTo(rc.getLocation());
 			}
 		}
 		adj[8] = rc.getLocation();
@@ -60,8 +60,8 @@ public class Politician extends Robot {
 				}
 			}
 		}
-		System.out.println(Arrays.toString(adj));
-		System.out.println(Arrays.toString(h));
+		//System.out.println(Arrays.toString(adj));
+		//System.out.println(Arrays.toString(h));
 		double min = 10000;
 		int mini = 8;
 		for(int i=0;i<9;i++) {
@@ -70,7 +70,7 @@ public class Politician extends Robot {
 				mini = i;
 			}
 		}
-		if(mini!=8)
+		if(mini!=8 && rc.canMove(directions[mini]))
 			rc.move(directions[mini]);
 	}
 
