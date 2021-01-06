@@ -30,6 +30,12 @@ public strictfp class RobotPlayer {
     static boolean enemyHqCaptured = false; // switch to true when enemy HQ falls
 
     static int flag = 0;
+    /**
+     * HQ Flag codes:
+     * 0: unset
+     * 1-65535: location of enemy HQ
+     * 65536-131071: location of captured HQ (that was formerly enemy HQ)
+     **/
     
     // for HQ, list of IDs of spawned units
     static ArrayList<Integer> spawnedIDs = new ArrayList<Integer>();
@@ -48,8 +54,10 @@ public strictfp class RobotPlayer {
         turnCount = 0;
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
+        /*
         if (rc.getType() == RobotType.ENLIGHTENMENT_CENTER && rc.getRoundNum() > 1)
             rc.setFlag(256*256); // this was a captured enlightnment center
+        */
         while (true) {
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
@@ -95,14 +103,28 @@ public strictfp class RobotPlayer {
             }
         }
         // check to see if any spawned robots have found the enemy HQ
-        if (flag == 0) {
+        if (flag == 0 || flag > 65536) {
             System.out.println("Flag is 0, looking for other flags");
             for (int id : spawnedIDs) {
                 System.out.println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
                     System.out.println(readFlag);
-                    if (readFlag > 0) {
+                    if (readFlag > 0 && readFlag < 65536) {
+                        flag = readFlag;
+                        rc.setFlag(flag);
+                        System.out.println("Flag set to " + flag);
+                    }
+                }
+            }
+        } else {
+            System.out.println("Flag is set, looking for capture flags");
+            for (int id : spawnedIDs) {
+                System.out.println("Checking ID " + id);
+                if (rc.canGetFlag(id)) {
+                    int readFlag = rc.getFlag(id);
+                    System.out.println(readFlag);
+                    if (readFlag > 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
                         System.out.println("Flag set to " + flag);
@@ -144,31 +166,37 @@ public strictfp class RobotPlayer {
                         rc.setFlag(flag);
                     }
                 }
-            // try to read from home HQ flag
-            if (hqLoc != null) {
-                if (rc.canGetFlag(hqID)) {
-                    int hqFlag = rc.getFlag(hqID);
-                    if (hqFlag != 0 && hqFlag < 256*256) {
-                        enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
-                        System.out.println("Read enemy HQ loc from home HQ!");
-                    } else if (hqFlag == 256*256) {
-                        enemyHqCaptured = true;
-                    }
-                }
+        } else {
+            // check if enemy HQ has already been captured
+            if (rc.canSenseLocation(enemyHqLoc) && rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam()) {
+                enemyHqCaptured = true;
+                int dx = enemyHqLoc.x - hqLoc.x;
+                int dy = enemyHqLoc.y - hqLoc.y;
+                enemyHqLoc = null;
+                flag = (dx + 128) * 256 + (dy + 128) + 65536;
+                rc.setFlag(flag);
             }
         }
-        else {
-            // check if enemy HQ has already been captured
-            if (rc.canSenseLocation(enemyHqLoc) && rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())
-                enemyHqCaptured = true;
+        // try to read from home HQ flag
+        if (hqLoc != null) {
+            if (rc.canGetFlag(hqID)) {
+                int hqFlag = rc.getFlag(hqID);
+                if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
+                    enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
+                    System.out.println("Read enemy HQ loc from home HQ!");
+                } else if (enemyHqLoc != null && hqFlag > 65536) {
+                    enemyHqLoc = null;
+                    System.out.println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
+                }
+            }
         }
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         boolean enemyHQInRange = false;
         for (RobotInfo r : attackable)
             enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
-        // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or enemy HQ already fell
-        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqCaptured))
+        // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
+        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
             && rc.canEmpower(actionRadius) && rc.getConviction() > 10) {
             System.out.println("empowering...");
             rc.empower(actionRadius);
@@ -209,27 +237,38 @@ public strictfp class RobotPlayer {
             for (RobotInfo r : possibleEnemyHQ)
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     enemyHqLoc = r.getLocation();
-                    System.out.println("Found enemy HQ!");
                     // set flag to signal this
                     if (hqLoc != null) {
                         int dx = enemyHqLoc.x - hqLoc.x;
                         int dy = enemyHqLoc.y - hqLoc.y;
                         flag = (dx + 128) * 256 + (dy + 128);
                         rc.setFlag(flag);
-                        System.out.println("Flag set to " + flag);
                     }
                 }
-            // try to read from home HQ flag
-            if (hqLoc != null) {
-                if (rc.canGetFlag(hqID)) {
-                    int hqFlag = rc.getFlag(hqID);
-                    if (hqFlag != 0 && hqFlag < 256*256) {
-                        enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
-                    }
-                }
+        } else {
+            // check if enemy HQ has already been captured
+            if (rc.canSenseLocation(enemyHqLoc) && rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam()) {
+                enemyHqCaptured = true;
+                int dx = enemyHqLoc.x - hqLoc.x;
+                int dy = enemyHqLoc.y - hqLoc.y;
+                enemyHqLoc = null;
+                flag = (dx + 128) * 256 + (dy + 128) + 65536;
+                rc.setFlag(flag);
             }
         }
-
+        // try to read from home HQ flag
+        if (hqLoc != null) { 
+            if (rc.canGetFlag(hqID)) { 
+                int hqFlag = rc.getFlag(hqID);
+                if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
+                    enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
+                    System.out.println("Read enemy HQ loc from home HQ!");
+                } else if (enemyHqLoc != null && hqFlag > 65536) {
+                    enemyHqLoc = null;
+                    System.out.println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
+                } 
+            } 
+        } 
         int actionRadius = rc.getType().actionRadiusSquared;
         for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
             if (robot.type.canBeExposed()) {
