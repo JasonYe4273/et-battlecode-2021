@@ -215,7 +215,7 @@ public strictfp class RobotPlayer {
 
     static void runPolitician() throws GameActionException {
         for (RobotInfo ri : rc.senseNearbyRobots(EMPOWER_MAX_RADIUS)) {
-            if (ri.team == op && ri.type == RobotType.MUCKRAKER && rc.canEmpower(EMPOWER_MAX_RADIUS)) {
+            if (ri.team == op && rc.canEmpower(EMPOWER_MAX_RADIUS)) {
                 rc.empower(EMPOWER_MAX_RADIUS);
                 return;
             }
