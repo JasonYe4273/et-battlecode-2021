@@ -28,7 +28,7 @@ public class Politician extends Robot {
 		for(int i=0;i<8;i++) {
 			if(rc.canMove(directions[i])) {
 				adj[i] = rc.getLocation().add(directions[i]);
-				h[i] = Math.random() * 10 - 100/home.distanceSquaredTo(rc.getLocation());
+				h[i] = Math.random() * 10 + 4*home.distanceSquaredTo(rc.getLocation());
 			}
 		}
 		adj[8] = rc.getLocation();
