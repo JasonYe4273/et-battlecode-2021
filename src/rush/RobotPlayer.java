@@ -196,16 +196,23 @@ public strictfp class RobotPlayer {
         for (RobotInfo r : attackable)
             enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
-        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
-            && rc.canEmpower(actionRadius) && rc.getConviction() > 10) {
-            System.out.println("empowering...");
-            rc.empower(actionRadius);
-            System.out.println("empowered");
-            return;
-        }
         // zeroth order navigation strategy: move away from HQ
         if (enemyHqLoc != null && tryMove(rc.getLocation().directionTo(enemyHqLoc)))
             System.out.println("Moved towards enemy HQ!");
+        else if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
+            && rc.canEmpower(actionRadius) && rc.getConviction() > 10) {
+            // attack either enemy HQ or farthest enemy in range
+            int attackLength = 1;
+            for (RobotInfo r : attackable) {
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
+                    attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
+            }
+            if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
+            System.out.println("empowering...");
+            rc.empower(attackLength);
+            System.out.println("empowered");
+            return;
+        }
         else if (hqLoc != null && tryMove(hqLoc.directionTo(rc.getLocation())))
             System.out.println("Moved away from HQ!");
         else if (tryMove(randomDirection()))
