@@ -25,11 +25,15 @@ public strictfp class RobotPlayer {
 
     static final int SLANDER_FACTOR = 20;
     static final int EMPOWER_MAX_RADIUS = 9;
+    static final int MIN_POL_INFLUENCE = 10;
+    static final int DEFAULT = 0;
+    static final int HEAL = 1;
 
     static Team me;
     static Team op;
 
     static int turnCount;
+    static int currConviction;
     static int currInfluence;
     static MapLocation currLocation;
     static RobotInfo[] nearbyRobots;
@@ -37,8 +41,9 @@ public strictfp class RobotPlayer {
     static MapLocation myHQ;
     static ArrayList<MapLocation> hqLocs;
     static ArrayList<Team> hqTeams;
+    static ArrayList<Integer> slandererIDs;
 
-    static boolean[] flag;
+    static int flag;
     static boolean flagChanged;
 
     /**
@@ -58,7 +63,8 @@ public strictfp class RobotPlayer {
         op = me.opponent();
         myHQ = rc.getLocation();
         hqLocs = new ArrayList<MapLocation>();
-        flag = new boolean[24];
+        hqTeams = new ArrayList<Team>();
+        flag = 0;
         flagChanged = false;
 
         for (RobotInfo ri : rc.senseNearbyRobots(2)) {
@@ -72,6 +78,7 @@ public strictfp class RobotPlayer {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
                 turnCount += 1;
+                currConviction = rc.getConviction();
                 currInfluence = rc.getInfluence();
                 currLocation = rc.getLocation();
                 nearbyRobots = rc.senseNearbyRobots();
@@ -84,8 +91,8 @@ public strictfp class RobotPlayer {
                     case MUCKRAKER:            runMuckraker();           break;
                 }
 
-                if (flagChanged) {
-                    rc.setFlag(encode(flag));
+                if (flagChanged && rc.canSetFlag(flag)) {
+                    rc.setFlag(flag);
                     flagChanged = false;
                 }
 
@@ -98,21 +105,11 @@ public strictfp class RobotPlayer {
         }
     }
 
-    static boolean[] decode(int i, int l) {
-        boolean[] decoded = new boolean[l];
-        for (int b = 0; b < l; b++) {
-            decoded[i] = (i >> b) % 2 == 1;
+    static void setFlag(int f) {
+        if (flag != f) {
+            flag = f;
+            flagChanged = true;
         }
-        return decoded;
-    }
-
-    static int encode(boolean[] b) {
-        int encoded = 0;
-        for (int i = b.length - 1; i >= 0; i--) {
-            if (b[i]) encoded++;
-            encoded = encoded << 1;
-        }
-        return encoded;
     }
 
     /*static void checkForHQs() throws GameActionException {
@@ -124,14 +121,14 @@ public strictfp class RobotPlayer {
                         if (hqTeams.get(i).equals(ri.team)) continue outer;
 
                         hqTeams.set(i, ri.team);
-                        // TODO: flag about team change
+                        // TODO: bitFlag about team change
                         continue outer;
                     }
                 }
 
                 hqLocs.add(ri.location);
                 hqTeams.add(ri.team);
-                // TODO: flag about new hq found
+                // TODO: bitFlag about new hq found
             }
         }
     }*/
@@ -142,11 +139,32 @@ public strictfp class RobotPlayer {
     }
 
     static void build() throws GameActionException {
-        int slanderers = 0;
-        for (RobotInfo ri : rc.senseNearbyRobots(2)) {
-            if (ri.type == RobotType.SLANDERER && ri.team == me) {
-                slanderers++;
+        for (RobotInfo ri : nearbyRobots) {
+            if (ri.type == RobotType.MUCKRAKER && ri.team == op) {
+                if (buildPolitician(MIN_POL_INFLUENCE * 2, currLocation.directionTo(ri.location))) return;
+                else break;
             }
+        }
+
+        int enemyPolInfluence = 0;
+        for (RobotInfo ri : nearbyRobots) {
+            if (ri.type == RobotType.POLITICIAN && ri.team == op) {
+                enemyPolInfluence += ri.influence;
+            }
+        }
+        if (enemyPolInfluence > currInfluence) return;
+        currInfluence -= enemyPolInfluence;
+
+        int income = 0;
+        for (RobotInfo ri : nearbyRobots) {
+            if (ri.type == RobotType.SLANDERER && ri.team == me && rc.canGetFlag(ri.ID)) {
+                income += rc.getFlag(ri.ID);
+            }
+        }
+        System.out.println(income);
+        if (income < ((turnCount / 10) + 1)) {
+            buildSlanderer();
+            return;
         }
 
         int politicians = 0;
@@ -155,21 +173,32 @@ public strictfp class RobotPlayer {
                 politicians++;
             }
         }
+        
+        if (politicians < 10 && buildPolitician(MIN_POL_INFLUENCE * 2)) return;
 
-        int rand = (int) (Math.random() * 7);
-        if (rand >= slanderers && buildSlanderer()) return;
+        if (currInfluence > turnCount * 5 + 100) buildMuckracker();
+    }
 
-        rand = (int) (Math.random() * 10);
-        if (rand >= politicians && buildPolitician()) return;
-
-        buildMuckracker();
+    static boolean buildMuckracker(Direction dir) throws GameActionException {
+        // Always build 1 influence muckrackers
+        for (Direction d : directionsTowards(dir)) {
+            if (rc.canBuildRobot(RobotType.MUCKRAKER, d, 1)) {
+                rc.buildRobot(RobotType.MUCKRAKER, d, 1);
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean buildMuckracker() throws GameActionException {
-        // Always build 1 influence muckrackers
-        for (Direction dir : directions) {
-            if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, 1)) {
-                rc.buildRobot(RobotType.MUCKRAKER, dir, 1);
+        return buildMuckracker(randomDirection());
+    }
+
+    static boolean buildPolitician(int influence, Direction dir) throws GameActionException {
+        if (currInfluence < influence || influence <= MIN_POL_INFLUENCE) return false;
+        for (Direction d : directionsTowards(dir)) {
+            if (rc.canBuildRobot(RobotType.POLITICIAN, d, influence)) {
+                rc.buildRobot(RobotType.POLITICIAN, d, influence);
                 return true;
             }
         }
@@ -177,33 +206,32 @@ public strictfp class RobotPlayer {
     }
 
     static boolean buildPolitician(int influence) throws GameActionException {
-        if (currInfluence < influence) return false;
-        for (Direction dir : directions) {
-            if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
-                rc.buildRobot(RobotType.POLITICIAN, dir, influence);
-                return true;
-            }
-        }
-        return false;
+        return buildPolitician(influence, randomDirection());
     }
 
     static boolean buildPolitician() throws GameActionException {
         return buildPolitician(currInfluence);
     }
 
-    static boolean buildSlanderer(int factor) throws GameActionException {
+    static boolean buildSlanderer(int factor, Direction dir) throws GameActionException {
         // always make slanderers in multiples of slander factor
         if (currInfluence < factor * SLANDER_FACTOR) return false;
-        for (Direction dir : directions) {
-            if (rc.canBuildRobot(RobotType.SLANDERER, dir, factor * SLANDER_FACTOR)) {
-                rc.buildRobot(RobotType.SLANDERER, dir, factor * SLANDER_FACTOR);
+        for (Direction d : directionsTowards(dir)) {
+            if (rc.canBuildRobot(RobotType.SLANDERER, d, factor * SLANDER_FACTOR)) {
+                rc.buildRobot(RobotType.SLANDERER, d, factor * SLANDER_FACTOR);
                 return true;
             }
         }
         return false;
     }
 
+    static boolean buildSlanderer(int factor) throws GameActionException {
+        return buildSlanderer(factor, randomDirection());
+    }
+
     static boolean buildSlanderer() throws GameActionException {
+        if (currInfluence < SLANDER_FACTOR) return false;
+        if (currInfluence > turnCount * 5) return buildSlanderer(turnCount / 4);
         return buildSlanderer(currInfluence / SLANDER_FACTOR);
     }
 
@@ -214,18 +242,55 @@ public strictfp class RobotPlayer {
     }
 
     static void runPolitician() throws GameActionException {
-        for (RobotInfo ri : rc.senseNearbyRobots(EMPOWER_MAX_RADIUS)) {
-            if (ri.team == op && rc.canEmpower(EMPOWER_MAX_RADIUS)) {
-                rc.empower(EMPOWER_MAX_RADIUS);
-                return;
+        /*for (RobotInfo ri : nearbyRobots) {
+            if (ri.type == RobotType.ENLIGHTENMENT_CENTER && ri.team == me && rc.canGetFlag(ri.ID)) {
+                if (rc.getFlag(ri.ID) == HEAL) {
+                    if (target(ri.location)) return;
+                }
+            }
+        }*/
+
+        int r = Integer.MAX_VALUE;
+        MapLocation t = currLocation;
+        for (RobotInfo ri : nearbyRobots) {
+            if (ri.type == RobotType.MUCKRAKER && ri.team == op && currLocation.distanceSquaredTo(ri.location) < r) {
+                r = currLocation.distanceSquaredTo(ri.location);
+                t = ri.location;
+            }
+        }
+        if (r != Integer.MAX_VALUE && target(t)) return;
+
+        hoverAroundLoc(myHQ, 16);
+    }
+
+    static boolean target(MapLocation loc) throws GameActionException {
+        int r = currLocation.distanceSquaredTo(loc);
+        if (r <= 2 && rc.canEmpower(r)) {
+            rc.empower(r);
+            return true;
+        }
+
+        Direction dir = currLocation.directionTo(loc);
+        for (RobotInfo ri : nearbyRobots) {
+            if (currLocation.distanceSquaredTo(ri.location) <= r) {
+                if (tryMove(dir)) return true;
+                if (tryMove(dir.rotateRight())) return true;
+                if (tryMove(dir.rotateLeft())) return true;
+                return false;
             }
         }
 
-        hoverAroundLoc(myHQ, 9);
+        if (rc.canEmpower(r)) {
+            rc.empower(r);
+            return true;
+        }
+        return false;
     }
 
     static void runSlanderer() throws GameActionException {
-        if (turnCount > 50) moveRandomly();
+        if (turnCount < 50) setFlag(currConviction / 20);
+        else if (turnCount == 50) setFlag(0);
+        else hoverAroundLoc(myHQ, 9);
     }
 
     static void runMuckraker() throws GameActionException {
@@ -269,6 +334,20 @@ public strictfp class RobotPlayer {
 
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
+    }
+
+    static Direction[] directionsTowards(Direction dir) {
+        Direction[] dirs = {
+            dir,
+            dir.rotateLeft(),
+            dir.rotateRight(),
+            dir.rotateLeft().rotateLeft(),
+            dir.rotateRight().rotateRight(),
+            dir.opposite().rotateLeft(),
+            dir.opposite().rotateRight(),
+            dir.opposite()
+        };
+        return dirs;
     }
 
     static boolean tryMove(Direction dir) throws GameActionException {
