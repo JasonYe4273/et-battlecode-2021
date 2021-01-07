@@ -15,7 +15,7 @@ public class Slanderer extends Politician {
 	public Slanderer(RobotController r) {
 		super(r);
 		politicanMask = 0;
-		patrolRadius = 2;
+		patrolRadius = 1;
 	}
 
 	public void turn() throws Exception {
