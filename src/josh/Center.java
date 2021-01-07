@@ -11,9 +11,9 @@ public class Center extends Robot {
 	public Center(RobotController r) {
 		super(r);
 	}
-
+	int lastInf = 1;
 	public void turn() throws Exception {
-		if(rc.getRoundNum() > 200) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getRoundNum() > 400) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getInfluence() < 20) {
 			return;
 		}
@@ -39,15 +39,17 @@ public class Center extends Robot {
 					
 			}
 		}
-		//System.out.println("p = "+politicians+" s="+slanderers);
+		System.out.println("p = "+politicians+" s="+slanderers);
+		int inf = rc.getInfluence() - enemyPStrength;
 		if(enemyPStrength > myPStrength) {
-			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
+			build(RobotType.POLITICIAN, Math.min(inf, enemyPStrength - myPStrength));
 		} else
-		if((politicians*2 > slanderers || politicians > 10 )&& rc.getInfluence()<0x00ffffff) {
-			build(RobotType.SLANDERER, 20*(rc.getInfluence()/20));
+		if(enemyRStrength == 0 && (politicians*2 > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
+			build(RobotType.SLANDERER, 20*(inf/20));
 		} else {
-			build(RobotType.POLITICIAN, Math.min(Math.min(rc.getInfluence(), 30 + rc.getInfluence()/2),123456));
+			build(RobotType.POLITICIAN, Math.min(Math.min(inf, 20 + inf/8),123456));
 		}
+		lastInf = rc.getInfluence();
 	}
 	private void build(RobotType t, int influence) throws GameActionException {
 		int offset = (int)(Math.random()*8);

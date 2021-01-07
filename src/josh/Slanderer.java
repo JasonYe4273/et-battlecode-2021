@@ -4,6 +4,7 @@ import static josh.RobotPlayer.directions;
 
 import java.util.Arrays;
 
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -13,6 +14,8 @@ public class Slanderer extends Politician {
 
 	public Slanderer(RobotController r) {
 		super(r);
+		politicanMask = 0;
+		patrolRadius = 1;
 	}
 
 	public void turn() throws Exception {
@@ -20,11 +23,55 @@ public class Slanderer extends Politician {
 			super.turn();
 			return;
 		}
-		if(rc.getCooldownTurns() > 1) {
-			//return;
-		}
 
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+		findRakerFlags(nearby);
+		movementS(nearby);
+		setRakerFlags();
+	}
+	public void movementS(RobotInfo[] nearby) throws GameActionException {
+		if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 100) {
+			moveToward(rc.getLocation().add(raker.directionTo(rc.getLocation())));
+		}
+		/*
+		double scale = Math.sqrt(15/rc.getLocation().distanceSquaredTo(home));
+		MapLocation l = new MapLocation((int)(scale*(rc.getLocation().x-home.x)+rc.getLocation().x),
+				(int)(scale*(rc.getLocation().y-home.y)+rc.getLocation().y));
+		for(RobotInfo r:nearby) {
+			if(r.team==rc.getTeam()) {
+				if(r.type == RobotType.POLITICIAN) {
+					l.add(rc.getLocation().directionTo(r.location));
+				}
+			}
+		}
+		moveToward(l);
+		*/
+		int nearp = 0, farp = 0;
+		int politicians = 0;
+		int myDist = rc.getLocation().distanceSquaredTo(home);
+		int farthest = 0;
+		for(RobotInfo r:nearby) {
+			if(r.team==rc.getTeam() && r.type == RobotType.POLITICIAN) {
+				politicians++;
+				int d = home.distanceSquaredTo(r.location);
+				if(d < myDist)
+					nearp++;
+				else
+					farp++;
+				if(d > farthest)
+					farthest = d;
+			}
+		}
+		if(patrolRadius > 2 && farp<5)
+			patrolRadius--;
+		int d = rc.getLocation().distanceSquaredTo(home);
+		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius)
+			patrolRadius++;
+		patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
+		System.out.println("PatrolRadius="+patrolRadius);
+	}
+	
+	
 		/*
 		MapLocation[] adj = new MapLocation[9];
 		double[] h = new double[9];
@@ -70,8 +117,8 @@ public class Slanderer extends Politician {
 		}
 		if(mini!=8 && rc.canMove(directions[mini]))
 			rc.move(directions[mini]);
-			*/
-		double scale = Math.sqrt(20/rc.getLocation().distanceSquaredTo(home));
+			
+		double scale = Math.sqrt(15/rc.getLocation().distanceSquaredTo(home));
 		MapLocation l = new MapLocation((int)(scale*(rc.getLocation().x-home.x)+rc.getLocation().x),
 				(int)(scale*(rc.getLocation().y-home.y)+rc.getLocation().y));
 		MapLocation raker = null;
@@ -108,6 +155,7 @@ public class Slanderer extends Politician {
 		}
 		super.moveToward(l);
 	}
+	*/
 
 
 }
