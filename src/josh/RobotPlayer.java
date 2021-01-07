@@ -43,6 +43,7 @@ public strictfp class RobotPlayer {
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
         RobotPlayer.rc = rc;
+		rc.setFlag(0);
         Robot r = null;
 
         switch (rc.getType()) {

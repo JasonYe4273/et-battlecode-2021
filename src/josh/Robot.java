@@ -1,6 +1,8 @@
 package josh;
 
 import battlecode.common.Clock;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -38,5 +40,30 @@ public class Robot {
 		}
 		result[8]=l;
 		return result;
+	}
+	public void moveToward(MapLocation l) throws GameActionException {
+		if(rc.getCooldownTurns()>1) return;
+		rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
+		Direction d = rc.getLocation().directionTo(l);
+		Direction[] dd = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
+		for(Direction dir:dd) {
+			if(rc.canMove(dir)) {
+				rc.move(dir);
+				return;
+			}
+		}
+	}
+	public static int locToFlag(MapLocation from, MapLocation to) {
+		return (to.x-from.x+64)<< 7 | (to.y-from.y+64);
+	}
+	public static MapLocation flagToLoc(MapLocation from, int flag) {
+		//System.out.println("reading "+(((flag&0x3f80)>>7)-64)+","+((flag&0x007f)-64));
+		return new MapLocation(from.x+(((flag&0x3f80)>>7)-64),from.y+((flag&0x007f)-64));
+	}
+	public static int roundToFlag(int round) {
+		return (round&0x7f)<<14;
+	}
+	public static int flagToRound(int round, int flag) {
+		return (round - ((flag>>14)&0x7f))&0x7f;
 	}
 }

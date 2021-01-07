@@ -1,5 +1,6 @@
 package josh;
 
+import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -13,16 +14,20 @@ public class Politician extends Robot {
 	 * politicans want to stay slightly away from other politicans and your base, but near slanderers
 	 * 
 	 */
-
+	MapLocation raker;
+	int rakerRound;
 	public Politician(RobotController r) {
 		super(r);
 	}
 	public void turn() throws Exception {
-		if(rc.getCooldownTurns() > 1) {
-			return;
-		}
-
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+		findRakerFlags(nearby);
+		movement(nearby);
+		setRakerFlags();
+	}
+	public void movement(RobotInfo[] nearby) throws GameActionException {
+
+		/*
 		MapLocation[] adj = new MapLocation[9];
 		double[] h = new double[9];
 		for(int i=0;i<8;i++) {
@@ -32,6 +37,7 @@ public class Politician extends Robot {
 			}
 		}
 		adj[8] = rc.getLocation();
+		*/
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
 				if(r.type == RobotType.MUCKRAKER) {
@@ -39,39 +45,57 @@ public class Politician extends Robot {
 					if(d < rc.getType().actionRadiusSquared && rc.canEmpower(d)) {
 						rc.empower(d);
 						return;
+					} else {
+						this.moveToward(r.location);
+						return;
+					}
+				} else if(r.type == RobotType.POLITICIAN) {
+					if(rc.getLocation().distanceSquaredTo(home) < 100) {
+						moveToward(new MapLocation((r.location.x + home.x)/2,(r.location.y + home.y)/2));
+						return;
+					}
+				}
+			}
+		}
+		if(raker != null) {
+			moveToward(raker);
+		}
+	}
+	public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
+		raker = null;
+		rakerRound = 99999;
+		for(RobotInfo r:nearby) {
+			if(r.team==rc.getTeam()) {
+				if(r.type == RobotType.POLITICIAN) {
+					if(rc.canGetFlag(r.ID)) {
+						int f = rc.getFlag(r.ID);
+						if(f > 0) {
+							int rr = Robot.flagToRound(rc.getRoundNum(), f);
+							if(rr < rakerRound) {
+								rakerRound = rr;
+								raker = Robot.flagToLoc(r.location, f);
+							}
+						}
 					}
 				}
 			} else {
-				for(int i=0;i<9;i++) {
-					if(adj[i]==null)
-						continue;
-					switch (r.type) {
-					case POLITICIAN: 
-						h[i] += 100/r.location.distanceSquaredTo(adj[i]);
-						break;
-					case SLANDERER: 
-						h[i] -= 200/r.location.distanceSquaredTo(adj[i]);
-						break;
-					case ENLIGHTENMENT_CENTER:
-						h[i] += 500/r.location.distanceSquaredTo(adj[i]);
-						break;
-					default: break;
-					}
+				if(r.type == RobotType.MUCKRAKER) {
+					raker = r.location;
+					rakerRound = 0;
 				}
 			}
 		}
-		//System.out.println(Arrays.toString(adj));
-		//System.out.println(Arrays.toString(h));
-		double min = 10000;
-		int mini = 8;
-		for(int i=0;i<9;i++) {
-			if(h[i] < min && adj[i] != null) {
-				min = h[i];
-				mini = i;
-			}
+		if(rakerRound < 48) {
+			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
+			return;
 		}
-		if(mini!=8 && rc.canMove(directions[mini]))
-			rc.move(directions[mini]);
 	}
-
+	public void setRakerFlags() throws GameActionException {
+		if(rakerRound > 48) {
+			if(rc.getFlag(rc.getID())>0)
+				rc.setFlag(0);
+			return;
+		}
+		rc.setFlag(Robot.roundToFlag(rc.getRoundNum() - rakerRound) | Robot.locToFlag(rc.getLocation(), raker));
+	}
 }
