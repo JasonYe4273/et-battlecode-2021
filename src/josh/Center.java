@@ -39,7 +39,7 @@ public class Center extends Robot {
 					
 			}
 		}
-		//System.out.println("p = "+politicians+" s="+slanderers);
+		System.out.println("p = "+politicians+" s="+slanderers);
 		int inf = rc.getInfluence() - enemyPStrength;
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(inf, enemyPStrength - myPStrength));
@@ -47,7 +47,7 @@ public class Center extends Robot {
 		if(enemyRStrength == 0 && (politicians*2 > slanderers || politicians > 20 )&& inf<0x00ffffff) {
 			build(RobotType.SLANDERER, 20*(inf/20));
 		} else {
-			build(RobotType.POLITICIAN, Math.min(Math.min(inf, 30 + inf/2),123456));
+			build(RobotType.POLITICIAN, Math.min(Math.min(inf, 15 + inf/4),123456));
 		}
 	}
 	private void build(RobotType t, int influence) throws GameActionException {

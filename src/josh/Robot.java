@@ -19,6 +19,8 @@ public class Robot {
 			if(r.type==RobotType.ENLIGHTENMENT_CENTER)
 				home = r.location;
 		}
+		if(home == null)
+			home = rc.getLocation();
 	}
 	public void turn() throws Exception {
 		
