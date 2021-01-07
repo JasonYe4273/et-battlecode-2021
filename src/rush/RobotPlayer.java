@@ -1,6 +1,7 @@
 package rush;
 import battlecode.common.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
@@ -105,7 +106,9 @@ public strictfp class RobotPlayer {
         // check to see if any spawned robots have found the enemy HQ
         if (flag == 0 || flag > 65536) {
             System.out.println("Flag is 0, looking for other flags");
-            for (int id : spawnedIDs) {
+            Iterator<Integer> it = spawnedIDs.iterator();
+            while (it.hasNext()) {
+                int id = (Integer) it.next();
                 System.out.println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
@@ -115,11 +118,15 @@ public strictfp class RobotPlayer {
                         rc.setFlag(flag);
                         System.out.println("Flag set to " + flag);
                     }
+                } else {
+                    it.remove();
                 }
             }
         } else {
             System.out.println("Flag is set, looking for capture flags");
-            for (int id : spawnedIDs) {
+            Iterator<Integer> it = spawnedIDs.iterator();
+            while (it.hasNext()) {
+                int id = (Integer) it.next();
                 System.out.println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
@@ -129,14 +136,11 @@ public strictfp class RobotPlayer {
                         rc.setFlag(flag);
                         System.out.println("Flag set to " + flag);
                     }
+                } else {
+                    it.remove();
                 }
             }
         }
-        // resign on turn 100 (for testing)
-        // TODO: Remove this
-        if (rc.getRoundNum() == 250)
-            ;
-            //rc.resign();
     }
 
     static void runPolitician() throws GameActionException {
