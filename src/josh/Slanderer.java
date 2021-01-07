@@ -21,10 +21,11 @@ public class Slanderer extends Politician {
 			return;
 		}
 		if(rc.getCooldownTurns() > 1) {
-			return;
+			//return;
 		}
 
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+		/*
 		MapLocation[] adj = new MapLocation[9];
 		double[] h = new double[9];
 		for(int i=0;i<8;i++) {
@@ -34,6 +35,7 @@ public class Slanderer extends Politician {
 			}
 		}
 		adj[8] = rc.getLocation();
+		
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
 				continue;
@@ -55,7 +57,7 @@ public class Slanderer extends Politician {
 					}
 				}
 			}
-		}
+		} 
 		//System.out.println(Arrays.toString(adj));
 		//System.out.println(Arrays.toString(h));
 		double min = 10000;
@@ -68,6 +70,43 @@ public class Slanderer extends Politician {
 		}
 		if(mini!=8 && rc.canMove(directions[mini]))
 			rc.move(directions[mini]);
+			*/
+		double scale = Math.sqrt(20/rc.getLocation().distanceSquaredTo(home));
+		MapLocation l = new MapLocation((int)(scale*(rc.getLocation().x-home.x)+rc.getLocation().x),
+				(int)(scale*(rc.getLocation().y-home.y)+rc.getLocation().y));
+		MapLocation raker = null;
+		int rakerRound = 99999;
+		for(RobotInfo r:nearby) {
+			if(r.team==rc.getTeam()) {
+				if(r.type == RobotType.POLITICIAN) {
+					l.add(rc.getLocation().directionTo(r.location));
+					if(rc.canGetFlag(r.ID)) {
+						int f = rc.getFlag(r.ID);
+						//System.out.println("flag "+f);
+						if(f > 0) {
+							rakerRound = Robot.flagToRound(rc.getRoundNum(), f);
+							raker = Robot.flagToLoc(r.location, f);
+							System.out.println("Raker at "+raker+" "+rakerRound+" rounds ago");
+						}
+					}
+				}
+			} else {
+				if(r.type == RobotType.MUCKRAKER) {
+					raker = r.location;
+					rakerRound = 0;
+				}
+			}
+			
+		}
+		if(rakerRound < 48) {
+			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
+			super.moveToward(rc.getLocation().add(raker.directionTo(rc.getLocation())));
+			rc.setFlag(Robot.roundToFlag(rc.getRoundNum() - rakerRound) | Robot.locToFlag(rc.getLocation(), raker));
+			return;
+		} else {
+			rc.setFlag(0);
+		}
+		super.moveToward(l);
 	}
 
 
