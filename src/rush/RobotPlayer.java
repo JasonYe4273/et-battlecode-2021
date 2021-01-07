@@ -201,7 +201,7 @@ public strictfp class RobotPlayer {
             enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
         // zeroth order navigation strategy: move away from HQ
-        if (enemyHqLoc != null && tryMove(rc.getLocation().directionTo(enemyHqLoc)))
+        if (enemyHqLoc != null && rc.getLocation().distanceSquaredTo(enemyHqLoc) > 2 && fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc)))
             System.out.println("Moved towards enemy HQ!");
         else if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
             && rc.canEmpower(actionRadius) && rc.getConviction() > 10) {
@@ -217,9 +217,9 @@ public strictfp class RobotPlayer {
             System.out.println("empowered");
             return;
         }
-        else if (hqLoc != null && tryMove(hqLoc.directionTo(rc.getLocation())))
+        else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
             System.out.println("Moved away from HQ!");
-        else if (tryMove(randomDirection()))
+        else if (fuzzyTryMove(randomDirection()))
             System.out.println("I moved!");
     }
 
@@ -291,12 +291,19 @@ public strictfp class RobotPlayer {
                 }
             }
         }
+        // If you see an enemy slanderer, move towards them
+        int sensorRadius = rc.getType().sensorRadiusSquared;
+        for (RobotInfo robot : rc.senseNearbyRobots(sensorRadius, enemy)) {
+            if (robot.type.canBeExposed()) {
+                fuzzyTryMove(rc.getLocation().directionTo(robot.location));
+            }
+        }
         // zeroth order navigation strategy: move away from HQ
-        if (enemyHqLoc != null && tryMove(rc.getLocation().directionTo(enemyHqLoc)))
+        if (enemyHqLoc != null && fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc)))
             System.out.println("Moved towards enemy HQ!");
-        else if (hqLoc != null && tryMove(hqLoc.directionTo(rc.getLocation())))
+        else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
             System.out.println("Moved away from HQ!");
-        else if (tryMove(randomDirection()))
+        else if (fuzzyTryMove(randomDirection()))
             System.out.println("I moved!");
     }
 
@@ -329,6 +336,21 @@ public strictfp class RobotPlayer {
         //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         if (rc.canMove(dir)) {
             rc.move(dir);
+            return true;
+        } else return false;
+    }
+
+    // try to move in or near a given direction
+    static boolean fuzzyTryMove(Direction dir) throws GameActionException {
+        //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            return true;
+        } else if (rc.canMove(dir.rotateLeft())) {
+            rc.move(dir.rotateLeft());
+            return true;
+        } else if (rc.canMove(dir.rotateRight())) {
+            rc.move(dir.rotateRight());
             return true;
         } else return false;
     }
