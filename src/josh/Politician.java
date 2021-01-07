@@ -16,6 +16,8 @@ public class Politician extends Robot {
 	 */
 	MapLocation raker;
 	int rakerRound;
+	public static final int RAKER_ROUNDS = 24;
+	public int politicanMask = 0x400000;
 	public Politician(RobotController r) {
 		super(r);
 	}
@@ -38,6 +40,7 @@ public class Politician extends Robot {
 		}
 		adj[8] = rc.getLocation();
 		*/
+		int nearestPoliticanToRaker = 999;
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
 				if(r.type == RobotType.MUCKRAKER) {
@@ -50,17 +53,29 @@ public class Politician extends Robot {
 						return;
 					}
 				} else if(r.type == RobotType.POLITICIAN) {
+					/*
 					if(rc.getLocation().distanceSquaredTo(home) < 100) {
 						moveToward(new MapLocation((r.location.x + home.x)/2,(r.location.y + home.y)/2));
 						return;
+					}*/
+				}
+			} else {
+				if(raker == null) continue;
+				if(r.type == RobotType.POLITICIAN && rc.canGetFlag(r.ID) && (rc.getFlag(r.ID)&0x400000)>0) {
+					int d = r.location.distanceSquaredTo(raker);
+					if(d < nearestPoliticanToRaker) {
+						nearestPoliticanToRaker = d;
 					}
 				}
 			}
 		}
-		if(raker != null) {
+		if(raker != null && rc.getLocation().distanceSquaredTo(raker) < nearestPoliticanToRaker) {
 			moveToward(raker);
+		} else {
+			patrol(home,36,64);
 		}
 	}
+	
 	public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
 		raker = null;
 		rakerRound = 99999;
@@ -69,11 +84,12 @@ public class Politician extends Robot {
 				if(r.type == RobotType.POLITICIAN) {
 					if(rc.canGetFlag(r.ID)) {
 						int f = rc.getFlag(r.ID);
-						if(f > 0) {
+						if((f&0xffff) > 0) {
 							int rr = Robot.flagToRound(rc.getRoundNum(), f);
-							if(rr < rakerRound) {
+							MapLocation l = Robot.flagToLoc(r.location, f);
+							if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
 								rakerRound = rr;
-								raker = Robot.flagToLoc(r.location, f);
+								raker = l;
 							}
 						}
 					}
@@ -85,17 +101,17 @@ public class Politician extends Robot {
 				}
 			}
 		}
-		if(rakerRound < 48) {
+		if(rakerRound < RAKER_ROUNDS) {
 			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
 			return;
 		}
 	}
 	public void setRakerFlags() throws GameActionException {
-		if(rakerRound > 48) {
-			if(rc.getFlag(rc.getID())>0)
-				rc.setFlag(0);
+		if(rakerRound > RAKER_ROUNDS) {
+			if((rc.getFlag(rc.getID())&0xffff)>0)
+				rc.setFlag(0 | politicanMask);
 			return;
 		}
-		rc.setFlag(Robot.roundToFlag(rc.getRoundNum() - rakerRound) | Robot.locToFlag(rc.getLocation(), raker));
+		rc.setFlag(politicanMask | Robot.roundToFlag(rc.getRoundNum() - rakerRound) | Robot.locToFlag(rc.getLocation(), raker));
 	}
 }
