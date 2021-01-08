@@ -223,7 +223,8 @@ public strictfp class RobotPlayer {
                 }
         } else {
             // check if enemy HQ has already been captured
-            if (rc.canSenseLocation(enemyHqLoc) && rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam()) {
+            if (rc.canSenseLocation(enemyHqLoc)
+                && (rc.senseRobotAtLocation(enemyHqLoc) == null || rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())) {
                 enemyHqCaptured = true;
                 int dx = enemyHqLoc.x - hqLoc.x;
                 int dy = enemyHqLoc.y - hqLoc.y;
@@ -310,7 +311,9 @@ public strictfp class RobotPlayer {
                 }
         } else {
             // check if enemy HQ has already been captured
-            if (rc.canSenseLocation(enemyHqLoc) && rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam()) {
+            // TODO: Figure out what to do if enemyHqLoc is empty (probably requires a flag)
+            if (rc.canSenseLocation(enemyHqLoc)
+                && (rc.senseRobotAtLocation(enemyHqLoc) == null || rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())) {
                 enemyHqCaptured = true;
                 int dx = enemyHqLoc.x - hqLoc.x;
                 int dy = enemyHqLoc.y - hqLoc.y;
