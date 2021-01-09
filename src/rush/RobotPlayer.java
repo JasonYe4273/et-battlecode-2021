@@ -79,7 +79,7 @@ public strictfp class RobotPlayer {
             try {
                 // Here, we've separated the controls into a different method for each RobotType.
                 // You may rewrite this into your own control structure if you wish.
-                System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
+                // System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
                     case ENLIGHTENMENT_CENTER: runEnlightenmentCenter(); break;
                     case POLITICIAN:           runPolitician();          break;
@@ -124,10 +124,10 @@ public strictfp class RobotPlayer {
             Iterator<Integer> it = spawnedIDs.iterator();
             while (it.hasNext()) {
                 int id = (Integer) it.next();
-                System.out.println("Checking ID " + id);
+                // System.out.println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
-                    System.out.println(readFlag);
+                    // System.out.println(readFlag);
                     if (readFlag > 0 && readFlag < 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
@@ -174,14 +174,14 @@ public strictfp class RobotPlayer {
                 }
             }
         } else {
-            System.out.println("Flag is set, looking for capture flags");
+            // System.out.println("Flag is set, looking for capture flags");
             Iterator<Integer> it = spawnedIDs.iterator();
             while (it.hasNext()) {
                 int id = (Integer) it.next();
-                System.out.println("Checking ID " + id);
+                // System.out.println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
-                    System.out.println(readFlag);
+                    // System.out.println(readFlag);
                     if (readFlag > 65536 && readFlag < 131072) {
                         flag = readFlag;
                         rc.setFlag(flag);
@@ -271,9 +271,11 @@ public strictfp class RobotPlayer {
             return;
         }
         else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
-            System.out.println("Moved away from HQ!");
+            ;
+            //System.out.println("Moved away from HQ!");
         else if (fuzzyTryMove(randomDirection()))
-            System.out.println("I moved!");
+            ;
+            //System.out.println("I moved!");
     }
 
     static void runSlanderer() throws GameActionException {
@@ -356,11 +358,14 @@ public strictfp class RobotPlayer {
         }
         // zeroth order navigation strategy: move away from HQ
         if (enemyHqLoc != null && fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc)))
-            System.out.println("Moved towards enemy HQ!");
+            ;
+            //System.out.println("Moved towards enemy HQ!");
         else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
-            System.out.println("Moved away from HQ!");
+            ;
+            //System.out.println("Moved away from HQ!");
         else if (fuzzyTryMove(randomDirection()))
-            System.out.println("I moved!");
+            ;
+            //System.out.println("I moved!");
     }
 
     /**
