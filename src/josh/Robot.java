@@ -68,14 +68,17 @@ public class Robot {
 	public static int flagToRound(int round, int flag) {
 		return (round - ((flag>>14)&0x7f))&0x7f;
 	}
-	public void moveInDirections(Direction[] dirs) throws GameActionException {
+	public boolean moveInDirections(Direction[] dirs) throws GameActionException {
 		for(Direction d : dirs) {
 			if(rc.canMove(d)) {
 				rc.move(d);
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
+	private static final int LEFT = 0, RIGHT = 1;
+	private int patrolDirection = Math.random()>.5?RIGHT:LEFT;
 	public void patrol(MapLocation l, int minR, int maxR) throws GameActionException {
 		int dist = rc.getLocation().distanceSquaredTo(l);
 		if(dist < minR) {
@@ -86,12 +89,17 @@ public class Robot {
 			moveToward(l);
 		} else {
 			Direction d = l.directionTo(rc.getLocation());
-			if(Math.random() < .5) {
-				Direction[] dirs = {d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight(), d.rotateLeft(), d.rotateRight()};
-				moveInDirections(dirs);
+			if(patrolDirection == LEFT) {
+				d = d.rotateLeft().rotateLeft();
 			} else {
-				Direction[] dirs = {d.rotateRight().rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight(), d.rotateLeft()};
-				moveInDirections(dirs);
+				d = d.rotateRight().rotateRight();
+			}
+			Direction[] dirs = {d, d.rotateLeft(), d.rotateRight()};
+			if(!moveInDirections(dirs)) {
+				patrolDirection = patrolDirection==LEFT?RIGHT:LEFT;
+				d = d.opposite();
+				Direction[] dirs2 = {d, d.rotateLeft(), d.rotateRight()};
+				moveInDirections(dirs2);
 			}
 		}
 	}
