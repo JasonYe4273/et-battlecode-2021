@@ -164,9 +164,7 @@ public strictfp class RobotPlayer {
                             // if mapX != mapY, the map is probably rotationally symmetric
                             if (flag == 0 && mapX != mapY) {
                                 enemyHqLoc = new MapLocation(enemyX, enemyY);
-                                int dx = enemyHqLoc.x - hqLoc.x;
-                                int dy = enemyHqLoc.y - hqLoc.y;
-                                int newFlag = (dx + 128) * 256 + (dy + 128);
+                                int newFlag = locToFlag(enemyHqLoc);
                                 if (flag - newFlag != 65536) flag = newFlag;
                                 rc.setFlag(flag);
                             } else if (mapX == mapY) {
@@ -185,9 +183,7 @@ public strictfp class RobotPlayer {
                                 else if (dirsExplored[0] && dirsExplored[2] && dirsExplored[4] && dirsExplored[6])
                                     enemyHqLoc = new MapLocation(enemyX, enemyY);
                                 if (enemyHqLoc != null) {
-                                    int dx = enemyHqLoc.x - hqLoc.x;
-                                    int dy = enemyHqLoc.y - hqLoc.y;
-                                    int newFlag = (dx + 128) * 256 + (dy + 128);
+                                    int newFlag = locToFlag(enemyHqLoc);
                                     if (flag - newFlag != 65536) flag = newFlag;
                                     rc.setFlag(flag);
                                 }
@@ -240,25 +236,29 @@ public strictfp class RobotPlayer {
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     println("Found enemy HQ");
                     enemyHqLoc = r.getLocation();
-                    // set flag to signal this
-                    if (hqLoc != null) {
-                        int dx = enemyHqLoc.x - hqLoc.x;
-                        int dy = enemyHqLoc.y - hqLoc.y;
-                        flag = (dx + 128) * 256 + (dy + 128);
-                        rc.setFlag(flag);
-                    }
+                    flag = locToFlag(enemyHqLoc);
+                    rc.setFlag(flag);
                 }
+            // also try to read flags of friendly units that may have found an enemy HQ
+            if (!enemyHqCaptured && flag == 0) {
+                RobotInfo [] friends = rc.senseNearbyRobots(-1, rc.getTeam());
+                int newFlag = 0;
+                for (RobotInfo r : friends) {
+                    if (rc.canGetFlag(r.ID) && rc.getFlag(r.ID) != 0) newFlag = rc.getFlag(r.ID);
+                }
+                if (newFlag > 0 && newFlag < 65536) {
+                    flag = newFlag;
+                    rc.setFlag(newFlag);
+                    enemyHqLoc = flagToLoc(newFlag);
+                }
+            }
         } else {
             // check if enemy HQ has already been captured
             if (rc.canSenseLocation(enemyHqLoc)
                 && (rc.senseRobotAtLocation(enemyHqLoc) == null || rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())) {
                 enemyHqCaptured = true;
-                if (hqLoc != null) {
-                    int dx = enemyHqLoc.x - hqLoc.x;
-                    int dy = enemyHqLoc.y - hqLoc.y;
-                    flag = (dx + 128) * 256 + (dy + 128) + 65536;
-                    rc.setFlag(flag);
-                }
+                flag = locToFlag(enemyHqLoc) + 65536;
+                rc.setFlag(flag);
                 enemyHqLoc = null;
             }
         }
@@ -267,7 +267,7 @@ public strictfp class RobotPlayer {
             if (rc.canGetFlag(hqID)) {
                 int hqFlag = rc.getFlag(hqID);
                 if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
-                    enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
+                    enemyHqLoc = flagToLoc(hqFlag);
                     println("Read enemy HQ loc from home HQ!");
                 } else if (enemyHqLoc != null && hqFlag > 65536) {
                     enemyHqLoc = null;
@@ -349,6 +349,19 @@ public strictfp class RobotPlayer {
                     hqID = r.getID();
                     println("Found the HQ!");
                 }
+            // also try to read flags of friendly units that may have found an enemy HQ
+            if (!enemyHqCaptured && flag == 0) {
+                RobotInfo [] friends = rc.senseNearbyRobots(-1, rc.getTeam());
+                int newFlag = 0;
+                for (RobotInfo r : friends) {
+                    if (rc.canGetFlag(r.ID) && rc.getFlag(r.ID) != 0) newFlag = rc.getFlag(r.ID);
+                }
+                if (newFlag > 0 && newFlag < 65536) {
+                    flag = newFlag;
+                    rc.setFlag(newFlag);
+                    enemyHqLoc = flagToLoc(newFlag);
+                }
+            }
         }
         Team enemy = rc.getTeam().opponent();
         // set enemyHqLoc if not set already
@@ -358,13 +371,8 @@ public strictfp class RobotPlayer {
             for (RobotInfo r : possibleEnemyHQ)
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     enemyHqLoc = r.getLocation();
-                    // set flag to signal this
-                    if (hqLoc != null) {
-                        int dx = enemyHqLoc.x - hqLoc.x;
-                        int dy = enemyHqLoc.y - hqLoc.y;
-                        flag = (dx + 128) * 256 + (dy + 128);
-                        rc.setFlag(flag);
-                    }
+                    flag = locToFlag(enemyHqLoc);
+                    rc.setFlag(flag);
                 }
         } else {
             // check if enemy HQ has already been captured
@@ -372,10 +380,8 @@ public strictfp class RobotPlayer {
             if (rc.canSenseLocation(enemyHqLoc)
                 && (rc.senseRobotAtLocation(enemyHqLoc) == null || rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())) {
                 enemyHqCaptured = true;
-                int dx = enemyHqLoc.x - hqLoc.x;
-                int dy = enemyHqLoc.y - hqLoc.y;
+                flag = locToFlag(enemyHqLoc) + 65536;
                 enemyHqLoc = null;
-                flag = (dx + 128) * 256 + (dy + 128) + 65536;
                 rc.setFlag(flag);
             }
         }
@@ -384,7 +390,7 @@ public strictfp class RobotPlayer {
             if (rc.canGetFlag(hqID)) { 
                 int hqFlag = rc.getFlag(hqID);
                 if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
-                    enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
+                    enemyHqLoc = flagToLoc(hqFlag);
                     println("Read enemy HQ loc from home HQ!");
                 } else if (enemyHqLoc != null && hqFlag > 65536) {
                     enemyHqLoc = null;
@@ -519,5 +525,25 @@ public strictfp class RobotPlayer {
 
     static void println(Object str) {
         if (debug) System.out.println(str);
+    }
+
+    // convert flag to location and back
+    // input: flag < 2**16
+    // output: MapLocation where loc.x % 256 == flag.x and loc.y % 256 == flag.y
+    static MapLocation flagToLoc (int flag) {
+        int flagX = flag / 256;
+        int flagY = flag % 256;
+        MapLocation currentLoc = rc.getLocation();
+        flagX += (currentLoc.x / 256) * 256;
+        flagY += (currentLoc.y / 256) * 256;
+        if (currentLoc.x - flagX > 128) flagX += 256;
+        if (currentLoc.x - flagX < -128) flagX -= 256;
+        if (currentLoc.y - flagY > 128) flagY += 256;
+        if (currentLoc.y - flagY < -128) flagY -= 256;
+        return new MapLocation(flagX, flagY);
+    }
+
+    static int locToFlag (MapLocation loc) {
+        return (loc.x % 256) * 256 + (loc.y % 256);
     }
 }
