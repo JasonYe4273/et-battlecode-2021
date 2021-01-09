@@ -98,6 +98,9 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
+        // resign on turn 1000 for testing
+        // TODO: Remove this
+        // if (rc.getRoundNum() > 1000) rc.resign();
         // bid 2 influence/turn on rounds > 2000
         if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
@@ -263,13 +266,27 @@ public strictfp class RobotPlayer {
         boolean enemyHQInRange = false;
         for (RobotInfo r : attackable)
             enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
+        // if empower factor is sufficiently high, empower own base
+        /*
+        if (rc.getEmpowerFactor(rc.getTeam(), 0) - 1 > 10/(rc.getConviction()-10)
+            && hqLoc != null && rc.getLocation().distanceSquaredTo(hqLoc) <= 2) {
+                RobotInfo [] nearbyRobots = rc.senseNearbyRobots(2);
+                if (nearbyRobots.length == 1 && rc.canEmpower(2)) rc.empower(2);
+            }
+        */
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
-        // zeroth order navigation strategy: move away from HQ
         if (enemyHqLoc != null && rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1)
-            if (rc.getConviction() > 10) 
-                if (fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) return;
-            else if (fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()))) return; // move away from enemy HQ if conviction <= 10 (worthless)
-        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
+            if (rc.getConviction() > 10) {
+                if (fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) {
+                    //System.out.println("Moving towards enemy HQ!");
+                    return;
+                }
+            }
+            else if (fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()))) {
+                //System.out.println("Moving away from enemy HQ!");
+                return; // move away from enemy HQ if conviction <= 10 (worthless)
+            }
+        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null))
             && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
@@ -377,10 +394,10 @@ public strictfp class RobotPlayer {
             // if enemy HQ is already swarmed, don't get any closer
             if (rc.senseNearbyRobots(-1, rc.getTeam()).length > 30) // && rc.getLocation().distanceSquaredTo(enemyHqLoc) <= 5)
                 fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()));
-            else if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 8)
+            else if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 16)
                 fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc));
             else
-                fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc).rotateRight().rotateRight());
+                fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc).rotateLeft().rotateLeft());
             //System.out.println("Moved towards enemy HQ!");
         // zeroth order navigation strategy: move away from HQ
         }
@@ -438,13 +455,13 @@ public strictfp class RobotPlayer {
         } else if (rc.canMove(dir.rotateRight())) {
             rc.move(dir.rotateRight());
             return true;
-        } else if (rc.canMove(dir.rotateLeft().rotateLeft())) {
+        } /*else if (rc.canMove(dir.rotateLeft().rotateLeft())) {
             rc.move(dir.rotateLeft().rotateLeft());
             return true;
         } else if (rc.canMove(dir.rotateRight().rotateRight())) {
             rc.move(dir.rotateRight().rotateRight());
             return true;
-        } else return false;
+        } */else return false;
     }
 
     // map edge checker
