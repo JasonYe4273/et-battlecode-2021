@@ -1,5 +1,6 @@
 package josh;
 
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
@@ -24,8 +25,42 @@ public class Politician extends Robot {
 	public void turn() throws Exception {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
-		movement(nearby);
+		if(rc.getConviction() < 10)
+			walling(nearby);
+		else
+			movement(nearby);
 		setRakerFlags();
+	}
+	public void walling(RobotInfo[] nearby) throws GameActionException {
+		int wallRadius = 25;
+		MapLocation nearestRaker = null;
+		int nearestRakerD = 999;
+		for(RobotInfo r:nearby) {
+			if(r.team != rc.getTeam()) {
+				if(r.type == RobotType.MUCKRAKER) {
+					int d = r.location.distanceSquaredTo(rc.getLocation());
+					if(d < nearestRakerD) {
+						nearestRaker = r.location;
+						nearestRakerD = d;
+					}
+				}
+			}
+		}
+		if(nearestRakerD> 0 && nearestRaker != null) {
+			moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
+		} else {
+			int distFromHome = rc.getLocation().distanceSquaredTo(home);
+			if(distFromHome < wallRadius) {
+				Direction d = home.directionTo(rc.getLocation());
+				for(int i=0;i<4;i++) {
+					if(rc.canMove(d)) {
+						rc.move(d);
+						break;
+					}
+					d = d.rotateLeft();
+				}
+			}
+		}
 	}
 	int patrolRadius = 4;
 	public void movement(RobotInfo[] nearby) throws GameActionException {

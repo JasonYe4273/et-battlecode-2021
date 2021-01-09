@@ -14,7 +14,9 @@ public class Center extends Robot {
 	int lastInf = 1;
 	public void turn() throws Exception {
 		if(rc.getRoundNum() > 400) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
+			build(RobotType.POLITICIAN, 1);
 			return;
 		}
 		RobotInfo[] nearby = rc.senseNearbyRobots();
