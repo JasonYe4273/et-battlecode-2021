@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public strictfp class RobotPlayer {
+
+    static boolean debug = false;
     static RobotController rc;
 
     static final RobotType[] spawnableRobot = {
@@ -37,10 +39,10 @@ public strictfp class RobotPlayer {
      * 1-65535: location of enemy HQ
      * 65536-131071: location of captured HQ (that was formerly enemy HQ)
      * 132000-132007: moved in directions[i] from HQ and hit edge of map without finding enemy HQ
-     * 140000-160000: minimum of x-coordinate of map
-     * 160000-180000: maximum of x-coordinate of map
-     * 180001-200001: minimum of y-coordinate of map
-     * 200000-220000: maximum of y-coordinate of map
+     * 140000-170000: minimum of x-coordinate of map
+     * 170000-200000: maximum of x-coordinate of map
+     * 200000-230000: minimum of y-coordinate of map
+     * 230000-260000: maximum of y-coordinate of map
      **/
 
     // directions already explored
@@ -68,18 +70,21 @@ public strictfp class RobotPlayer {
 
         turnCount = 0;
 
-        System.out.println("I'm a " + rc.getType() + " and I just got created!");
+        println("I'm a " + rc.getType() + " and I just got created!");
         /*
         if (rc.getType() == RobotType.ENLIGHTENMENT_CENTER && rc.getRoundNum() > 1)
             rc.setFlag(256*256); // this was a captured enlightnment center
         */
         while (true) {
+            // resign on turn 1000 for testing
+            // TODO: Remove this
+            if (rc.getRoundNum() > 1500) rc.resign();
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
                 // Here, we've separated the controls into a different method for each RobotType.
                 // You may rewrite this into your own control structure if you wish.
-                // System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
+                // println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
                     case ENLIGHTENMENT_CENTER: runEnlightenmentCenter(); break;
                     case POLITICIAN:           runPolitician();          break;
@@ -91,16 +96,13 @@ public strictfp class RobotPlayer {
                 Clock.yield();
 
             } catch (Exception e) {
-                System.out.println(rc.getType() + " Exception");
+                println(rc.getType() + " Exception");
                 e.printStackTrace();
             }
         }
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
-        // resign on turn 1000 for testing
-        // TODO: Remove this
-        // if (rc.getRoundNum() > 1000) rc.resign();
         // bid 2 influence/turn on rounds > 2000
         if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
@@ -122,28 +124,28 @@ public strictfp class RobotPlayer {
                 break;
             }
         }
-        System.out.println("Knowledge of map: " + mapMinX + " " + mapMaxX + " " + mapMinY + " " + mapMaxY);
+        println("Knowledge of map: " + mapMinX + " " + mapMaxX + " " + mapMinY + " " + mapMaxY);
         // check to see if any spawned robots have found the enemy HQ
         if (flag == 0 || flag > 65536) {
-            System.out.println("Flag is 0, looking for other flags");
+            println("Flag is 0, looking for other flags");
             Iterator<Integer> it = spawnedIDs.iterator();
             while (it.hasNext()) {
                 int id = (Integer) it.next();
-                // System.out.println("Checking ID " + id);
+                // println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
-                    // System.out.println(readFlag);
+                    // println(readFlag);
                     if (readFlag > 0 && readFlag < 65536 && flag - readFlag != 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
-                        System.out.println("Flag set to " + flag);
+                        println("Flag set to " + flag);
                     } else if (readFlag > 131072) {
                         // try to get min and max coordinates of map
                         if (readFlag >= 132000 && readFlag <= 132007) dirsExplored[readFlag - 132000] = true;
-                        else if (readFlag >= 140000 && readFlag < 160000) mapMinX = readFlag - 130000;
-                        else if (readFlag > 160000 && readFlag <= 180000) mapMaxX = readFlag - 150000;
-                        else if (readFlag >= 180001 && readFlag < 200001) mapMinY = readFlag - 170001;
-                        else if (readFlag > 200000 && readFlag <= 220000) mapMaxY = readFlag - 190000;
+                        else if (readFlag >= 140000 && readFlag < 170000) mapMinX = readFlag - 130000;
+                        else if (readFlag >= 170000 && readFlag < 200000) mapMaxX = readFlag - 160000;
+                        else if (readFlag >= 200000 && readFlag < 230000) mapMinY = readFlag - 190000;
+                        else if (readFlag >= 230000 && readFlag < 250000) mapMaxY = readFlag - 220000;
                         // if we know all the map coordinates, maybe we can figure out where the enemy HQ is
                         if (mapMinX > 0 && mapMinY > 0 && mapMaxX > 0 && mapMaxY > 0) {
                             int mapX = mapMaxX - mapMinX + 1;
@@ -153,7 +155,7 @@ public strictfp class RobotPlayer {
                             hqLoc = rc.getLocation();
                             enemyX = mapMinX + (mapMaxX - hqLoc.x);
                             enemyY = mapMinY + (mapMaxY - hqLoc.y);
-                            //System.out.println("Enemy HQ location: " + enemyX + " " + enemyY);
+                            //println("Enemy HQ location: " + enemyX + " " + enemyY);
                             // if mapX != mapY, the map is probably rotationally symmetric
                             if (flag == 0 && mapX != mapY) {
                                 enemyHqLoc = new MapLocation(enemyX, enemyY);
@@ -163,12 +165,17 @@ public strictfp class RobotPlayer {
                                 if (flag - newFlag != 65536) flag = newFlag;
                                 rc.setFlag(flag);
                             } else if (mapX == mapY) {
+                                /*
+                                System.out.print("dirs explored: ");
+                                for (int i = 0; i < 8; i ++) System.out.print(dirsExplored[i] + " ");
+                                println();
+                                */
                                 // map is probably reflectionally symmetric (although this is not guaranteed)
                                 // TODO: Rule out rotational symmetry explicitly
                                 // if N and S are explored, then map has symmetry in x direction
-                                if (dirsExplored[0] && dirsExplored[4] && !dirsExplored[2] && !dirsExplored[6])
+                                if (dirsExplored[0] && dirsExplored[4] && !(dirsExplored[2] && dirsExplored[6]))
                                     enemyHqLoc = new MapLocation(enemyX, hqLoc.y);
-                                else if (dirsExplored[2] && dirsExplored[6] && !dirsExplored[0] && !dirsExplored[4])
+                                else if (dirsExplored[2] && dirsExplored[6] && !(dirsExplored[0] && dirsExplored[4]))
                                     enemyHqLoc = new MapLocation(hqLoc.x, enemyY);
                                 else if (dirsExplored[0] && dirsExplored[2] && dirsExplored[4] && dirsExplored[6])
                                     enemyHqLoc = new MapLocation(enemyX, enemyY);
@@ -187,19 +194,19 @@ public strictfp class RobotPlayer {
                 }
             }
         } else {
-            // System.out.println("Flag is set, looking for capture flags");
+            // println("Flag is set, looking for capture flags");
             Iterator<Integer> it = spawnedIDs.iterator();
             while (it.hasNext()) {
                 int id = (Integer) it.next();
-                // System.out.println("Checking ID " + id);
+                // println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
-                    // System.out.println(readFlag);
+                    // println(readFlag);
                     //if (readFlag > 65536 && readFlag < 131072) {
                     if (readFlag - flag == 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
-                        System.out.println("Flag set to " + flag);
+                        println("Flag set to " + flag);
                     }
                 } else {
                     it.remove();
@@ -216,7 +223,7 @@ public strictfp class RobotPlayer {
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     hqLoc = r.getLocation();
                     hqID = r.getID();
-                    System.out.println("Found the HQ!");
+                    println("Found the HQ!");
                 }
         }
         Team enemy = rc.getTeam().opponent();
@@ -226,6 +233,7 @@ public strictfp class RobotPlayer {
             RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1, enemy);
             for (RobotInfo r : possibleEnemyHQ)
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
+                    println("Found enemy HQ");
                     enemyHqLoc = r.getLocation();
                     // set flag to signal this
                     if (hqLoc != null) {
@@ -240,11 +248,13 @@ public strictfp class RobotPlayer {
             if (rc.canSenseLocation(enemyHqLoc)
                 && (rc.senseRobotAtLocation(enemyHqLoc) == null || rc.senseRobotAtLocation(enemyHqLoc).team == rc.getTeam())) {
                 enemyHqCaptured = true;
-                int dx = enemyHqLoc.x - hqLoc.x;
-                int dy = enemyHqLoc.y - hqLoc.y;
+                if (hqLoc != null) {
+                    int dx = enemyHqLoc.x - hqLoc.x;
+                    int dy = enemyHqLoc.y - hqLoc.y;
+                    flag = (dx + 128) * 256 + (dy + 128) + 65536;
+                    rc.setFlag(flag);
+                }
                 enemyHqLoc = null;
-                flag = (dx + 128) * 256 + (dy + 128) + 65536;
-                rc.setFlag(flag);
             }
         }
         // try to read from home HQ flag
@@ -253,14 +263,14 @@ public strictfp class RobotPlayer {
                 int hqFlag = rc.getFlag(hqID);
                 if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
                     enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
-                    System.out.println("Read enemy HQ loc from home HQ!");
+                    println("Read enemy HQ loc from home HQ!");
                 } else if (enemyHqLoc != null && hqFlag > 65536) {
                     enemyHqLoc = null;
-                    System.out.println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
+                    println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
                 }
             }
         }
-        if (flag == 0 || flag >= 132000 && flag <= 132007) checkEdges();
+        if (flag == 0 || flag >= 132000 && flag <= 2600000) checkEdges();
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         boolean enemyHQInRange = false;
@@ -275,15 +285,15 @@ public strictfp class RobotPlayer {
             }
         */
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
-        if (enemyHqLoc != null && rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1)
+        if (enemyHqLoc != null)
             if (rc.getConviction() > 10) {
-                if (fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) {
-                    //System.out.println("Moving towards enemy HQ!");
+                if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1 &&fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) {
+                    //println("Moving towards enemy HQ!");
                     return;
                 }
             }
             else if (fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()))) {
-                //System.out.println("Moving away from enemy HQ!");
+                //println("Moving away from enemy HQ!");
                 return; // move away from enemy HQ if conviction <= 10 (worthless)
             }
         if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null))
@@ -295,23 +305,33 @@ public strictfp class RobotPlayer {
                     attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
             }
             if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
-            System.out.println("empowering...");
-            rc.empower(attackLength);
-            System.out.println("empowered");
-            return;
+            // Heuristic for attacking: More than half of robot's conviction goes to attacking enemy units
+            // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
+            // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
+            RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
+            RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
+                    * (rc.getConviction() - 10) / rc.getConviction();
+            println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
+                if (attackFactor > 0.5 || rc.getConviction() <= 10) {
+                println("empowering...");
+                rc.empower(attackLength);
+                println("empowered");
+                return;
+            }
         }
         else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
             ;
-            //System.out.println("Moved away from HQ!");
+            //println("Moved away from HQ!");
         else if (fuzzyTryMove(randomDirection()))
             ;
-            //System.out.println("I moved!");
+            //println("I moved!");
     }
 
     static void runSlanderer() throws GameActionException {
         if (tryMove(randomDirection()))
             ;
-            //System.out.println("I moved!");
+            //println("I moved!");
     }
 
     static void runMuckraker() throws GameActionException {
@@ -322,7 +342,7 @@ public strictfp class RobotPlayer {
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     hqLoc = r.getLocation();
                     hqID = r.getID();
-                    System.out.println("Found the HQ!");
+                    println("Found the HQ!");
                 }
         }
         Team enemy = rc.getTeam().opponent();
@@ -360,24 +380,24 @@ public strictfp class RobotPlayer {
                 int hqFlag = rc.getFlag(hqID);
                 if (enemyHqLoc == null && hqFlag != 0 && hqFlag < 256*256) {
                     enemyHqLoc = hqLoc.translate(hqFlag / 256 - 128, hqFlag % 256 - 128);
-                    System.out.println("Read enemy HQ loc from home HQ!");
+                    println("Read enemy HQ loc from home HQ!");
                 } else if (enemyHqLoc != null && hqFlag > 65536) {
                     enemyHqLoc = null;
                     if (flag > 0 && flag < 65536) {
                         flag = 0;
                         rc.setFlag(0);
                     }
-                    System.out.println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
+                    println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
                 } 
             } 
         }
-        if (flag == 0 || flag >= 132000 && flag <= 132007) checkEdges();
+        if (flag == 0 || flag >= 132000 && flag <= 260000) checkEdges();
         int actionRadius = rc.getType().actionRadiusSquared;
         for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
             if (robot.type.canBeExposed()) {
                 // It's a slanderer... go get them!
                 if (rc.canExpose(robot.location)) {
-                    System.out.println("e x p o s e d");
+                    println("e x p o s e d");
                     rc.expose(robot.location);
                     return;
                 }
@@ -398,15 +418,15 @@ public strictfp class RobotPlayer {
                 fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc));
             else
                 fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc).rotateLeft().rotateLeft());
-            //System.out.println("Moved towards enemy HQ!");
+            //println("Moved towards enemy HQ!");
         // zeroth order navigation strategy: move away from HQ
         }
         else if (hqLoc != null && fuzzyTryMove(hqLoc.directionTo(rc.getLocation())))
             ;
-            //System.out.println("Moved away from HQ!");
+            //println("Moved away from HQ!");
         else if (fuzzyTryMove(randomDirection()))
             ;
-            //System.out.println("I moved!");
+            //println("I moved!");
     }
 
     /**
@@ -435,7 +455,7 @@ public strictfp class RobotPlayer {
      * @throws GameActionException
      */
     static boolean tryMove(Direction dir) throws GameActionException {
-        //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        //println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         if (rc.canMove(dir)) {
             rc.move(dir);
             return true;
@@ -444,7 +464,7 @@ public strictfp class RobotPlayer {
 
     // try to move in or near a given direction
     static boolean fuzzyTryMove(Direction dir) throws GameActionException {
-        //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        //println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         // Change: It's probably better to move 45 degrees away from the desired direction if the passability is more than twice that of going forward
         if (rc.canMove(dir)) {
             rc.move(dir);
@@ -455,17 +475,18 @@ public strictfp class RobotPlayer {
         } else if (rc.canMove(dir.rotateRight())) {
             rc.move(dir.rotateRight());
             return true;
-        } /*else if (rc.canMove(dir.rotateLeft().rotateLeft())) {
+        } else if (!rc.onTheMap(rc.getLocation().add(dir)) && rc.canMove(dir.rotateLeft().rotateLeft())) {
             rc.move(dir.rotateLeft().rotateLeft());
             return true;
-        } else if (rc.canMove(dir.rotateRight().rotateRight())) {
+        } else if (!rc.onTheMap(rc.getLocation().add(dir)) && rc.canMove(dir.rotateRight().rotateRight())) {
             rc.move(dir.rotateRight().rotateRight());
             return true;
-        } */else return false;
+        } else return false;
     }
 
     // map edge checker
     static boolean checkEdges() throws GameActionException {
+        int oldFlag = flag;
         // first iteration: set flag based on direction from HQ
         if (flag == 0) {
             if (hqLoc == null) return false;
@@ -474,18 +495,22 @@ public strictfp class RobotPlayer {
                 flag = 132000;
                 for (int i = 0; i < 8; i ++) if (dirFromHQ == directions[i]) flag += i;
             }
-        } else if (flag >= 132000 && flag <= 132007) {
-            if (!rc.onTheMap(rc.getLocation().translate(-1,0))) {
+        } else if (flag >= 132000 && flag <= 250000) {
+            if (!rc.onTheMap(rc.getLocation().translate(-1,0)) && !(oldFlag < 170000)) {
                 flag = rc.getLocation().x + 130000;
-            } else if (!rc.onTheMap(rc.getLocation().translate(1,0))) {
-                flag = rc.getLocation().x + 150000;
-            } else if (!rc.onTheMap(rc.getLocation().translate(0,-1))) {
-                flag = rc.getLocation().y + 170001;
-            } else if (!rc.onTheMap(rc.getLocation().translate(0,1))) {
+            } else if (!rc.onTheMap(rc.getLocation().translate(1,0)) && !(oldFlag < 200000 && oldFlag >= 170000)) {
+                flag = rc.getLocation().x + 160000;
+            } else if (!rc.onTheMap(rc.getLocation().translate(0,-1)) && !(oldFlag < 230000 && oldFlag >= 200000)) {
                 flag = rc.getLocation().y + 190000;
+            } else if (!rc.onTheMap(rc.getLocation().translate(0,1)) && !(oldFlag >= 230000)) {
+                flag = rc.getLocation().y + 220000;
             } else return false;
         }
         rc.setFlag(flag);
         return true;
+    }
+
+    static void println(Object str) {
+        if (debug) System.out.println(str);
     }
 }
