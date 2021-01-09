@@ -413,6 +413,12 @@ public strictfp class RobotPlayer {
         } else if (rc.canMove(dir.rotateRight())) {
             rc.move(dir.rotateRight());
             return true;
+        } else if (rc.canMove(dir.rotateLeft().rotateLeft())) {
+            rc.move(dir.rotateLeft().rotateLeft());
+            return true;
+        } else if (rc.canMove(dir.rotateRight().rotateRight())) {
+            rc.move(dir.rotateRight().rotateRight());
+            return true;
         } else return false;
     }
 
