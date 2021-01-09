@@ -111,6 +111,11 @@ public strictfp class RobotPlayer {
         int influence = Math.max(50, rc.getInfluence() - 100);
         if (toBuild == RobotType.SLANDERER) influence = (influence/20) * 20;
         else if (toBuild == RobotType.MUCKRAKER) influence = 1;
+        // on first turn, build a slanderer
+        if (rc.getRoundNum() == 1) {
+            influence = 130;
+            toBuild = RobotType.SLANDERER;
+        }
         Direction dir1 = randomDirection();
         if (rc.canBuildRobot(toBuild, dir1, influence)) {
             rc.buildRobot(toBuild, dir1, influence);
@@ -296,7 +301,7 @@ public strictfp class RobotPlayer {
                 //println("Moving away from enemy HQ!");
                 return; // move away from enemy HQ if conviction <= 10 (worthless)
             }
-        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null))
+        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null && false))
             && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
@@ -469,19 +474,21 @@ public strictfp class RobotPlayer {
         if (rc.canMove(dir)) {
             rc.move(dir);
             return true;
-        } else if (rc.canMove(dir.rotateLeft())) {
-            rc.move(dir.rotateLeft());
-            return true;
-        } else if (rc.canMove(dir.rotateRight())) {
-            rc.move(dir.rotateRight());
-            return true;
-        } else if (!rc.onTheMap(rc.getLocation().add(dir)) && rc.canMove(dir.rotateLeft().rotateLeft())) {
-            rc.move(dir.rotateLeft().rotateLeft());
-            return true;
-        } else if (!rc.onTheMap(rc.getLocation().add(dir)) && rc.canMove(dir.rotateRight().rotateRight())) {
-            rc.move(dir.rotateRight().rotateRight());
-            return true;
-        } else return false;
+        } else if (rc.onTheMap(rc.getLocation().add(dir))) {
+            if (rc.canMove(dir.rotateLeft())) {
+                rc.move(dir.rotateLeft());
+                return true;
+            } else if (rc.canMove(dir.rotateRight())) {
+                rc.move(dir.rotateRight());
+                return true;
+            }
+        } else {
+            for (int counter = 1; counter < 8; counter ++) {
+                dir = dir.rotateLeft();
+                if (rc.canMove(dir)) rc.move(dir);
+            }
+        }
+        return false;
     }
 
     // map edge checker
