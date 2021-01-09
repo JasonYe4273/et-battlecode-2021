@@ -130,7 +130,7 @@ public strictfp class RobotPlayer {
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
                     // System.out.println(readFlag);
-                    if (readFlag > 0 && readFlag < 65536) {
+                    if (readFlag > 0 && readFlag < 65536 && flag - readFlag != 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
                         System.out.println("Flag set to " + flag);
@@ -150,24 +150,30 @@ public strictfp class RobotPlayer {
                             hqLoc = rc.getLocation();
                             enemyX = mapMinX + (mapMaxX - hqLoc.x);
                             enemyY = mapMinY + (mapMaxY - hqLoc.y);
-                            System.out.println("Enemy HQ location: " + enemyX + " " + enemyY);
+                            //System.out.println("Enemy HQ location: " + enemyX + " " + enemyY);
                             // if mapX != mapY, the map is probably rotationally symmetric
                             if (flag == 0 && mapX != mapY) {
                                 enemyHqLoc = new MapLocation(enemyX, enemyY);
                                 int dx = enemyHqLoc.x - hqLoc.x;
                                 int dy = enemyHqLoc.y - hqLoc.y;
-                                flag = (dx + 128) * 256 + (dy + 128);
+                                int newFlag = (dx + 128) * 256 + (dy + 128);
+                                if (flag - newFlag != 65536) flag = newFlag;
                                 rc.setFlag(flag);
                             } else if (mapX == mapY) {
                                 // map is probably reflectionally symmetric (although this is not guaranteed)
                                 // TODO: Rule out rotational symmetry explicitly
                                 // if N and S are explored, then map has symmetry in x direction
-                                if (dirsExplored[0] && dirsExplored[4]) enemyHqLoc = new MapLocation(enemyX, hqLoc.y);
-                                else if (dirsExplored[2] && dirsExplored[6]) enemyHqLoc = new MapLocation(hqLoc.x, enemyY);
+                                if (dirsExplored[0] && dirsExplored[4] && !dirsExplored[2] && !dirsExplored[6])
+                                    enemyHqLoc = new MapLocation(enemyX, hqLoc.y);
+                                else if (dirsExplored[2] && dirsExplored[6] && !dirsExplored[0] && !dirsExplored[4])
+                                    enemyHqLoc = new MapLocation(hqLoc.x, enemyY);
+                                else if (dirsExplored[0] && dirsExplored[2] && dirsExplored[4] && dirsExplored[6])
+                                    enemyHqLoc = new MapLocation(enemyX, enemyY);
                                 if (enemyHqLoc != null) {
                                     int dx = enemyHqLoc.x - hqLoc.x;
                                     int dy = enemyHqLoc.y - hqLoc.y;
-                                    flag = (dx + 128) * 256 + (dy + 128);
+                                    int newFlag = (dx + 128) * 256 + (dy + 128);
+                                    if (flag - newFlag != 65536) flag = newFlag;
                                     rc.setFlag(flag);
                                 }
                             }
@@ -186,7 +192,8 @@ public strictfp class RobotPlayer {
                 if (rc.canGetFlag(id)) {
                     int readFlag = rc.getFlag(id);
                     // System.out.println(readFlag);
-                    if (readFlag > 65536 && readFlag < 131072) {
+                    //if (readFlag > 65536 && readFlag < 131072) {
+                    if (readFlag - flag == 65536) {
                         flag = readFlag;
                         rc.setFlag(flag);
                         System.out.println("Flag set to " + flag);
@@ -263,7 +270,7 @@ public strictfp class RobotPlayer {
                 if (fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) return;
             else if (fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()))) return; // move away from enemy HQ if conviction <= 10 (worthless)
         if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1 || enemyHqLoc == null))
-            && rc.canEmpower(actionRadius) && rc.getConviction() > 10) {
+            && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
             for (RobotInfo r : attackable) {
@@ -339,6 +346,10 @@ public strictfp class RobotPlayer {
                     System.out.println("Read enemy HQ loc from home HQ!");
                 } else if (enemyHqLoc != null && hqFlag > 65536) {
                     enemyHqLoc = null;
+                    if (flag > 0 && flag < 65536) {
+                        flag = 0;
+                        rc.setFlag(0);
+                    }
                     System.out.println("Home HQ says that enemy HQ is captured, resetting enemyHqLoc to null!");
                 } 
             } 
@@ -364,10 +375,12 @@ public strictfp class RobotPlayer {
         }
         if (enemyHqLoc != null) {
             // if enemy HQ is already swarmed, don't get any closer
-            if (rc.senseNearbyRobots(-1, rc.getTeam()).length > 40) // && rc.getLocation().distanceSquaredTo(enemyHqLoc) <= 5)
+            if (rc.senseNearbyRobots(-1, rc.getTeam()).length > 30) // && rc.getLocation().distanceSquaredTo(enemyHqLoc) <= 5)
                 fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()));
-            else
+            else if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 8)
                 fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc));
+            else
+                fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc).rotateRight().rotateRight());
             //System.out.println("Moved towards enemy HQ!");
         // zeroth order navigation strategy: move away from HQ
         }
@@ -415,6 +428,7 @@ public strictfp class RobotPlayer {
     // try to move in or near a given direction
     static boolean fuzzyTryMove(Direction dir) throws GameActionException {
         //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        // Change: It's probably better to move 45 degrees away from the desired direction if the passability is more than twice that of going forward
         if (rc.canMove(dir)) {
             rc.move(dir);
             return true;
