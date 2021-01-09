@@ -1,4 +1,4 @@
-package josh;
+package josh2;
 
 import battlecode.common.Clock;
 import battlecode.common.Direction;

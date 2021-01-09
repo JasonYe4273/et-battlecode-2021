@@ -1,4 +1,4 @@
-package josh;
+package josh2;
 
 import java.util.Arrays;
 

@@ -1,4 +1,4 @@
-package josh;
+package josh2;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -12,7 +12,7 @@ public class Center extends Robot {
 	}
 	int lastInf = 1;
 	public void turn() throws Exception {
-		if(rc.getRoundNum() > 400) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
 			build(RobotType.POLITICIAN, 1);
@@ -52,6 +52,8 @@ public class Center extends Robot {
 		if(enemyRStrength == 0 && (politicians*2+1 > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
+			if(Math.random()< .4)
+				build(RobotType.MUCKRAKER, 1);
 			build(RobotType.POLITICIAN, Math.min(inf, 17 + inf/8));
 		}
 		lastInf = rc.getInfluence();
