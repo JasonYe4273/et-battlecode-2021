@@ -98,6 +98,8 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
+        // bid 2 influence/turn on rounds > 2000
+        if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
         if (rc.getInfluence() < 100)
             toBuild = RobotType.MUCKRAKER;
