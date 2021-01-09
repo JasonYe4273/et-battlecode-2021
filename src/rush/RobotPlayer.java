@@ -258,7 +258,7 @@ public strictfp class RobotPlayer {
             enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
         // zeroth order navigation strategy: move away from HQ
-        if (enemyHqLoc != null && rc.getLocation().distanceSquaredTo(enemyHqLoc) > 2)
+        if (enemyHqLoc != null && rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1)
             if (rc.getConviction() > 10) 
                 if (fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) return;
             else if (fuzzyTryMove(enemyHqLoc.directionTo(rc.getLocation()))) return; // move away from enemy HQ if conviction <= 10 (worthless)
