@@ -2,6 +2,7 @@ package josh;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -25,10 +26,12 @@ public class Politician extends Robot {
 	public void turn() throws Exception {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
-		if(rc.getConviction() < 10)
+		if(rc.getConviction() <= 10)
 			walling(nearby);
-		else
+		else {
+			checkEmpower();
 			movement(nearby);
+		}
 		setRakerFlags();
 	}
 	public void walling(RobotInfo[] nearby) throws GameActionException {
@@ -38,7 +41,7 @@ public class Politician extends Robot {
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
 				if(r.type == RobotType.MUCKRAKER) {
-					int d = r.location.distanceSquaredTo(rc.getLocation());
+					int d = rc.getLocation().distanceSquaredTo(r.location);
 					if(d < nearestRakerD) {
 						nearestRaker = r.location;
 						nearestRakerD = d;
@@ -62,6 +65,63 @@ public class Politician extends Robot {
 			}
 		}
 	}
+	public void checkEmpower() throws GameActionException {
+		if(rc.getCooldownTurns() >= 1) return;
+		if(rc.getConviction() <= 10) return;
+		int[] unitsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
+		int[] killsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
+		RobotInfo[] nearerby = rc.senseNearbyRobots(RobotType.POLITICIAN.actionRadiusSquared);
+		for(RobotInfo r:nearerby) {
+			int d = r.location.distanceSquaredTo(rc.getLocation());
+			if(d <= RobotType.POLITICIAN.actionRadiusSquared) {
+				unitsAtDist[d]++;
+			}
+		}
+		unitsAtDist[2] += unitsAtDist[1];
+		unitsAtDist[4] += unitsAtDist[2];
+		unitsAtDist[5] += unitsAtDist[4];
+		unitsAtDist[8] += unitsAtDist[5];
+		unitsAtDist[9] += unitsAtDist[8];
+		int damage = (int)(rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) - GameConstants.EMPOWER_TAX;
+		for(RobotInfo r:nearerby) {
+			if(r.team==rc.getTeam()) continue;
+			switch(r.location.distanceSquaredTo(rc.getLocation())) {
+			case 1:
+			if(r.conviction <= damage/unitsAtDist[1]) 
+				killsAtDist[1]++;
+			case 2:
+			if(r.conviction <= damage/unitsAtDist[2]) 
+				killsAtDist[2]++;
+			case 4:
+			if(r.conviction <= damage/unitsAtDist[4]) 
+				killsAtDist[4]++;
+			case 5:
+			if(r.conviction <= damage/unitsAtDist[5]) 
+				killsAtDist[5]++;
+			case 8:
+			if(r.conviction <= damage/unitsAtDist[8]) 
+				killsAtDist[8]++;
+			case 9:
+			if(r.conviction <= damage/unitsAtDist[9]) 
+				killsAtDist[9]++;
+			default:
+			}
+		}
+		int maxKills = 0;
+		int maxKillD = 0;
+		for(int i=1;i<10;i++) {
+			if(killsAtDist[i] > maxKills) {
+				maxKillD = i;
+				maxKills = killsAtDist[i];
+			}
+		}
+		if(maxKills > 2)
+			rc.empower(maxKillD);
+		if(killsAtDist[1] == 1)
+			rc.empower(1);
+		if(killsAtDist[2] == 1)
+			rc.empower(2);
+	}
 	int patrolRadius = 4;
 	public void movement(RobotInfo[] nearby) throws GameActionException {
 
@@ -83,14 +143,15 @@ public class Politician extends Robot {
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
 				if(r.type == RobotType.MUCKRAKER) {
-					int d = rc.getLocation().distanceSquaredTo(r.location);
+					/*
+					int d = r.location.distanceSquaredTo(rc.getLocation());
 					if(d < rc.getType().actionRadiusSquared && rc.canEmpower(d)) {
 						rc.empower(d);
 						return;
-					} else {
+					} else {*/
 						this.moveToward(r.location);
 						return;
-					}
+					//}
 				}
 					/*
 					if(rc.getLocation().distanceSquaredTo(home) < 100) {
@@ -107,9 +168,9 @@ public class Politician extends Robot {
 				}
 				if(raker == null) continue;
 				if(r.type == RobotType.POLITICIAN && rc.canGetFlag(r.ID) && (rc.getFlag(r.ID)&0x400000)>0) {
-					int d = r.location.distanceSquaredTo(raker);
-					if(d < nearestPoliticanToRaker) {
-						nearestPoliticanToRaker = d;
+					int d2 = r.location.distanceSquaredTo(raker);
+					if(d2 < nearestPoliticanToRaker) {
+						nearestPoliticanToRaker = d2;
 					}
 				}
 			}
