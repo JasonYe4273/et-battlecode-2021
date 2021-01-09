@@ -45,13 +45,14 @@ public class Center extends Robot {
 			build(RobotType.POLITICIAN, Math.min(inf, enemyPStrength - myPStrength));
 		} else
 		if(enemyRStrength == 0 && (politicians*2+1 > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
-			build(RobotType.SLANDERER, Math.min(20*(inf/40),949));
+			build(RobotType.SLANDERER, Math.min(Math.max(20*(inf/40),20),949));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 17 + inf/8));
 		}
 		lastInf = rc.getInfluence();
 	}
 	private void build(RobotType t, int influence) throws GameActionException {
+		System.out.println("building "+t+" with inf "+influence);
 		int offset = (int)(Math.random()*8);
 		for (int i=0;i<8;i++) {
 			Direction dir = directions[(i+offset)%8];
