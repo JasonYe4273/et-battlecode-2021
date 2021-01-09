@@ -35,7 +35,7 @@ public class Politician extends Robot {
 		setRakerFlags();
 	}
 	public void walling(RobotInfo[] nearby) throws GameActionException {
-		int wallRadius = 25;
+		int wallRadius = 5;
 		MapLocation nearestRaker = null;
 		int nearestRakerD = 999;
 		for(RobotInfo r:nearby) {
@@ -49,10 +49,10 @@ public class Politician extends Robot {
 				}
 			}
 		}
-		if(nearestRakerD> 0 && nearestRaker != null) {
+		if(nearestRakerD> 3 && nearestRaker != null) {
 			moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
-		} else {
-			int distFromHome = rc.getLocation().distanceSquaredTo(home);
+		} else if(nearestRaker == null){
+			int distFromHome = Robot.taxiDistance(home, rc.getLocation());
 			if(distFromHome < wallRadius) {
 				Direction d = home.directionTo(rc.getLocation());
 				for(int i=0;i<4;i++) {
@@ -73,9 +73,7 @@ public class Politician extends Robot {
 		RobotInfo[] nearerby = rc.senseNearbyRobots(RobotType.POLITICIAN.actionRadiusSquared);
 		for(RobotInfo r:nearerby) {
 			int d = r.location.distanceSquaredTo(rc.getLocation());
-			if(d <= RobotType.POLITICIAN.actionRadiusSquared) {
-				unitsAtDist[d]++;
-			}
+			unitsAtDist[d]++;
 		}
 		unitsAtDist[2] += unitsAtDist[1];
 		unitsAtDist[4] += unitsAtDist[2];
@@ -87,22 +85,22 @@ public class Politician extends Robot {
 			if(r.team==rc.getTeam()) continue;
 			switch(r.location.distanceSquaredTo(rc.getLocation())) {
 			case 1:
-			if(r.conviction <= damage/unitsAtDist[1]) 
+			if(r.conviction < damage/unitsAtDist[1]) 
 				killsAtDist[1]++;
 			case 2:
-			if(r.conviction <= damage/unitsAtDist[2]) 
+			if(r.conviction < damage/unitsAtDist[2]) 
 				killsAtDist[2]++;
 			case 4:
-			if(r.conviction <= damage/unitsAtDist[4]) 
+			if(r.conviction < damage/unitsAtDist[4]) 
 				killsAtDist[4]++;
 			case 5:
-			if(r.conviction <= damage/unitsAtDist[5]) 
+			if(r.conviction < damage/unitsAtDist[5]) 
 				killsAtDist[5]++;
 			case 8:
-			if(r.conviction <= damage/unitsAtDist[8]) 
+			if(r.conviction < damage/unitsAtDist[8]) 
 				killsAtDist[8]++;
 			case 9:
-			if(r.conviction <= damage/unitsAtDist[9]) 
+			if(r.conviction < damage/unitsAtDist[9]) 
 				killsAtDist[9]++;
 			default:
 			}
@@ -117,10 +115,13 @@ public class Politician extends Robot {
 		}
 		if(maxKills > 2)
 			rc.empower(maxKillD);
+		
 		if(killsAtDist[1] == 1)
 			rc.empower(1);
+		/*
 		if(killsAtDist[2] == 1)
 			rc.empower(2);
+		*/
 	}
 	int patrolRadius = 4;
 	public void movement(RobotInfo[] nearby) throws GameActionException {

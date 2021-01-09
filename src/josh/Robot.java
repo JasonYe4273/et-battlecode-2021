@@ -68,8 +68,10 @@ public class Robot {
 	public static int flagToRound(int round, int flag) {
 		return (round - ((flag>>14)&0x7f))&0x7f;
 	}
-	public boolean moveInDirections(Direction[] dirs) throws GameActionException {
+	private boolean moveInDirections(Direction[] dirs, int minR, int maxR, MapLocation l) throws GameActionException {
 		for(Direction d : dirs) {
+			int dist = rc.getLocation().add(d).distanceSquaredTo(l);
+			if(dist < minR || dist > maxR) continue;
 			if(rc.canMove(d)) {
 				rc.move(d);
 				return true;
@@ -84,7 +86,7 @@ public class Robot {
 		if(dist < minR) {
 			Direction d = l.directionTo(rc.getLocation());
 			Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
-			moveInDirections(dirs);
+			moveInDirections(dirs, 0, 999, l);
 		} else if(dist > maxR) {
 			moveToward(l);
 		} else {
@@ -95,12 +97,15 @@ public class Robot {
 				d = d.rotateRight().rotateRight();
 			}
 			Direction[] dirs = {d, d.rotateLeft(), d.rotateRight()};
-			if(!moveInDirections(dirs)) {
+			if(!moveInDirections(dirs, minR, maxR, l)) {
 				patrolDirection = patrolDirection==LEFT?RIGHT:LEFT;
 				d = d.opposite();
 				Direction[] dirs2 = {d, d.rotateLeft(), d.rotateRight()};
-				moveInDirections(dirs2);
+				moveInDirections(dirs2, minR, maxR, l);
 			}
 		}
+	}
+	public static int taxiDistance(MapLocation l1, MapLocation l2) {
+		return Math.max(Math.abs(l1.x - l2.x), Math.abs(l1.y - l2.y));
 	}
 }
