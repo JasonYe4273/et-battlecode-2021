@@ -89,7 +89,7 @@ public class Politician extends Robot {
 				patrolRadius--;
 			patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
 		}
-		System.out.println("PatrolRadius="+patrolRadius+" nearp="+nearp+" farp="+farp);
+		//System.out.println("PatrolRadius="+patrolRadius+" nearp="+nearp+" farp="+farp);
 	}
 	
 	public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {

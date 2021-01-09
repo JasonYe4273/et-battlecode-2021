@@ -68,7 +68,7 @@ public class Slanderer extends Politician {
 		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius)
 			patrolRadius++;
 		patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
-		System.out.println("PatrolRadius="+patrolRadius);
+		//System.out.println("PatrolRadius="+patrolRadius);
 	}
 	
 	
