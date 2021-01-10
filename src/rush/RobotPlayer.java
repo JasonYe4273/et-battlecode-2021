@@ -231,9 +231,9 @@ public strictfp class RobotPlayer {
         // set enemyHqLoc if not set already
         if (enemyHqLoc == null) {
             // try to see enemy HQ if it's visible
-            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1, enemy);
+            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1);
             for (RobotInfo r : possibleEnemyHQ)
-                if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
+                if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
                     println("Found enemy HQ");
                     enemyHqLoc = r.getLocation();
                     flag = locToFlag(enemyHqLoc);
@@ -391,9 +391,9 @@ public strictfp class RobotPlayer {
         // set enemyHqLoc if not set already
         if (enemyHqLoc == null) {
             // try to see enemy HQ if it's visible
-            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1, enemy);
+            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1);
             for (RobotInfo r : possibleEnemyHQ)
-                if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
+                if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
                     enemyHqLoc = r.getLocation();
                     flag = locToFlag(enemyHqLoc);
                     rc.setFlag(flag);
