@@ -106,11 +106,10 @@ public strictfp class RobotPlayer {
         // bid 2 influence/turn on rounds > 2000
         if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
-        if (rc.getInfluence() < 100)
+        if (rc.getInfluence() < 200)
             toBuild = RobotType.MUCKRAKER;
-        int influence = Math.max(50, rc.getInfluence() - 100);
-        if (toBuild == RobotType.SLANDERER) influence = (influence/20) * 20;
-        else if (toBuild == RobotType.MUCKRAKER) influence = 1;
+        int influence = Math.max(150, rc.getInfluence() - 100);
+        if (toBuild == RobotType.MUCKRAKER) influence = 1;
         // on first turn, build a slanderer
         if (rc.getRoundNum() == 1) {
             influence = 130;
@@ -277,10 +276,6 @@ public strictfp class RobotPlayer {
         }
         if (flag == 0 || flag >= 132000 && flag <= 2600000) checkEdges();
         int actionRadius = rc.getType().actionRadiusSquared;
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-        boolean enemyHQInRange = false;
-        for (RobotInfo r : attackable)
-            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         // if empower factor is sufficiently high, empower own base
         /*
         if (rc.getEmpowerFactor(rc.getTeam(), 0) - 1 > 10/(rc.getConviction()-10)
@@ -301,6 +296,10 @@ public strictfp class RobotPlayer {
                 //println("Moving away from enemy HQ!");
                 return; // move away from enemy HQ if conviction <= 10 (worthless)
             }
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+        boolean enemyHQInRange = false;
+        for (RobotInfo r : attackable)
+            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null && false))
             && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
@@ -419,6 +418,13 @@ public strictfp class RobotPlayer {
         for (RobotInfo robot : rc.senseNearbyRobots(sensorRadius, enemy)) {
             if (robot.type.canBeExposed()) {
                 fuzzyTryMove(rc.getLocation().directionTo(robot.location));
+            }
+        }
+        // if you see nearby muckrakers, move away from them
+        RobotInfo [] nearbyFriends = rc.senseNearbyRobots(8, rc.getTeam());
+        for (RobotInfo r : nearbyFriends) {
+            if (r.type == RobotType.MUCKRAKER) {
+                if (fuzzyTryMove(r.location.directionTo(rc.getLocation()))) return;
             }
         }
         if (enemyHqLoc != null) {
