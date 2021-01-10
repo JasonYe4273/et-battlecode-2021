@@ -11,8 +11,9 @@ public class Center extends Robot {
 		super(r);
 	}
 	int lastInf = 1;
+	int lastRakerRound = 0;
 	public void turn() throws Exception {
-		if(rc.getRoundNum() > 400) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
 			build(RobotType.POLITICIAN, 1);
@@ -35,11 +36,14 @@ public class Center extends Robot {
 			} else {
 				if(r.type == RobotType.POLITICIAN)
 					enemyPStrength+=r.conviction;
-				else if(r.type == RobotType.MUCKRAKER)
+				else if(r.type == RobotType.MUCKRAKER) {
 					enemyRStrength+=r.conviction;
-					
+					lastRakerRound = rc.getRoundNum();
+				}	
 			}
 		}
+		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
+			lastRakerRound = rc.getRoundNum();
 		System.out.println("p = "+politicians+" s="+slanderers);
 		int inf = rc.getInfluence() - enemyPStrength;
 		if(inf < 11) {
@@ -49,7 +53,7 @@ public class Center extends Robot {
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
 		} else
-		if(enemyRStrength == 0 && (politicians*2+1 > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
+		if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 17 + inf/8));

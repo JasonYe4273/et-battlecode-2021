@@ -11,6 +11,7 @@ public class Center extends Robot {
 		super(r);
 	}
 	int lastInf = 1;
+	int lastRakerRound = 0;
 	public void turn() throws Exception {
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
@@ -35,8 +36,10 @@ public class Center extends Robot {
 			} else {
 				if(r.type == RobotType.POLITICIAN)
 					enemyPStrength+=r.conviction;
-				else if(r.type == RobotType.MUCKRAKER)
+				else if(r.type == RobotType.MUCKRAKER) {
 					enemyRStrength+=r.conviction;
+					lastRakerRound = rc.getRoundNum();
+				}
 					
 			}
 		}
@@ -52,7 +55,7 @@ public class Center extends Robot {
 		if(enemyRStrength == 0 && (politicians*2+1 > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
-			if(Math.random()< .4)
+			if(Math.random() < .4)
 				build(RobotType.MUCKRAKER, 1);
 			build(RobotType.POLITICIAN, Math.min(inf, 17 + inf/8));
 		}

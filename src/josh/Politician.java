@@ -136,7 +136,7 @@ public class Politician extends Robot {
 		}
 		adj[8] = rc.getLocation();
 		*/
-		int nearestPoliticanToRaker = 999;
+		int nearestPoliticanToRaker = 99999;
 		int nearp = 0, farp = 0;
 		int politicians = 0;
 		int myDist = rc.getLocation().distanceSquaredTo(home);
@@ -184,6 +184,9 @@ public class Politician extends Robot {
 			if(nearp < 5 && patrolRadius > 5)
 				patrolRadius--;
 			patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
+			
+			//if(lastMoveTurn + 10 < rc.getRoundNum())
+			//	System.out.println("patrolR = "+patrolRadius);
 		}
 		//System.out.println("PatrolRadius="+patrolRadius+" nearp="+nearp+" farp="+farp);
 	}

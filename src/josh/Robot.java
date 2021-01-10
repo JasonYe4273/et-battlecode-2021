@@ -11,6 +11,7 @@ import battlecode.common.RobotType;
 public class Robot {
 	RobotController rc;
 	MapLocation home;
+	int lastMoveTurn = 0;
 	public Robot(RobotController robot) {
 		rc = robot;
 		for(RobotInfo r:rc.senseNearbyRobots(2, rc.getTeam())) {
@@ -49,6 +50,7 @@ public class Robot {
 		for(Direction dir:dd) {
 			if(rc.canMove(dir)) {
 				rc.move(dir);
+				lastMoveTurn = rc.getRoundNum();
 				return;
 			}
 		}
@@ -72,6 +74,7 @@ public class Robot {
 			if(dist < minR || dist > maxR) continue;
 			if(rc.canMove(d)) {
 				rc.move(d);
+				lastMoveTurn = rc.getRoundNum();
 				return true;
 			}
 		}
@@ -80,11 +83,12 @@ public class Robot {
 	private static final int LEFT = 0, RIGHT = 1;
 	private int patrolDirection = Math.random()>.5?RIGHT:LEFT;
 	public void patrol(MapLocation l, int minR, int maxR) throws GameActionException {
+		if(rc.getCooldownTurns() >= 1) return;
 		int dist = rc.getLocation().distanceSquaredTo(l);
 		if(dist < minR) {
 			Direction d = l.directionTo(rc.getLocation());
 			Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
-			moveInDirections(dirs, 0, 999, l);
+			moveInDirections(dirs, 0, 99999, l);
 		} else if(dist > maxR) {
 			moveToward(l);
 		} else {
