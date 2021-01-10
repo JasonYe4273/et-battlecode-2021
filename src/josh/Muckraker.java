@@ -15,6 +15,8 @@ public class Muckraker extends Robot {
 	public void turn() throws GameActionException {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+		findRakerFlags(nearby);
+		setRakerFlags();
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;

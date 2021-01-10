@@ -15,10 +15,6 @@ public class Politician extends Robot {
 	 * politicans want to stay slightly away from other politicans and your base, but near slanderers
 	 * 
 	 */
-	MapLocation raker;
-	int rakerRound;
-	public static final int RAKER_ROUNDS = 12;
-	public int politicanMask = 0x080000;
 	public Politician(RobotController r) {
 		super(r);
 	}
@@ -28,7 +24,7 @@ public class Politician extends Robot {
 		if(rc.getConviction() <= 10)
 			walling(nearby);
 		else {
-			checkEmpower();
+			checkEmpower(nearby);
 			movement(nearby);
 		}
 		setRakerFlags();
@@ -64,7 +60,7 @@ public class Politician extends Robot {
 			}
 		}
 	}
-	public void checkEmpower() throws GameActionException {
+	public void checkEmpower(RobotInfo[] nearby) throws GameActionException {
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getConviction() <= 10) return;
 		int[] unitsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
@@ -114,13 +110,19 @@ public class Politician extends Robot {
 		}
 		if(maxKills > 2)
 			rc.empower(maxKillD);
-		
-		if(killsAtDist[1] == 1)
-			rc.empower(1);
-		/*
-		if(killsAtDist[2] == 1)
-			rc.empower(2);
-		*/
+		int slanderers = 0;
+		for(RobotInfo r:nearby) {
+			if(r.team!=rc.getTeam()) continue;
+			if((rc.getFlag(r.ID) & politicanMask) != politicanMask)
+				slanderers++;
+		}
+		System.out.println("slanderers = "+slanderers);
+		if(slanderers > 0) {
+			if(killsAtDist[1] == 1)
+				rc.empower(1);
+			if(killsAtDist[2] == 1)
+				rc.empower(2);
+		}
 	}
 	int patrolRadius = 4;
 	public void movement(RobotInfo[] nearby) throws GameActionException {
@@ -191,44 +193,4 @@ public class Politician extends Robot {
 		//System.out.println("PatrolRadius="+patrolRadius+" nearp="+nearp+" farp="+farp);
 	}
 	
-	public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
-		raker = null;
-		rakerRound = 99999;
-		for(RobotInfo r:nearby) {
-			if(r.team==rc.getTeam()) {
-				if(r.type == RobotType.POLITICIAN) {
-					if(rc.canGetFlag(r.ID)) {
-						int f = rc.getFlag(r.ID);
-						if((f&0xf00000) == 0x100000) {
-							int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
-							MapLocation l = Robot.flagToLoc(r.location, f);
-							if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
-								rakerRound = rr;
-								raker = l;
-							}
-						}
-					}
-				}
-			} else {
-				if(r.type == RobotType.MUCKRAKER) {
-					raker = r.location;
-					rakerRound = 0;
-				}
-			}
-		}
-		if(rakerRound < RAKER_ROUNDS) {
-			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
-			return;
-		}
-	}
-	public void setRakerFlags() throws GameActionException {
-		if(raker != null)
-			System.out.println("rakerRound = "+rakerRound);
-		if(rakerRound > RAKER_ROUNDS) {
-			if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
-				rc.setFlag(0 | politicanMask);
-			return;
-		}
-		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
-	}
 }

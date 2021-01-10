@@ -15,6 +15,11 @@ public class Robot {
 	RobotController rc;
 	MapLocation home;
 	int lastMoveTurn = 0;
+
+	MapLocation raker;
+	int rakerRound;
+	public static final int RAKER_ROUNDS = 12;
+	public int politicanMask = 0x080000;
 	public Robot(RobotController robot) {
 		rc = robot;
 		for(RobotInfo r:rc.senseNearbyRobots(2, rc.getTeam())) {
@@ -124,5 +129,47 @@ public class Robot {
 	}
 	public static int taxiDistance(MapLocation l1, MapLocation l2) {
 		return Math.max(Math.abs(l1.x - l2.x), Math.abs(l1.y - l2.y));
+	}
+	
+
+	public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
+		raker = null;
+		rakerRound = 99999;
+		for(RobotInfo r:nearby) {
+			if(r.team==rc.getTeam()) {
+				if(true || r.type == RobotType.POLITICIAN) {
+					if(rc.canGetFlag(r.ID)) {
+						int f = rc.getFlag(r.ID);
+						if((f&0xf00000) == 0x100000) {
+							int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
+							MapLocation l = Robot.flagToLoc(r.location, f);
+							if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
+								rakerRound = rr;
+								raker = l;
+							}
+						}
+					}
+				}
+			} else {
+				if(r.type == RobotType.MUCKRAKER) {
+					raker = r.location;
+					rakerRound = 0;
+				}
+			}
+		}
+		if(rakerRound < RAKER_ROUNDS) {
+			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
+			return;
+		}
+	}
+	public void setRakerFlags() throws GameActionException {
+		//if(raker != null)
+			//System.out.println("rakerRound = "+rakerRound);
+		if(rakerRound > RAKER_ROUNDS) {
+			if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
+				rc.setFlag(0 | politicanMask);
+			return;
+		}
+		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
 }

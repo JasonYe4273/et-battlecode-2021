@@ -57,7 +57,7 @@ public class Center extends Robot {
 		} else {
 			if(Math.random() < .4)
 				build(RobotType.MUCKRAKER, 1);
-			build(RobotType.POLITICIAN, Math.min(inf, 17 + inf/8));
+			build(RobotType.POLITICIAN, Math.min(inf, 21 + inf/20));
 		}
 		lastInf = rc.getInfluence();
 	}
