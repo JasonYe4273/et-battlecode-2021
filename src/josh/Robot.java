@@ -48,6 +48,7 @@ public class Robot {
 	public void run() {
 		while(true) {
 			try {
+			rc.setIndicatorDot(home, 255, 255, 255);
 			turn();
 			} catch(Exception e) {
 				e.printStackTrace();

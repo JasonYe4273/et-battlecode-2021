@@ -76,13 +76,15 @@ public class Center extends Robot {
 			Direction dir = RobotPlayer.directions[(i+offset)%8];
 			if (rc.canBuildRobot(t, dir, influence)) {
 				rc.buildRobot(t, dir, influence);
-				rakers.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
+				if(t == RobotType.MUCKRAKER)
+					rakers.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
 			}
 		}
         
 	}
 	public void readNonfriendlyHQFlag() throws GameActionException {
 		Iterator<Integer> i = rakers.iterator();
+		System.out.println("num rakers " +rakers.size());
 		while(i.hasNext()) {
 			int id = i.next();
 			if(rc.canGetFlag(id)) {

@@ -18,9 +18,9 @@ public class Muckraker extends Robot {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
-		if(rc.getRoundNum() % 2 == 0)
-			sendNonfriendlyHQ();
 		setRakerFlags();
+		if(rc.getRoundNum() % 4 == 0)
+			sendNonfriendlyHQ();
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;
