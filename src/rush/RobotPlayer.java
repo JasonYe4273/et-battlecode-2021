@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 public strictfp class RobotPlayer {
 
-    static boolean debug = false;
+    static boolean debug = true;
     static RobotController rc;
 
     static final RobotType[] spawnableRobot = {
@@ -103,6 +103,7 @@ public strictfp class RobotPlayer {
     }
 
     static void runEnlightenmentCenter() throws GameActionException {
+        println("Empower factor: " + rc.getEmpowerFactor(rc.getTeam(), 0));
         // bid 2 influence/turn on rounds > 2000
         if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
@@ -285,6 +286,34 @@ public strictfp class RobotPlayer {
             }
         */
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+        boolean enemyHQInRange = false;
+        for (RobotInfo r : attackable)
+            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
+        // if attack factor > 2, this takes priority over moving closer to enemy HQ
+        if (attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 2) && rc.canEmpower(actionRadius)) {
+            // attack either enemy HQ or farthest enemy in range
+            int attackLength = 1;
+            for (RobotInfo r : attackable) {
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
+                    attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
+            }
+            if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
+            // Heuristic for attacking: More than half of robot's conviction goes to attacking enemy units
+            // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
+            // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
+            RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
+            RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
+                    * (rc.getConviction() - 10) / rc.getConviction();
+            println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
+                if (attackFactor > 2) {
+                println("empowering...");
+                rc.empower(attackLength);
+                println("empowered");
+                return;
+            }
+        }
         if (enemyHqLoc != null)
             if (rc.getConviction() > 10) {
                 if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1 &&fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) {
@@ -296,10 +325,6 @@ public strictfp class RobotPlayer {
                 //println("Moving away from enemy HQ!");
                 return; // move away from enemy HQ if conviction <= 10 (worthless)
             }
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-        boolean enemyHQInRange = false;
-        for (RobotInfo r : attackable)
-            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null && false))
             && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
