@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 public strictfp class RobotPlayer {
 
-    static boolean debug = true;
+    static boolean debug = false;
     static RobotController rc;
 
     static final RobotType[] spawnableRobot = {
@@ -78,7 +78,7 @@ public strictfp class RobotPlayer {
         while (true) {
             // resign on turn 1000 for testing
             // TODO: Remove this
-            if (rc.getRoundNum() > 1500) rc.resign();
+            // if (rc.getRoundNum() > 1500) rc.resign();
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
@@ -104,8 +104,8 @@ public strictfp class RobotPlayer {
 
     static void runEnlightenmentCenter() throws GameActionException {
         println("Empower factor: " + rc.getEmpowerFactor(rc.getTeam(), 0));
-        // bid 2 influence/turn on rounds > 2000
-        if (rc.getRoundNum() > 2000 && rc.canBid(2)) rc.bid(2);
+        // bid 2 influence/turn on rounds > 1500
+        if (rc.getRoundNum() > 1498 && rc.canBid(2)) rc.bid(2);
         RobotType toBuild = RobotType.POLITICIAN;
         if (rc.getInfluence() < 200)
             toBuild = RobotType.MUCKRAKER;
@@ -134,7 +134,7 @@ public strictfp class RobotPlayer {
         if (flag == 0 || flag > 65536) {
             println("Flag is 0, looking for other flags");
             Iterator<Integer> it = spawnedIDs.iterator();
-            while (it.hasNext()) {
+            while (it.hasNext() && Clock.getBytecodesLeft() > 1000) {
                 int id = (Integer) it.next();
                 // println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
@@ -197,7 +197,7 @@ public strictfp class RobotPlayer {
         } else {
             // println("Flag is set, looking for capture flags");
             Iterator<Integer> it = spawnedIDs.iterator();
-            while (it.hasNext()) {
+            while (it.hasNext() && Clock.getBytecodesLeft() > 1000) {
                 int id = (Integer) it.next();
                 // println("Checking ID " + id);
                 if (rc.canGetFlag(id)) {
@@ -325,7 +325,7 @@ public strictfp class RobotPlayer {
                 //println("Moving away from enemy HQ!");
                 return; // move away from enemy HQ if conviction <= 10 (worthless)
             }
-        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null && false))
+        if ((enemyHQInRange || attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 1.25 || enemyHqLoc == null && rc.getRoundNum() > 2000))
             && rc.canEmpower(actionRadius) && (true || rc.getConviction() > 10)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
@@ -342,7 +342,7 @@ public strictfp class RobotPlayer {
             double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
                     * (rc.getConviction() - 10) / rc.getConviction();
             println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
-                if (attackFactor > 0.5 || rc.getConviction() <= 10) {
+                if (attackFactor > 0.5 || rc.getConviction() <= 10 || (rc.getRoundNum() > 2100 && attackFactor > 0.2) || rc.getRoundNum() > 2500) {
                 println("empowering...");
                 rc.empower(attackLength);
                 println("empowered");
