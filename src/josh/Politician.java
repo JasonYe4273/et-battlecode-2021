@@ -41,12 +41,14 @@ public class Politician extends Robot {
 		if((f&0xf00000) != Robot.NONFRIENDLY_HQ)
 			return false;
 		nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
+		boolean yes = true;
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
-				return false;
+				rc.setIndicatorDot(r.location, 255, 0, 255);
+				yes = false;
 			}
 		}
-		return true;
+		return yes;
 	}
 	public void attackHQ() throws GameActionException {
 		int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQ);
