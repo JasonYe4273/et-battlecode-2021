@@ -146,7 +146,7 @@ public class Politician extends Robot {
 				slanderers++;
 			}
 		}
-		System.out.println("slanderers = "+slanderers);
+		//System.out.println("slanderers = "+slanderers);
 		if(slanderers > 1) {
 			if(killsAtDist[1] == 1)
 				rc.empower(1);
@@ -204,6 +204,8 @@ public class Politician extends Robot {
 					if(d2 < nearestPoliticanToRaker) {
 						nearestPoliticanToRaker = d2;
 					}
+					//if(d2 < rc.getLocation().distanceSquaredTo(raker))
+						rc.setIndicatorDot(r.location, 255, 0, 0);
 				}
 			}
 		}

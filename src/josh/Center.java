@@ -48,6 +48,9 @@ public class Center extends Robot {
 				}	
 			}
 		}
+		if(rc.getInfluence() > 1000 && nonfriendlyHQ!=null) {
+			build(RobotType.POLITICIAN, 400);
+		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
 			lastRakerRound = rc.getRoundNum();
 		//System.out.println("p = "+politicians+" s="+slanderers);
@@ -62,7 +65,7 @@ public class Center extends Robot {
 		}
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
-		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<0x00ffffff) {
+		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<3000) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
