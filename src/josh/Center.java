@@ -44,7 +44,7 @@ public class Center extends Robot {
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
 			lastRakerRound = rc.getRoundNum();
-		System.out.println("p = "+politicians+" s="+slanderers);
+		//System.out.println("p = "+politicians+" s="+slanderers);
 		int inf = rc.getInfluence() - enemyPStrength;
 		if(inf < 11) {
 			build(RobotType.POLITICIAN, 1);

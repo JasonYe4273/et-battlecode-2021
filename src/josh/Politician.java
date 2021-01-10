@@ -17,8 +17,8 @@ public class Politician extends Robot {
 	 */
 	MapLocation raker;
 	int rakerRound;
-	public static final int RAKER_ROUNDS = 24;
-	public int politicanMask = 0x400000;
+	public static final int RAKER_ROUNDS = 12;
+	public int politicanMask = 0x080000;
 	public Politician(RobotController r) {
 		super(r);
 	}
@@ -167,7 +167,7 @@ public class Politician extends Robot {
 						farp++;
 				}
 				if(raker == null) continue;
-				if(r.type == RobotType.POLITICIAN && rc.canGetFlag(r.ID) && (rc.getFlag(r.ID)&0x400000)>0) {
+				if(r.type == RobotType.POLITICIAN && rc.canGetFlag(r.ID) && (rc.getFlag(r.ID)&politicanMask)>0) {
 					int d2 = r.location.distanceSquaredTo(raker);
 					if(d2 < nearestPoliticanToRaker) {
 						nearestPoliticanToRaker = d2;
@@ -199,8 +199,8 @@ public class Politician extends Robot {
 				if(r.type == RobotType.POLITICIAN) {
 					if(rc.canGetFlag(r.ID)) {
 						int f = rc.getFlag(r.ID);
-						if((f&0xffff) > 0) {
-							int rr = Robot.flagToRound(rc.getRoundNum(), f);
+						if((f&0xf00000) == 0x100000) {
+							int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
 							MapLocation l = Robot.flagToLoc(r.location, f);
 							if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
 								rakerRound = rr;
@@ -222,11 +222,13 @@ public class Politician extends Robot {
 		}
 	}
 	public void setRakerFlags() throws GameActionException {
+		if(raker != null)
+			System.out.println("rakerRound = "+rakerRound);
 		if(rakerRound > RAKER_ROUNDS) {
-			if((rc.getFlag(rc.getID())&0xffff)>0)
+			if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
 				rc.setFlag(0 | politicanMask);
 			return;
 		}
-		rc.setFlag(politicanMask | Robot.roundToFlag(rc.getRoundNum() - rakerRound) | Robot.locToFlag(rc.getLocation(), raker));
+		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
 }

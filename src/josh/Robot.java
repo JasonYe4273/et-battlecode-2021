@@ -9,6 +9,9 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Robot {
+	/*
+	 * first 4 bits of flag determine type
+	 */
 	RobotController rc;
 	MapLocation home;
 	int lastMoveTurn = 0;
@@ -55,18 +58,30 @@ public class Robot {
 			}
 		}
 	}
-	public static int locToFlag(MapLocation from, MapLocation to) {
-		return (to.x-from.x+64)<< 7 | (to.y-from.y+64);
+	public static int locToFlag(MapLocation to) {
+		return (to.x&0x7f)<< 7 | (to.y&0x7f);
 	}
 	public static MapLocation flagToLoc(MapLocation from, int flag) {
-		//System.out.println("reading "+(((flag&0x3f80)>>7)-64)+","+((flag&0x007f)-64));
-		return new MapLocation(from.x+(((flag&0x3f80)>>7)-64),from.y+((flag&0x007f)-64));
+		//System.out.println("reading "+(((flag&0x3f80)>>7)-64)+","+((flag&0x007f)-64));\
+		int x = (flag&0x3f80)>>7;
+		x = (from.x&0xffff80)|x;
+		if(from.x - x > 64)
+			x += 128;
+		else if(from.x - x < -64)
+			x -= 128;
+		int y = flag&0x007f;
+		y = (from.y&0xffff80)|y;
+		if(from.y - y > 64)
+			y += 128;
+		else if(from.y - y < -64)
+			y -= 128;
+		return new MapLocation(x,y);
 	}
 	public static int roundToFlag(int round) {
-		return (round&0x7f)<<14;
+		return (round&0xf)<<14;
 	}
 	public static int flagToRound(int round, int flag) {
-		return (round - ((flag>>14)&0x7f))&0x7f;
+		return (round - ((flag>>14)&0xf))&0xf;
 	}
 	private boolean moveInDirections(Direction[] dirs, int minR, int maxR, MapLocation l) throws GameActionException {
 		for(Direction d : dirs) {
