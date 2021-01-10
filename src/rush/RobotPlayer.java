@@ -286,16 +286,16 @@ public strictfp class RobotPlayer {
             }
         */
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius);
         boolean enemyHQInRange = false;
         for (RobotInfo r : attackable)
-            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
+            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam());
         // if attack factor > 2, this takes priority over moving closer to enemy HQ
         if (attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 2) && rc.canEmpower(actionRadius)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
             for (RobotInfo r : attackable) {
-                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength && r.team != rc.getTeam())
                     attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
             }
             if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
@@ -303,8 +303,9 @@ public strictfp class RobotPlayer {
             // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
             // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
             RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
+            RobotInfo [] neutrals = rc.senseNearbyRobots(attackLength, Team.NEUTRAL);
             RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
-            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * (enemies.length + neutrals.length) / (enemies.length + neutrals.length + friends.length)
                     * (rc.getConviction() - 10) / rc.getConviction();
             println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
                 if (attackFactor > 2) {
@@ -330,7 +331,7 @@ public strictfp class RobotPlayer {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
             for (RobotInfo r : attackable) {
-                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength && r.team != rc.getTeam())
                     attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
             }
             if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
@@ -338,8 +339,9 @@ public strictfp class RobotPlayer {
             // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
             // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
             RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
+            RobotInfo [] neutrals = rc.senseNearbyRobots(attackLength, Team.NEUTRAL);
             RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
-            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * (enemies.length + neutrals.length) / (enemies.length + neutrals.length + friends.length)
                     * (rc.getConviction() - 10) / rc.getConviction();
             println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
                 if (attackFactor > 0.5 || rc.getConviction() <= 10 || (rc.getRoundNum() > 2100 && attackFactor > 0.2) || rc.getRoundNum() > 2500) {
