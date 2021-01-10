@@ -12,15 +12,23 @@ public class Muckraker extends Robot {
 		super(r);
 	}
 	MapLocation target = null;
+	MapLocation nonfriendlyHQ = null;
+	int nonfriendlyHQround = 0;
 	public void turn() throws GameActionException {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
+		if(rc.getRoundNum() % 2 == 0)
+			sendNonfriendlyHQ();
 		setRakerFlags();
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;
 		for(RobotInfo r:nearby) {
+			if(r.type == RobotType.ENLIGHTENMENT_CENTER && r.team!=rc.getTeam()) {
+				nonfriendlyHQ = r.location;
+				nonfriendlyHQround = rc.getRoundNum();
+			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
 				if(rc.canExpose(r.location))
 					rc.expose(r.location);
@@ -33,13 +41,26 @@ public class Muckraker extends Robot {
 			}
 		}
 		if(nearestRaker != null) {
-			moveToward(rc.getLocation().add(nearestRaker.directionTo(rc.getLocation())));
+			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
+			target = null;
+			return;
 		}
 		while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {
 			double angle = Math.random() * Math.PI * 2;
 			target = rc.getLocation().translate((int)(Math.cos(angle) * 30),(int)( Math.sin(angle) * 30));
 		}
 		moveToward(target);
+	}
+	public void sendNonfriendlyHQ() throws GameActionException {
+		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
+			nonfriendlyHQ = null;
+			if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
+				rc.setFlag(0);
+		}
+		if(nonfriendlyHQ == null) return;
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ);
+		if(nonfriendlyHQ != null)
+			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
 	int mapXmin = -1;
 	int mapXmax = 999999;

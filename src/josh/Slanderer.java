@@ -29,7 +29,7 @@ public class Slanderer extends Politician {
 	}
 	public void movementS(RobotInfo[] nearby) throws GameActionException {
 		if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
-			moveToward(rc.getLocation().add(raker.directionTo(rc.getLocation())));
+			moveInDirection(raker.directionTo(rc.getLocation()));
 		}
 		/*
 		double scale = Math.sqrt(15/rc.getLocation().distanceSquaredTo(home));

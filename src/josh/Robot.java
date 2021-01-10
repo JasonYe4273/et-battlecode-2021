@@ -11,6 +11,13 @@ import battlecode.common.RobotType;
 public class Robot {
 	/*
 	 * first 4 bits of flag determine type
+	 * 0x100000: raker
+	 * 	1-14 location
+	 *  15-18 round mod 16
+	 *  20 am i a politician or a slanderer
+	 * 0x200000: enemy/neutral HQ
+	 *  1-14 location
+	 *  sent by rakers and by HQ
 	 */
 	RobotController rc;
 	MapLocation home;
@@ -19,15 +26,21 @@ public class Robot {
 	MapLocation raker;
 	int rakerRound;
 	public static final int RAKER_ROUNDS = 12;
+	public static final int NONFRIENDLY_HQ = 0x200000;
 	public int politicanMask = 0x080000;
+	int homeID;
 	public Robot(RobotController robot) {
 		rc = robot;
 		for(RobotInfo r:rc.senseNearbyRobots(2, rc.getTeam())) {
-			if(r.type==RobotType.ENLIGHTENMENT_CENTER)
+			if(r.type==RobotType.ENLIGHTENMENT_CENTER) {
 				home = r.location;
+				homeID = r.ID;
+			}
 		}
-		if(home == null)
+		if(home == null) {
 			home = rc.getLocation();
+			homeID = -1;
+		}
 	}
 	public void turn() throws Exception {
 		
@@ -50,18 +63,28 @@ public class Robot {
 		result[8]=l;
 		return result;
 	}
-	public void moveToward(MapLocation l) throws GameActionException {
-		if(rc.getCooldownTurns()>1) return;
-		rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
-		Direction d = rc.getLocation().directionTo(l);
+	public void moveInDirection(Direction d) throws GameActionException {
 		Direction[] dd = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
 		for(Direction dir:dd) {
 			if(rc.canMove(dir)) {
 				rc.move(dir);
 				lastMoveTurn = rc.getRoundNum();
-				return;
+				break;
 			}
 		}
+	}
+	public void moveToward(MapLocation l) throws GameActionException {
+		if(rc.getCooldownTurns()>1) return;
+		rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
+		if(rc.getLocation().equals(l)) return;
+		if(rc.getLocation().isAdjacentTo(l)) {
+			Direction d = rc.getLocation().directionTo(l);
+			if(rc.canMove(d))
+				rc.move(d);
+			return;
+		}
+		Direction d = rc.getLocation().directionTo(l);
+		moveInDirection(d);
 	}
 	public static int locToFlag(MapLocation to) {
 		return (to.x&0x7f)<< 7 | (to.y&0x7f);
@@ -151,7 +174,7 @@ public class Robot {
 					}
 				}
 			} else {
-				if(r.type == RobotType.MUCKRAKER) {
+				if(r.type == RobotType.MUCKRAKER && (rakerRound > 0 || raker.distanceSquaredTo(rc.getLocation()) > r.location.distanceSquaredTo(rc.getLocation()))) {
 					raker = r.location;
 					rakerRound = 0;
 				}

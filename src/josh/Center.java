@@ -1,10 +1,10 @@
 package josh;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import battlecode.common.*;
 
 public class Center extends Robot {
 	public Center(RobotController r) {
@@ -13,7 +13,12 @@ public class Center extends Robot {
 	int lastInf = 1;
 	int lastRakerRound = 0;
 	int rakersBuilt= 0;
+	Set<Integer> rakers = new HashSet<Integer>();
+	MapLocation nonfriendlyHQ = null;
+	int nonfriendlyHQround = 0;
 	public void turn() throws Exception {
+		readNonfriendlyHQFlag();
+		if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
@@ -71,9 +76,31 @@ public class Center extends Robot {
 			Direction dir = RobotPlayer.directions[(i+offset)%8];
 			if (rc.canBuildRobot(t, dir, influence)) {
 				rc.buildRobot(t, dir, influence);
+				rakers.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
 			}
 		}
         
+	}
+	public void readNonfriendlyHQFlag() throws GameActionException {
+		Iterator<Integer> i = rakers.iterator();
+		while(i.hasNext()) {
+			int id = i.next();
+			if(rc.canGetFlag(id)) {
+				int f = rc.getFlag(id);
+				if((f&0xf00000) == Robot.NONFRIENDLY_HQ) {
+					nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
+					nonfriendlyHQround = rc.getRoundNum();
+				}
+			} else {
+				i.remove();
+			}
+		}
+		if(nonfriendlyHQround + 50 < rc.getRoundNum())
+			nonfriendlyHQ = null;
+		else if(nonfriendlyHQ != null) {
+			rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | Robot.NONFRIENDLY_HQ);
+			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
+		}
 	}
 
 }

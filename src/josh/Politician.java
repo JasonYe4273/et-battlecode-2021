@@ -21,13 +21,38 @@ public class Politician extends Robot {
 	public void turn() throws Exception {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
-		if(rc.getConviction() <= 10)
+		if(shouldAttackHQ(nearby))
+			attackHQ();
+		else if(rc.getConviction() <= 10)
 			walling(nearby);
 		else {
 			checkEmpower(nearby);
 			movement(nearby);
 		}
 		setRakerFlags();
+	}
+	MapLocation nonfriendlyHQ;
+	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
+		if(rc.getConviction() < 300)
+			return false;
+		if(!rc.canGetFlag(homeID))
+			return false;
+		int f = rc.getFlag(homeID);
+		if((f&0xf00000) != Robot.NONFRIENDLY_HQ)
+			return false;
+		nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
+		for(RobotInfo r:nearby) {
+			if(r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	public void attackHQ() throws GameActionException {
+		int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQ);
+		if(d < 3 && rc.canEmpower(d))
+			rc.empower(d);
+		this.moveToward(nonfriendlyHQ);
 	}
 	public void walling(RobotInfo[] nearby) throws GameActionException {
 		int wallRadius = 5;
@@ -108,16 +133,21 @@ public class Politician extends Robot {
 				maxKills = killsAtDist[i];
 			}
 		}
-		if(maxKills > 2)
+		//System.out.println(Arrays.toString(killsAtDist));
+		if(maxKills >= 2) {
 			rc.empower(maxKillD);
+			return;
+		}
 		int slanderers = 0;
 		for(RobotInfo r:nearby) {
-			if(r.team!=rc.getTeam()) continue;
-			if((rc.getFlag(r.ID) & politicanMask) != politicanMask)
+			if(r.team!=rc.getTeam() || r.type != RobotType.POLITICIAN) continue;
+			if((rc.getFlag(r.ID) & politicanMask) != politicanMask) {
+				rc.setIndicatorDot(r.location, 0, 0, 255);
 				slanderers++;
+			}
 		}
 		System.out.println("slanderers = "+slanderers);
-		if(slanderers > 0) {
+		if(slanderers > 1) {
 			if(killsAtDist[1] == 1)
 				rc.empower(1);
 			if(killsAtDist[2] == 1)
