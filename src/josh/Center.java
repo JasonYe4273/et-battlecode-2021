@@ -65,7 +65,7 @@ public class Center extends Robot {
 		}
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
-		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20 || (rc.getInfluence()-lastInf)*100/(lastInf+1) < 5)&& inf<3000) {
+		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && inf<3000 && (rc.getInfluence()-lastInf)/20 < politicians*politicians) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
