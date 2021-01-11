@@ -109,7 +109,7 @@ public strictfp class RobotPlayer {
         RobotType toBuild = RobotType.POLITICIAN;
         if (rc.getInfluence() < 200)
             toBuild = RobotType.MUCKRAKER;
-        int influence = Math.max(150, rc.getInfluence() - 100);
+        int influence = Math.min(Math.max(150, rc.getInfluence() - 100), 10000);
         if (toBuild == RobotType.MUCKRAKER) influence = 1;
         // on first turn, build a slanderer
         if (rc.getRoundNum() == 1) {
