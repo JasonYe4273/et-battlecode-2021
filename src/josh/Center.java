@@ -18,7 +18,7 @@ public class Center extends Robot {
 	int nonfriendlyHQround = 0;
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
-		if(rc.getRoundNum() > 1000) rc.resign();
+		//if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
@@ -73,7 +73,7 @@ public class Center extends Robot {
 		lastInf = rc.getInfluence();
 	}
 	private void build(RobotType t, int influence) throws GameActionException {
-		System.out.println("building "+t+" with inf "+influence);
+		//System.out.println("building "+t+" with inf "+influence);
 		int offset = (int)(Math.random()*8);
 		for (int i=0;i<8;i++) {
 			Direction dir = RobotPlayer.directions[(i+offset)%8];
@@ -87,7 +87,7 @@ public class Center extends Robot {
 	}
 	public void readNonfriendlyHQFlag() throws GameActionException {
 		Iterator<Integer> i = rakers.iterator();
-		System.out.println("num rakers " +rakers.size());
+		//System.out.println("num rakers " +rakers.size());
 		while(i.hasNext()) {
 			int id = i.next();
 			if(rc.canGetFlag(id)) {

@@ -35,15 +35,18 @@ public class Politician extends Robot {
 	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
 		if(rc.getConviction() < 300)
 			return false;
+		//System.out.println("homeID = "+homeID);
 		if(!rc.canGetFlag(homeID))
 			return false;
 		int f = rc.getFlag(homeID);
 		if((f&0xf00000) != Robot.NONFRIENDLY_HQ)
 			return false;
 		nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
+		rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
 		boolean yes = true;
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
+				//System.out.println(r.location);
 				rc.setIndicatorDot(r.location, 255, 0, 255);
 				yes = false;
 			}
@@ -87,6 +90,13 @@ public class Politician extends Robot {
 			}
 		}
 	}
+	/*
+	 * empower conditions:
+	 * a double kill
+	 * or kill a center
+	 * or kill a raker and there's a nearby slanderer
+	 * or adjacent to enemy center, and there's an adjacent friendly politician
+	 */
 	public void checkEmpower(RobotInfo[] nearby) throws GameActionException {
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getConviction() <= 10) return;
@@ -103,30 +113,42 @@ public class Politician extends Robot {
 		unitsAtDist[8] += unitsAtDist[5];
 		unitsAtDist[9] += unitsAtDist[8];
 		int damage = (int)(rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) - GameConstants.EMPOWER_TAX;
+		boolean adjToEnemyCenter = false;
+		int numberFriendlyP = 0;
 		for(RobotInfo r:nearerby) {
-			if(r.team==rc.getTeam()) continue;
-			switch(r.location.distanceSquaredTo(rc.getLocation())) {
+			if(r.team==rc.getTeam()) {
+				if(r.type == RobotType.POLITICIAN)
+					numberFriendlyP++;
+				continue;
+			}
+			int a = (r.type == RobotType.ENLIGHTENMENT_CENTER)?10:1;
+			int d = r.location.distanceSquaredTo(rc.getLocation());
+			if(r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
+				adjToEnemyCenter = true;
+			switch(d) {
 			case 1:
 			if(r.conviction < damage/unitsAtDist[1]) 
-				killsAtDist[1]++;
+				killsAtDist[1]+=a;
 			case 2:
 			if(r.conviction < damage/unitsAtDist[2]) 
-				killsAtDist[2]++;
+				killsAtDist[2]+=a;
 			case 4:
 			if(r.conviction < damage/unitsAtDist[4]) 
-				killsAtDist[4]++;
+				killsAtDist[4]+=a;
 			case 5:
 			if(r.conviction < damage/unitsAtDist[5]) 
-				killsAtDist[5]++;
+				killsAtDist[5]+=a;
 			case 8:
 			if(r.conviction < damage/unitsAtDist[8]) 
-				killsAtDist[8]++;
+				killsAtDist[8]+=a;
 			case 9:
 			if(r.conviction < damage/unitsAtDist[9]) 
-				killsAtDist[9]++;
+				killsAtDist[9]+=a;
 			default:
 			}
 		}
+		if(adjToEnemyCenter && numberFriendlyP > 5)
+			rc.empower(1);
 		int maxKills = 0;
 		int maxKillD = 0;
 		for(int i=1;i<10;i++) {
@@ -149,7 +171,7 @@ public class Politician extends Robot {
 			}
 		}
 		//System.out.println("slanderers = "+slanderers);
-		if(slanderers > 1) {
+		if(slanderers > 1 || numberFriendlyP > 8) {
 			if(killsAtDist[1] == 1)
 				rc.empower(1);
 			if(killsAtDist[2] == 1)

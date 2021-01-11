@@ -31,7 +31,7 @@ public class Robot {
 	int homeID;
 	public Robot(RobotController robot) {
 		rc = robot;
-		for(RobotInfo r:rc.senseNearbyRobots(2, rc.getTeam())) {
+		for(RobotInfo r:rc.senseNearbyRobots(3, rc.getTeam())) {
 			if(r.type==RobotType.ENLIGHTENMENT_CENTER) {
 				home = r.location;
 				homeID = r.ID;
