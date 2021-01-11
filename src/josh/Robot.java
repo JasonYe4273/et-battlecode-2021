@@ -133,6 +133,8 @@ public class Robot {
 		int dist = rc.getLocation().distanceSquaredTo(l);
 		if(dist < minR) {
 			Direction d = l.directionTo(rc.getLocation());
+			if(d == Direction.CENTER)
+				d = RobotPlayer.randomDirection();
 			Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
 			moveInDirections(dirs, 0, 99999, l);
 		} else if(dist > maxR) {

@@ -54,7 +54,7 @@ public class Center extends Robot {
 		//System.out.println("p = "+politicians+" s="+slanderers);
 		int inf = rc.getInfluence() - enemyPStrength;
 		if(inf < 11) {
-			build(RobotType.POLITICIAN, 1);
+			build(RobotType.MUCKRAKER, 1);
 			return;
 		}
 		if(slanderers > 0 && Math.random() < 1.0/(1.0+rakersBuilt)) {
