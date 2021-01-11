@@ -231,9 +231,9 @@ public strictfp class RobotPlayer {
         // set enemyHqLoc if not set already
         if (enemyHqLoc == null) {
             // try to see enemy HQ if it's visible
-            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1);
+            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1, enemy);
             for (RobotInfo r : possibleEnemyHQ)
-                if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
+                if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     println("Found enemy HQ");
                     enemyHqLoc = r.getLocation();
                     flag = locToFlag(enemyHqLoc);
@@ -286,16 +286,16 @@ public strictfp class RobotPlayer {
             }
         */
         // only attack enemy HQ (don't waste time with other robots) unless empower factor > 1 or no enemy HQ found
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius);
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         boolean enemyHQInRange = false;
         for (RobotInfo r : attackable)
-            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam());
+            enemyHQInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
         // if attack factor > 2, this takes priority over moving closer to enemy HQ
         if (attackable.length > 0 && (rc.getEmpowerFactor(rc.getTeam(), 0) > 2) && rc.canEmpower(actionRadius)) {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
             for (RobotInfo r : attackable) {
-                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength && r.team != rc.getTeam())
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
                     attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
             }
             if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
@@ -303,9 +303,8 @@ public strictfp class RobotPlayer {
             // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
             // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
             RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
-            RobotInfo [] neutrals = rc.senseNearbyRobots(attackLength, Team.NEUTRAL);
             RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
-            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * (enemies.length + neutrals.length) / (enemies.length + neutrals.length + friends.length)
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
                     * (rc.getConviction() - 10) / rc.getConviction();
             println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
                 if (attackFactor > 2) {
@@ -315,6 +314,12 @@ public strictfp class RobotPlayer {
                 return;
             }
         }
+        // also, if empower factor > 2 and adjacent to own HQ, consider blowing up
+        RobotInfo [] adjacentUnits = rc.senseNearbyRobots(2);
+        boolean hqInRange = false;
+        for (RobotInfo r : adjacentUnits)
+            hqInRange |= (r.type == RobotType.ENLIGHTENMENT_CENTER);
+        if (hqInRange && rc.getEmpowerFactor(rc.getTeam(), 0) > adjacentUnits.length && rc.canEmpower(2)) rc.empower(2);
         if (enemyHqLoc != null)
             if (rc.getConviction() > 10) {
                 if (rc.getLocation().distanceSquaredTo(enemyHqLoc) > 1 &&fuzzyTryMove(rc.getLocation().directionTo(enemyHqLoc))) {
@@ -331,7 +336,7 @@ public strictfp class RobotPlayer {
             // attack either enemy HQ or farthest enemy in range
             int attackLength = 1;
             for (RobotInfo r : attackable) {
-                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength && r.team != rc.getTeam())
+                if (r.getLocation().distanceSquaredTo(rc.getLocation()) > attackLength)
                     attackLength = r.getLocation().distanceSquaredTo(rc.getLocation());
             }
             if (enemyHQInRange) attackLength = rc.getLocation().distanceSquaredTo(enemyHqLoc);
@@ -339,9 +344,8 @@ public strictfp class RobotPlayer {
             // TODO: Maybe modify this (make it stricter?/include benefit of killing units?)
             // Note: Here, we count 10 attack on a 1-cost unit as 10 attack (TODO: fix this!)
             RobotInfo [] enemies = rc.senseNearbyRobots(attackLength, enemy);
-            RobotInfo [] neutrals = rc.senseNearbyRobots(attackLength, Team.NEUTRAL);
             RobotInfo [] friends = rc.senseNearbyRobots(attackLength, rc.getTeam());
-            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * (enemies.length + neutrals.length) / (enemies.length + neutrals.length + friends.length)
+            double attackFactor = rc.getEmpowerFactor(rc.getTeam(), 0) * enemies.length / (enemies.length + friends.length)
                     * (rc.getConviction() - 10) / rc.getConviction();
             println(rc.getEmpowerFactor(rc.getTeam(), 0) + " " + attackFactor);
                 if (attackFactor > 0.5 || rc.getConviction() <= 10 || (rc.getRoundNum() > 2100 && attackFactor > 0.2) || rc.getRoundNum() > 2500) {
@@ -393,9 +397,9 @@ public strictfp class RobotPlayer {
         // set enemyHqLoc if not set already
         if (enemyHqLoc == null) {
             // try to see enemy HQ if it's visible
-            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1);
+            RobotInfo [] possibleEnemyHQ = rc.senseNearbyRobots(-1, enemy);
             for (RobotInfo r : possibleEnemyHQ)
-                if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
+                if (r.type == RobotType.ENLIGHTENMENT_CENTER) {
                     enemyHqLoc = r.getLocation();
                     flag = locToFlag(enemyHqLoc);
                     rc.setFlag(flag);
@@ -447,13 +451,18 @@ public strictfp class RobotPlayer {
                 fuzzyTryMove(rc.getLocation().directionTo(robot.location));
             }
         }
-        // if you see nearby muckrakers, move away from them
-        RobotInfo [] nearbyFriends = rc.senseNearbyRobots(8, rc.getTeam());
+        // if you see nearby muckrakers, move away from the nearest one
+        RobotInfo [] nearbyFriends = rc.senseNearbyRobots(30, rc.getTeam());
+        MapLocation closestNeighbor = null;
+        int minDistance = Integer.MAX_VALUE;
         for (RobotInfo r : nearbyFriends) {
-            if (r.type == RobotType.MUCKRAKER) {
-                if (fuzzyTryMove(r.location.directionTo(rc.getLocation()))) return;
+            int distanceToFriend = rc.getLocation().distanceSquaredTo(r.location);
+            if (r.type == RobotType.MUCKRAKER && distanceToFriend < minDistance) {
+                closestNeighbor = r.location;
+                minDistance = distanceToFriend;
             }
         }
+        if (closestNeighbor != null && fuzzyTryMove(closestNeighbor.directionTo(rc.getLocation()))) return;
         if (enemyHqLoc != null) {
             // if enemy HQ is already swarmed, don't get any closer
             if (rc.senseNearbyRobots(-1, rc.getTeam()).length > 30) // && rc.getLocation().distanceSquaredTo(enemyHqLoc) <= 5)
@@ -513,7 +522,7 @@ public strictfp class RobotPlayer {
         if (rc.canMove(dir)) {
             rc.move(dir);
             return true;
-        } else if (rc.onTheMap(rc.getLocation().add(dir))) {
+        } else if (true || rc.onTheMap(rc.getLocation().add(dir))) {
             if (rc.canMove(dir.rotateLeft())) {
                 rc.move(dir.rotateLeft());
                 return true;
