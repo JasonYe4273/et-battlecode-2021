@@ -63,9 +63,10 @@ public class Center extends Robot {
 			build(RobotType.MUCKRAKER, 1);
 			rakersBuilt++;
 		}
+		int income =  rc.getInfluence() - lastInf;
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
-		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && inf<3000 && (rc.getInfluence()-lastInf)/20 < politicians*politicians) {
+		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && inf<3000 && (income < 60 || politicians > 11)) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
