@@ -23,6 +23,8 @@ public class Robot {
 	MapLocation home;
 	int lastMoveTurn = 0;
 
+	MapLocation nonfriendlyHQ = null;
+	int nonfriendlyHQround = 0;
 	MapLocation raker;
 	int rakerRound;
 	public static final int RAKER_ROUNDS = 12;
@@ -161,7 +163,7 @@ public class Robot {
 		rakerRound = 99999;
 		for(RobotInfo r:nearby) {
 			if(r.team==rc.getTeam()) {
-				if(true || r.type == RobotType.POLITICIAN) {
+				if(true) {
 					if(rc.canGetFlag(r.ID)) {
 						int f = rc.getFlag(r.ID);
 						if((f&0xf00000) == 0x100000) {
@@ -195,5 +197,20 @@ public class Robot {
 			return;
 		}
 		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
+	}
+
+	public void sendNonfriendlyHQ() throws GameActionException {
+		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
+			nonfriendlyHQ = null;
+			if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
+				rc.setFlag(0);
+		}
+		if(nonfriendlyHQ == null) return;
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ);
+		if(nonfriendlyHQ != null)
+			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
+	}
+	public void unsendNonfriendlyHQ() throws GameActionException {
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | 0x4000);
 	}
 }

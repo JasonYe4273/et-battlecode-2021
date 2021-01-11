@@ -30,8 +30,12 @@ public class Politician extends Robot {
 			movement(nearby);
 		}
 		setRakerFlags();
+		if(nonfriendlyHQ != null && rc.canSenseLocation(nonfriendlyHQ)) {
+			RobotInfo r = rc.senseRobotAtLocation(nonfriendlyHQ);
+			if(r.team == rc.getTeam())
+				super.unsendNonfriendlyHQ();
+		}
 	}
-	MapLocation nonfriendlyHQ;
 	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
 		if(rc.getConviction() < 300)
 			return false;
@@ -194,7 +198,6 @@ public class Politician extends Robot {
 		*/
 		int nearestPoliticanToRaker = 99999;
 		int nearp = 0, farp = 0;
-		int politicians = 0;
 		int myDist = rc.getLocation().distanceSquaredTo(home);
 		for(RobotInfo r:nearby) {
 			if(r.team != rc.getTeam()) {
@@ -216,7 +219,6 @@ public class Politician extends Robot {
 					}*/
 			} else {
 				if(r.type == RobotType.POLITICIAN) {
-					politicians++;
 					if(r.location.distanceSquaredTo(home) < myDist)
 						nearp++;
 					else

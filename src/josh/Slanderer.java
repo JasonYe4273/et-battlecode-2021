@@ -2,6 +2,7 @@ package josh;
 
 import java.util.Arrays;
 
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
@@ -9,9 +10,13 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Slanderer extends Politician {
-
-	public Slanderer(RobotController r) {
+	int homeAdjLimit=0;
+	public Slanderer(RobotController r) throws GameActionException {
 		super(r);
+		for(Direction d:RobotPlayer.directions) {
+			if(rc.onTheMap(home.add(d)))
+				homeAdjLimit++;
+		}
 		politicanMask = 0;
 		patrolRadius = 1;
 	}
@@ -65,7 +70,7 @@ public class Slanderer extends Politician {
 		if(patrolRadius > 2 && farp<5)
 			patrolRadius--;
 		int d = rc.getLocation().distanceSquaredTo(home);
-		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius || homeAdj == 8)
+		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
 			patrolRadius++;
 		patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
 		//System.out.println("PatrolRadius="+patrolRadius);

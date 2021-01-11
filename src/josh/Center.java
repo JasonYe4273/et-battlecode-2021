@@ -14,8 +14,6 @@ public class Center extends Robot {
 	int lastRakerRound = 0;
 	int rakersBuilt= 0;
 	Set<Integer> rakers = new HashSet<Integer>();
-	MapLocation nonfriendlyHQ = null;
-	int nonfriendlyHQround = 0;
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
 		//if(rc.getRoundNum() > 1000) rc.resign();
@@ -66,7 +64,7 @@ public class Center extends Robot {
 		int income =  rc.getInfluence() - lastInf;
 		if(enemyPStrength > myPStrength) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
-		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && inf<3000 && (income < 60 || politicians > 11)) {
+		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || politicians > 11)) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
@@ -94,19 +92,20 @@ public class Center extends Robot {
 			if(rc.canGetFlag(id)) {
 				int f = rc.getFlag(id);
 				if((f&0xf00000) == Robot.NONFRIENDLY_HQ) {
-					nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
-					nonfriendlyHQround = rc.getRoundNum();
+					MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
+					if((f&0x4000) == 0x4000) {
+						if(nonfriendlyHQ.equals(l))
+						nonfriendlyHQ = null;
+					} else {
+						nonfriendlyHQ = l;
+						nonfriendlyHQround = rc.getRoundNum();
+					}
 				}
 			} else {
 				i.remove();
 			}
 		}
-		if(nonfriendlyHQround + 50 < rc.getRoundNum())
-			nonfriendlyHQ = null;
-		else if(nonfriendlyHQ != null) {
-			rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | Robot.NONFRIENDLY_HQ);
-			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
-		}
+		sendNonfriendlyHQ();
 	}
 
 }

@@ -12,8 +12,6 @@ public class Muckraker extends Robot {
 		super(r);
 	}
 	MapLocation target = null;
-	MapLocation nonfriendlyHQ = null;
-	int nonfriendlyHQround = 0;
 	public void turn() throws GameActionException {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
@@ -50,17 +48,6 @@ public class Muckraker extends Robot {
 			target = rc.getLocation().translate((int)(Math.cos(angle) * 30),(int)( Math.sin(angle) * 30));
 		}
 		moveToward(target);
-	}
-	public void sendNonfriendlyHQ() throws GameActionException {
-		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
-			nonfriendlyHQ = null;
-			if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
-				rc.setFlag(0);
-		}
-		if(nonfriendlyHQ == null) return;
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ);
-		if(nonfriendlyHQ != null)
-			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
 	int mapXmin = -1;
 	int mapXmax = 999999;
