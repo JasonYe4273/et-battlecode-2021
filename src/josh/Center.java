@@ -10,17 +10,17 @@ public class Center extends Robot {
 	public Center(RobotController r) {
 		super(r);
 	}
-	int lastInf = 1;
+	int lastInf = rc.getInfluence();
 	int lastRakerRound = 0;
 	int rakersBuilt= 0;
 	Set<Integer> rakers = new HashSet<Integer>();
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
-		//if(rc.getRoundNum() > 1000) rc.resign();
+		if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 20) {
-			build(RobotType.POLITICIAN, 1);
+			build(RobotType.MUCKRAKER, 1);
 			return;
 		}
 		RobotInfo[] nearby = rc.senseNearbyRobots();
@@ -57,14 +57,14 @@ public class Center extends Robot {
 			build(RobotType.MUCKRAKER, 1);
 			return;
 		}
-		if(slanderers > 0 && Math.random() < 1.0/(1.0+rakersBuilt)) {
+		if(slanderers > 0 && Math.random() < 1.0/(1.0+rakers.size())) {
 			build(RobotType.MUCKRAKER, 1);
 			rakersBuilt++;
 		}
 		int income =  rc.getInfluence() - lastInf;
-		if(enemyPStrength > myPStrength) {
-			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength - myPStrength));
-		} else if(enemyRStrength == 0 && (politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || politicians > 11)) {
+		if(enemyPStrength + enemyRStrength > myPStrength + 20) {
+			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength + enemyRStrength - myPStrength ));
+		} else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<250) && (income < 60 || politicians > 11)) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
@@ -84,6 +84,7 @@ public class Center extends Robot {
 		}
         
 	}
+	/*
 	public void readNonfriendlyHQFlag() throws GameActionException {
 		Iterator<Integer> i = rakers.iterator();
 		//System.out.println("num rakers " +rakers.size());
@@ -93,9 +94,9 @@ public class Center extends Robot {
 				int f = rc.getFlag(id);
 				if((f&0xf00000) == Robot.NONFRIENDLY_HQ) {
 					MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
-					if((f&0x4000) == 0x4000) {
+					if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) {
 						if(nonfriendlyHQ.equals(l))
-						nonfriendlyHQ = null;
+							nonfriendlyHQ = null;
 					} else {
 						nonfriendlyHQ = l;
 						nonfriendlyHQround = rc.getRoundNum();
@@ -106,6 +107,42 @@ public class Center extends Robot {
 			}
 		}
 		sendNonfriendlyHQ();
+	}*/
+	public void readNonfriendlyHQFlag() throws GameActionException {
+		Iterator<Integer> it = rakers.iterator();
+		//System.out.println("num rakers " +rakers.size());
+		while(it.hasNext()) {
+			int id = it.next();
+			if(rc.canGetFlag(id)) {
+				int f = rc.getFlag(id);
+				super.recieveNonfriendlyHQ(f);
+			} else {
+				it.remove();
+			}
+		}
+		sendNonfriendlyHQ();
+	}
+	int hqIndex=0;
+	public void sendNonfriendlyHQ() throws GameActionException {
+		if(true) {
+			for(int i=0;i<nonfriendlyHQs.length;i++) {
+				if(nonfriendlyHQs[i]!=null) {
+					rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+				}
+			}
+		}
+		hqIndex = (hqIndex + 1)%nonfriendlyHQs.length;
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(nonfriendlyHQs[hqIndex]==null)
+				hqIndex = (hqIndex + 1)%nonfriendlyHQs.length;
+			else
+				break;
+		}
+		MapLocation l = nonfriendlyHQs[hqIndex];
+		if(l!=null) {
+			int a = enemyHQs[hqIndex]? Robot.ENENMY_HQ : Robot.NEUTRAL_HQ;
+			rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
+		}
 	}
 
 }

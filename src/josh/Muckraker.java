@@ -16,6 +16,8 @@ public class Muckraker extends Robot {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
+		if(rc.canGetFlag(homeID))
+			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
 		setRakerFlags();
 		if(rc.getRoundNum() % 4 == 0)
 			sendNonfriendlyHQ();
@@ -23,9 +25,19 @@ public class Muckraker extends Robot {
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;
 		for(RobotInfo r:nearby) {
-			if(r.type == RobotType.ENLIGHTENMENT_CENTER && r.team!=rc.getTeam()) {
-				nonfriendlyHQ = r.location;
-				nonfriendlyHQround = rc.getRoundNum();
+			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
+				if(r.team == rc.getTeam()) {
+					for(int i=0;i<nonfriendlyHQs.length;i++) {
+						if(r.location.equals(nonfriendlyHQs[i])) {
+							super.unsendNonfriendlyHQ(r.location);
+							break;
+						}
+					}
+				} else {
+					nonfriendlyHQ = r.location;
+					nonfriendlyHQround = rc.getRoundNum();
+					isEnemyHQ = (r.team == rc.getTeam().opponent());
+				}
 			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
 				if(rc.canExpose(r.location))

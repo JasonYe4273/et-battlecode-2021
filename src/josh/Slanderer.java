@@ -67,10 +67,10 @@ public class Slanderer extends Politician {
 				}
 			}
 		}
-		if(patrolRadius > 2 && farp<5)
+		if(patrolRadius > 2 && farp<2)
 			patrolRadius--;
 		int d = rc.getLocation().distanceSquaredTo(home);
-		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
+		if(nearp > 10 && farp>5 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
 			patrolRadius++;
 		patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
 		//System.out.println("PatrolRadius="+patrolRadius);

@@ -17,18 +17,32 @@ public class Robot {
 	 *  20 am i a politician or a slanderer
 	 * 0x200000: enemy/neutral HQ
 	 *  1-14 location
+	 *  15 1 if mine
+	 *  16 1 if enemy, 0 if neutral
 	 *  sent by rakers and by HQ
+	 */
+	
+	/*
+	 * HQ location info:
+	 * centers will cycle through all known nonfriendly locations, indicating whether they beieve it to be neutral or enemy
+	 * any raker can report an HQ location.
 	 */
 	RobotController rc;
 	MapLocation home;
 	int lastMoveTurn = 0;
 
-	MapLocation nonfriendlyHQ = null;
-	int nonfriendlyHQround = 0;
+	MapLocation nonfriendlyHQ = null; //this robot's locally detected nonfriendly HQ
+	int nonfriendlyHQround = 0; //when such a nonfriendly HQ was last seen
+	MapLocation[] nonfriendlyHQs = new MapLocation [10]; //list of all nonfriendlyHQs broadcast by the our HQ
+	boolean[] enemyHQs = new boolean[10]; //whether each HQ in the above list is neutral or enemy
+	int[] nonfriendlyHQrounds = new int[10]; //when we last heard about each HQ in the above list
 	MapLocation raker;
 	int rakerRound;
 	public static final int RAKER_ROUNDS = 12;
 	public static final int NONFRIENDLY_HQ = 0x200000;
+	public static final int FRIENDLY_HQ = 0x4000;
+	public static final int ENENMY_HQ = 0x8000;
+	public static final int NEUTRAL_HQ = 0;
 	public int politicanMask = 0x080000;
 	int homeID;
 	public Robot(RobotController robot) {
@@ -68,12 +82,23 @@ public class Robot {
 	}
 	public void moveInDirection(Direction d) throws GameActionException {
 		Direction[] dd = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
-		for(Direction dir:dd) {
-			if(rc.canMove(dir)) {
-				rc.move(dir);
-				lastMoveTurn = rc.getRoundNum();
-				break;
+		double[] suitability = {1,.5,.5,.1,.1};
+		for(int i=0;i<5;i++) {
+			MapLocation l = rc.getLocation().add(dd[i]);
+			if(rc.onTheMap(l))
+				suitability[i] *= rc.sensePassability(l);
+		}
+		double best = 0;
+		Direction bestD = null;
+		for(int i=0;i<5;i++) {
+			if(suitability[i]>best && rc.canMove(dd[i])) {
+				best = suitability[i];
+				bestD = dd[i];
 			}
+		}
+		if(bestD != null) {
+			rc.move(bestD);
+			lastMoveTurn = rc.getRoundNum();
 		}
 	}
 	public void moveToward(MapLocation l) throws GameActionException {
@@ -200,7 +225,7 @@ public class Robot {
 		}
 		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
-
+	boolean isEnemyHQ;
 	public void sendNonfriendlyHQ() throws GameActionException {
 		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
 			nonfriendlyHQ = null;
@@ -208,11 +233,35 @@ public class Robot {
 				rc.setFlag(0);
 		}
 		if(nonfriendlyHQ == null) return;
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ);
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENENMY_HQ : Robot.NEUTRAL_HQ));
 		if(nonfriendlyHQ != null)
 			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
-	public void unsendNonfriendlyHQ() throws GameActionException {
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | 0x4000);
+	public void recieveNonfriendlyHQ(int f) throws GameActionException {
+		if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
+		MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
+		int empty = -1;
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(l.equals(nonfriendlyHQs[i])) {
+				if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
+					nonfriendlyHQs[i] = null;
+				else {
+					enemyHQs[i] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+					nonfriendlyHQrounds[i] = rc.getRoundNum();
+				}
+				return;
+			} else if(nonfriendlyHQs[i] == null) {
+				empty = i;
+			}
+		}
+		//this location is not present in the nonfriendlyHQs array
+		if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) return; //its a friendly one, we don't need it
+		//now we need to store it in a new empty location
+		nonfriendlyHQs[empty] = l;
+		enemyHQs[empty] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+		nonfriendlyHQrounds[empty] = rc.getRoundNum();
+	}
+	public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
 	}
 }

@@ -21,6 +21,8 @@ public class Politician extends Robot {
 	public void turn() throws Exception {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
+		if(rc.canGetFlag(homeID))
+			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
 		if(shouldAttackHQ(nearby))
 			attackHQ();
 		else if(rc.getConviction() <= 10)
@@ -30,22 +32,27 @@ public class Politician extends Robot {
 			movement(nearby);
 		}
 		setRakerFlags();
+		/*
 		if(nonfriendlyHQ != null && rc.canSenseLocation(nonfriendlyHQ)) {
 			RobotInfo r = rc.senseRobotAtLocation(nonfriendlyHQ);
 			if(r.team == rc.getTeam())
 				super.unsendNonfriendlyHQ();
 		}
+		*/
 	}
 	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
+		//System.out.println("homeID = "+homeID);
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(nonfriendlyHQs[i] != null) {
+				int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+				if(nonfriendlyHQ==null || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d)
+					nonfriendlyHQ = nonfriendlyHQs[i];
+			}
+		}
+		if(nonfriendlyHQ != null && rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam() && rc.getConviction() > 300)
+			return true;
 		if(rc.getConviction() < 300)
 			return false;
-		//System.out.println("homeID = "+homeID);
-		if(!rc.canGetFlag(homeID))
-			return false;
-		int f = rc.getFlag(homeID);
-		if((f&0xf00000) != Robot.NONFRIENDLY_HQ)
-			return false;
-		nonfriendlyHQ = Robot.flagToLoc(rc.getLocation(), f);
 		rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
 		boolean yes = true;
 		for(RobotInfo r:nearby) {
@@ -161,7 +168,8 @@ public class Politician extends Robot {
 				maxKills = killsAtDist[i];
 			}
 		}
-		//System.out.println(Arrays.toString(killsAtDist));
+		if(rc.getID()==12180)
+			System.out.println(Arrays.toString(killsAtDist));
 		if(maxKills >= 2) {
 			rc.empower(maxKillD);
 			return;
@@ -175,27 +183,48 @@ public class Politician extends Robot {
 			}
 		}
 		//System.out.println("slanderers = "+slanderers);
-		if(slanderers > 1 || numberFriendlyP > 8) {
-			if(killsAtDist[1] == 1)
-				rc.empower(1);
-			if(killsAtDist[2] == 1)
-				rc.empower(2);
+		if(slanderers >= 1 || numberFriendlyP > 8) {
+			if(maxKills == 1 && maxKillD < 9)
+				rc.empower(maxKillD);
 		}
+	}
+	public void defend(RobotInfo[] nearby) throws GameActionException {
+		System.out.println("nonfriendlyHQ "+nonfriendlyHQ);
+		if(nonfriendlyHQ!=null && rc.getID()%2 == 0 && rc.getLocation().distanceSquaredTo(nonfriendlyHQ) > 9) {
+			moveToward(nonfriendlyHQ);
+			return;
+		}
+		MapLocation me = rc.getLocation();
+		int x = 0;
+		int y = 0;
+		for(RobotInfo r: nearby) {
+			if(r.type == RobotType.POLITICIAN) {
+				if((rc.getFlag(r.ID) & politicanMask)==politicanMask) {
+					//politician
+					x -= 1000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
+					y -= 1000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
+				} else {
+					//slanderer
+					x += 000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
+					y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
+				}
+			}
+		}
+		if(home.distanceSquaredTo(me) > 25) {
+			x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+			y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
+		} else {
+			x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+			y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
+			
+		}
+		//rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
+		System.out.println("moving toward "+me.translate(x, y));
+		//this.moveInDirection(rc.getLocation().directionTo(me.translate(x, y)));
+		this.moveToward(me.translate(x, y));
 	}
 	int patrolRadius = 4;
 	public void movement(RobotInfo[] nearby) throws GameActionException {
-
-		/*
-		MapLocation[] adj = new MapLocation[9];
-		double[] h = new double[9];
-		for(int i=0;i<8;i++) {
-			if(rc.canMove(directions[i])) {
-				adj[i] = rc.getLocation().add(directions[i]);
-				h[i] = Math.random() * 10 + 4*home.distanceSquaredTo(rc.getLocation());
-			}
-		}
-		adj[8] = rc.getLocation();
-		*/
 		int nearestPoliticanToRaker = 99999;
 		int nearp = 0, farp = 0;
 		int myDist = rc.getLocation().distanceSquaredTo(home);
@@ -208,8 +237,8 @@ public class Politician extends Robot {
 						rc.empower(d);
 						return;
 					} else {*/
-						this.moveToward(r.location);
-						return;
+						//this.moveToward(r.location);
+						//return;
 					//}
 				}
 					/*
@@ -230,21 +259,25 @@ public class Politician extends Robot {
 					if(d2 < nearestPoliticanToRaker) {
 						nearestPoliticanToRaker = d2;
 					}
-					//if(d2 < rc.getLocation().distanceSquaredTo(raker))
+					if(d2 < rc.getLocation().distanceSquaredTo(raker))
 						rc.setIndicatorDot(r.location, 255, 0, 0);
 				}
 			}
 		}
+		if(raker != null) System.out.println("nearestPtoRaker "+nearestPoliticanToRaker);
 		if(raker != null && rc.getLocation().distanceSquaredTo(raker) < nearestPoliticanToRaker) {
 			moveToward(raker);
 		} else {
+			if(true)
+				defend(nearby);
+			else {
 			int d = rc.getLocation().distanceSquaredTo(home);
 			if(nearp > 12 && d > patrolRadius*patrolRadius)
 				patrolRadius++;
 			if(nearp < 5 && patrolRadius > 5)
 				patrolRadius--;
 			patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
-			
+			}
 			//if(lastMoveTurn + 10 < rc.getRoundNum())
 			//	System.out.println("patrolR = "+patrolRadius);
 		}
