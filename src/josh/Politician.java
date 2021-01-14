@@ -66,9 +66,18 @@ public class Politician extends Robot {
 			return false;
 		if(rc.getConviction() < 300)
 			return false;
-		if(rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam())
-			return true;
-		if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
+		if(rc.canSenseLocation(nonfriendlyHQ)) {
+			int pow = rc.getConviction();
+			RobotInfo e = rc.senseRobotAtLocation(nonfriendlyHQ);
+			for(RobotInfo r:nearby) {
+				if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300) {
+					pow += r.conviction - 10;
+				}
+			}
+			return e.team != rc.getTeam() && e.influence < pow;
+		}
+		return true;
+		/*if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
 		boolean yes = true;
 		for(RobotInfo r:nearby) {
 			if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
@@ -78,7 +87,7 @@ public class Politician extends Robot {
 				break;
 			}
 		}
-		return yes;
+		return yes;*/
 	}
 	public void attackHQ() throws GameActionException {
 		int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQ);
