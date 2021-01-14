@@ -1,7 +1,8 @@
-package josh2;
+package josh;
 
 import java.util.Arrays;
 
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
@@ -9,9 +10,13 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Slanderer extends Politician {
-
-	public Slanderer(RobotController r) {
+	int homeAdjLimit=0;
+	public Slanderer(RobotController r) throws GameActionException {
 		super(r);
+		for(Direction d:RobotPlayer.directions) {
+			if(rc.onTheMap(home.add(d)))
+				homeAdjLimit++;
+		}
 		politicanMask = 0;
 		patrolRadius = 1;
 	}
@@ -28,8 +33,8 @@ public class Slanderer extends Politician {
 		setRakerFlags();
 	}
 	public void movementS(RobotInfo[] nearby) throws GameActionException {
-		if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 100) {
-			moveToward(rc.getLocation().add(raker.directionTo(rc.getLocation())));
+		if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
+			moveInDirection(raker.directionTo(rc.getLocation()));
 		}
 		/*
 		double scale = Math.sqrt(15/rc.getLocation().distanceSquaredTo(home));
@@ -45,27 +50,27 @@ public class Slanderer extends Politician {
 		moveToward(l);
 		*/
 		int nearp = 0, farp = 0;
-		int politicians = 0;
 		int myDist = rc.getLocation().distanceSquaredTo(home);
 		int farthest = 0;
 		int homeAdj = 0;
 		for(RobotInfo r:nearby) {
-			if(r.team==rc.getTeam() && r.type == RobotType.POLITICIAN) {
-				politicians++;
-				int d = home.distanceSquaredTo(r.location);
+			int d = home.distanceSquaredTo(r.location);
+			if(r.team==rc.getTeam()) {
 				if(d < 3) homeAdj++;
-				if(d < myDist)
-					nearp++;
-				else
-					farp++;
-				if(d > farthest)
-					farthest = d;
+				if(r.type == RobotType.POLITICIAN) {
+					if(d < myDist)
+						nearp++;
+					else
+						farp++;
+					if(d > farthest)
+						farthest = d;
+				}
 			}
 		}
 		if(patrolRadius > 2 && farp<5)
 			patrolRadius--;
 		int d = rc.getLocation().distanceSquaredTo(home);
-		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius || homeAdj == 8)
+		if(nearp > 10 && farp>20 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
 			patrolRadius++;
 		patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
 		//System.out.println("PatrolRadius="+patrolRadius);

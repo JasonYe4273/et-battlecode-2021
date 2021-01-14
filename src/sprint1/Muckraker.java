@@ -1,6 +1,10 @@
-package josh2;
+package josh;
 
-import battlecode.common.*;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 
 public class Muckraker extends Robot {
 
@@ -11,10 +15,18 @@ public class Muckraker extends Robot {
 	public void turn() throws GameActionException {
 		checkEdges();
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+		findRakerFlags(nearby);
+		setRakerFlags();
+		if(rc.getRoundNum() % 4 == 0)
+			sendNonfriendlyHQ();
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;
 		for(RobotInfo r:nearby) {
+			if(r.type == RobotType.ENLIGHTENMENT_CENTER && r.team!=rc.getTeam()) {
+				nonfriendlyHQ = r.location;
+				nonfriendlyHQround = rc.getRoundNum();
+			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
 				if(rc.canExpose(r.location))
 					rc.expose(r.location);
@@ -27,7 +39,9 @@ public class Muckraker extends Robot {
 			}
 		}
 		if(nearestRaker != null) {
-			moveToward(rc.getLocation().add(nearestRaker.directionTo(rc.getLocation())));
+			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
+			target = null;
+			return;
 		}
 		while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {
 			double angle = Math.random() * Math.PI * 2;
@@ -60,5 +74,6 @@ public class Muckraker extends Robot {
 	public boolean onTheMap(MapLocation l) {
 		return l.x > mapXmin && l.x < mapXmax && l.y > mapYmin && l.y < mapYmax;
 	}
+
 
 }
