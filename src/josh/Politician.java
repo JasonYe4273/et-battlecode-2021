@@ -23,6 +23,12 @@ public class Politician extends Robot {
 		findRakerFlags(nearby);
 		if(rc.canGetFlag(homeID))
 			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
+		//remove old enemyHQs
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(nonfriendlyHQs[i]!=null) {
+				rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+			}
+		}
 		if(shouldAttackHQ(nearby))
 			attackHQ();
 		else if(rc.getConviction() <= 10)
@@ -44,19 +50,25 @@ public class Politician extends Robot {
 		//System.out.println("homeID = "+homeID);
 		for(int i=0;i<nonfriendlyHQs.length;i++) {
 			if(nonfriendlyHQs[i] != null) {
+				if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50) {
+					nonfriendlyHQs[i] = null;
+					continue;
+				}
 				int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
 				if(nonfriendlyHQ==null || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d)
 					nonfriendlyHQ = nonfriendlyHQs[i];
 			}
 		}
-		if(nonfriendlyHQ != null && rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam() && rc.getConviction() > 300)
-			return true;
+		if(nonfriendlyHQ == null)
+			return false;
 		if(rc.getConviction() < 300)
 			return false;
+		if(rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam())
+			return true;
 		rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
 		boolean yes = true;
 		for(RobotInfo r:nearby) {
-			if(r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
+			if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
 				//System.out.println(r.location);
 				rc.setIndicatorDot(r.location, 255, 0, 255);
 				yes = false;
