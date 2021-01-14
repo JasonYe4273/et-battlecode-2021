@@ -29,10 +29,10 @@ public class Politician extends Robot {
 				rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
 			}
 		}
-		if(shouldAttackHQ(nearby))
-			attackHQ();
-		else if(rc.getConviction() <= 10)
+		if(rc.getConviction() <= 10)
 			walling(nearby);
+		else if(shouldAttackHQ(nearby))
+			attackHQ();
 		else {
 			checkEmpower(nearby);
 			movement(nearby);
@@ -48,6 +48,8 @@ public class Politician extends Robot {
 	}
 	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
 		//System.out.println("homeID = "+homeID);
+		if(rc.getConviction() < 300)
+			return false;
 		for(int i=0;i<nonfriendlyHQs.length;i++) {
 			if(nonfriendlyHQs[i] != null) {
 				if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50) {
@@ -60,8 +62,6 @@ public class Politician extends Robot {
 			}
 		}
 		if(nonfriendlyHQ == null)
-			return false;
-		if(rc.getConviction() < 300)
 			return false;
 		if(rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam())
 			return true;
