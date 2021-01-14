@@ -134,7 +134,7 @@ public class Center extends Robot {
 		if(true) {
 			for(int i=0;i<nonfriendlyHQs.length;i++) {
 				if(nonfriendlyHQs[i]!=null) {
-					rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+					if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
 					if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50)
 						nonfriendlyHQs[i] = null;
 				}
