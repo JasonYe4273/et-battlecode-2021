@@ -48,9 +48,10 @@ public class Politician extends Robot {
 	}
 	public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
 		//System.out.println("homeID = "+homeID);
+		nonfriendlyHQ = null;
 		for(int i=0;i<nonfriendlyHQs.length;i++) {
 			if(nonfriendlyHQs[i] != null) {
-				if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50) {
+				if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 20) {
 					nonfriendlyHQs[i] = null;
 					continue;
 				}
@@ -227,18 +228,19 @@ public class Politician extends Robot {
 					y -= 1000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
 				} else {
 					//slanderer
-					x += 000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
-					y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
+					//x += 000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
+					//y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
 				}
 			}
 		}
-		if(home.distanceSquaredTo(me) > 25) {
-			x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-			y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
-		} else {
-			x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-			y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
-			
+		if(!home.equals(me)) {
+			if(home.distanceSquaredTo(me) > 25) {
+				x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+				y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
+			} else {
+				x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+				y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));	
+			}
 		}
 		//rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
 		//System.out.println("moving toward "+me.translate(x, y));

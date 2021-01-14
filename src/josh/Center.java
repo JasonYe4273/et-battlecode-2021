@@ -151,6 +151,8 @@ public class Center extends Robot {
 		if(l!=null) {
 			int a = enemyHQs[hqIndex]? Robot.ENENMY_HQ : Robot.NEUTRAL_HQ;
 			rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
+		} else {
+			rc.setFlag(0);
 		}
 	}
 
