@@ -16,10 +16,10 @@ public class Center extends Robot {
 	Set<Integer> rakers = new HashSet<Integer>();
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
-		if(rc.getRoundNum() > 1000) rc.resign();
+		//if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
 		if(rc.getCooldownTurns() >= 1) return;
-		if(rc.getInfluence() < 20) {
+		if(rc.getInfluence() < 40) {
 			build(RobotType.MUCKRAKER, 1);
 			return;
 		}
