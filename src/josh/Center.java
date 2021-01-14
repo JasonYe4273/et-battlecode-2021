@@ -46,7 +46,14 @@ public class Center extends Robot {
 				}	
 			}
 		}
-		if(rc.getInfluence() > 1000 && nonfriendlyHQ!=null) {
+		boolean enemyHQ = false;
+		for(int i=0;i<10;i++) {
+			if(nonfriendlyHQs[i]!=null) {
+				enemyHQ = true;
+				break;
+			}
+		}
+		if(rc.getInfluence() > 500 && enemyHQ) {
 			build(RobotType.POLITICIAN, 400);
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
@@ -128,6 +135,8 @@ public class Center extends Robot {
 			for(int i=0;i<nonfriendlyHQs.length;i++) {
 				if(nonfriendlyHQs[i]!=null) {
 					rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+					if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50)
+						nonfriendlyHQs[i] = null;
 				}
 			}
 		}
