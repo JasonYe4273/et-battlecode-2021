@@ -189,7 +189,15 @@ public class Politician extends Robot {
 		}
 	}
 	public void defend(RobotInfo[] nearby) throws GameActionException {
-		System.out.println("nonfriendlyHQ "+nonfriendlyHQ);
+		//System.out.println("nonfriendlyHQ "+nonfriendlyHQ);
+		nonfriendlyHQ = null;
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(nonfriendlyHQs[i] != null && enemyHQs[i]) {
+				int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+				if(nonfriendlyHQ==null || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d)
+					nonfriendlyHQ = nonfriendlyHQs[i];
+			}
+		}
 		if(nonfriendlyHQ!=null && rc.getID()%2 == 0 && rc.getLocation().distanceSquaredTo(nonfriendlyHQ) > 9) {
 			moveToward(nonfriendlyHQ);
 			return;
@@ -197,6 +205,8 @@ public class Politician extends Robot {
 		MapLocation me = rc.getLocation();
 		int x = 0;
 		int y = 0;
+		if(nearby.length > 30)
+			nearby = rc.senseNearbyRobots(9);
 		for(RobotInfo r: nearby) {
 			if(r.type == RobotType.POLITICIAN) {
 				if((rc.getFlag(r.ID) & politicanMask)==politicanMask) {
@@ -219,7 +229,7 @@ public class Politician extends Robot {
 			
 		}
 		//rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
-		System.out.println("moving toward "+me.translate(x, y));
+		//System.out.println("moving toward "+me.translate(x, y));
 		//this.moveInDirection(rc.getLocation().directionTo(me.translate(x, y)));
 		this.moveToward(me.translate(x, y));
 	}
@@ -264,7 +274,7 @@ public class Politician extends Robot {
 				}
 			}
 		}
-		if(raker != null) System.out.println("nearestPtoRaker "+nearestPoliticanToRaker);
+		//if(raker != null) System.out.println("nearestPtoRaker "+nearestPoliticanToRaker);
 		if(raker != null && rc.getLocation().distanceSquaredTo(raker) < nearestPoliticanToRaker) {
 			moveToward(raker);
 		} else {
