@@ -67,11 +67,11 @@ public class Politician extends Robot {
 		if(rc.getConviction() < 300)
 			return false;
 		if(rc.canSenseLocation(nonfriendlyHQ)) {
-			int pow = rc.getConviction();
+			int pow = (int)(rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0) - 10);
 			RobotInfo e = rc.senseRobotAtLocation(nonfriendlyHQ);
 			for(RobotInfo r:nearby) {
 				if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300) {
-					pow += r.conviction - 10;
+					pow += r.conviction * rc.getEmpowerFactor(rc.getTeam(), 0) - 10;
 				}
 			}
 			return e.team != rc.getTeam() && e.influence < pow;

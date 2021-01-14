@@ -35,6 +35,7 @@ public class Slanderer extends Politician {
 	public void movementS(RobotInfo[] nearby) throws GameActionException {
 		if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
 			moveInDirection(raker.directionTo(rc.getLocation()));
+			return;
 		}
 		/*
 		double scale = Math.sqrt(15/rc.getLocation().distanceSquaredTo(home));
@@ -53,6 +54,7 @@ public class Slanderer extends Politician {
 		int myDist = rc.getLocation().distanceSquaredTo(home);
 		int farthest = 0;
 		int homeAdj = 0;
+		MapLocation nearestEnemy = null;
 		for(RobotInfo r:nearby) {
 			int d = home.distanceSquaredTo(r.location);
 			if(r.team==rc.getTeam()) {
@@ -65,7 +67,14 @@ public class Slanderer extends Politician {
 					if(d > farthest)
 						farthest = d;
 				}
+			} else {
+				if(nearestEnemy == null || rc.getLocation().distanceSquaredTo(nearestEnemy) < rc.getLocation().distanceSquaredTo(r.location))
+					nearestEnemy = r.location;
 			}
+		}
+		if(nearestEnemy != null) {
+			moveInDirection(nearestEnemy.directionTo(rc.getLocation()));
+			return;
 		}
 		if(patrolRadius > 2 && farp<2)
 			patrolRadius--;
