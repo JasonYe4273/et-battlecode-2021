@@ -27,6 +27,8 @@ public class Robot {
 	 * centers will cycle through all known nonfriendly locations, indicating whether they beieve it to be neutral or enemy
 	 * any raker can report an HQ location.
 	 */
+	public static final boolean DEBUG = true;
+
 	RobotController rc;
 	MapLocation home;
 	int lastMoveTurn = 0;
@@ -64,7 +66,7 @@ public class Robot {
 	public void run() {
 		while(true) {
 			try {
-			rc.setIndicatorDot(home, 255, 255, 255);
+			if (DEBUG) rc.setIndicatorDot(home, 255, 255, 255);
 			turn();
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -103,7 +105,7 @@ public class Robot {
 	}
 	public void moveToward(MapLocation l) throws GameActionException {
 		if(rc.getCooldownTurns()>1) return;
-		rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
+		if (DEBUG) rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
 		if(rc.getLocation().equals(l)) return;
 		if(rc.getLocation().isAdjacentTo(l)) {
 			Direction d = rc.getLocation().directionTo(l);
@@ -211,7 +213,7 @@ public class Robot {
 			}
 		}
 		if(rakerRound < RAKER_ROUNDS) {
-			rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
+			if (DEBUG) rc.setIndicatorLine(rc.getLocation(), raker, 0, 255, 0);
 			return;
 		}
 	}
@@ -235,7 +237,7 @@ public class Robot {
 		if(nonfriendlyHQ == null) return;
 		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENENMY_HQ : Robot.NEUTRAL_HQ));
 		if(nonfriendlyHQ != null)
-			rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
+			if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
 	public void recieveNonfriendlyHQ(int f) throws GameActionException {
 		if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;

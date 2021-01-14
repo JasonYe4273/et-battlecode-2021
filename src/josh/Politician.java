@@ -24,9 +24,11 @@ public class Politician extends Robot {
 		if(rc.canGetFlag(homeID))
 			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
 		//remove old enemyHQs
-		for(int i=0;i<nonfriendlyHQs.length;i++) {
-			if(nonfriendlyHQs[i]!=null) {
-				rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+		if (DEBUG) {
+			for(int i=0;i<nonfriendlyHQs.length;i++) {
+				if(nonfriendlyHQs[i]!=null) {
+					rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+				}
 			}
 		}
 		if(rc.getConviction() <= 10)
@@ -65,13 +67,14 @@ public class Politician extends Robot {
 			return false;
 		if(rc.canSenseLocation(nonfriendlyHQ) && rc.senseRobotAtLocation(nonfriendlyHQ).team!=rc.getTeam())
 			return true;
-		rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
+		if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
 		boolean yes = true;
 		for(RobotInfo r:nearby) {
 			if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicanMask)>0 && r.conviction > 300 && r.location.distanceSquaredTo(nonfriendlyHQ) < rc.getLocation().distanceSquaredTo(nonfriendlyHQ)) {
 				//System.out.println(r.location);
-				rc.setIndicatorDot(r.location, 255, 0, 255);
+				if (DEBUG) rc.setIndicatorDot(r.location, 255, 0, 255);
 				yes = false;
+				break;
 			}
 		}
 		return yes;
@@ -190,7 +193,7 @@ public class Politician extends Robot {
 		for(RobotInfo r:nearby) {
 			if(r.team!=rc.getTeam() || r.type != RobotType.POLITICIAN) continue;
 			if((rc.getFlag(r.ID) & politicanMask) != politicanMask) {
-				rc.setIndicatorDot(r.location, 0, 0, 255);
+				if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
 				slanderers++;
 			}
 		}
@@ -282,7 +285,7 @@ public class Politician extends Robot {
 						nearestPoliticanToRaker = d2;
 					}
 					if(d2 < rc.getLocation().distanceSquaredTo(raker))
-						rc.setIndicatorDot(r.location, 255, 0, 0);
+						if (DEBUG) rc.setIndicatorDot(r.location, 255, 0, 0);
 				}
 			}
 		}
