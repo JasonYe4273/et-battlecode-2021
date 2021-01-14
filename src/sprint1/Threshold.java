@@ -1,4 +1,4 @@
-package josh2;
+package josh;
 public final class Threshold {
 	public static final int slandererThreshold(int inf) {
 		switch(inf) {
