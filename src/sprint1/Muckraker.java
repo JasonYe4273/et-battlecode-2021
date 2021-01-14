@@ -1,4 +1,4 @@
-package josh;
+package sprint1;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;

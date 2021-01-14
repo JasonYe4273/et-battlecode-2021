@@ -1,4 +1,4 @@
-package josh;
+package sprint1;
 
 import java.util.HashSet;
 import java.util.Iterator;
