@@ -49,6 +49,11 @@ public class Robot {
 	int homeID;
 	public Robot(RobotController robot) {
 		rc = robot;
+		if (rc.getType() == RobotType.ENLIGHTENMENT_CENTER) {
+			home = rc.getLocation();
+			homeID = rc.getID();
+			return;
+		}
 		for(RobotInfo r:rc.senseNearbyRobots(3, rc.getTeam())) {
 			if(r.type==RobotType.ENLIGHTENMENT_CENTER) {
 				home = r.location;

@@ -20,6 +20,23 @@ public class Politician extends Robot {
 	}
 	public void turn() throws Exception {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
+
+		if (homeID == -1) {
+			for (RobotInfo r : nearby) {
+				if (r.team == rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER) {
+					homeID = r.ID;
+					home = r.location;
+					break;
+				}
+			}
+
+			if (homeID == -1) {
+				walling(nearby);
+				setRakerFlags();
+				return;
+			}
+		}
+
 		findRakerFlags(nearby);
 		if(rc.canGetFlag(homeID))
 			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
@@ -31,8 +48,10 @@ public class Politician extends Robot {
 				}
 			}
 		}
-		if(rc.getConviction() <= 10)
-			walling(nearby);
+		if(rc.getConviction() <= 10) {
+			if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
+			else walling(nearby);
+		}
 		else if(shouldAttackHQ(nearby))
 			attackHQ();
 		else {
@@ -111,10 +130,16 @@ public class Politician extends Robot {
 			}
 		}
 		if(nearestRakerD> 3 && nearestRaker != null) {
-			moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
+			if (homeID == -1) moveToward(nearestRaker.add(RobotPlayer.randomDirection()));
+			else moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
 		} else if(nearestRaker == null){
 			int distFromHome = Robot.taxiDistance(home, rc.getLocation());
-			if(distFromHome < wallRadius) {
+			if (distFromHome == 0) {
+				// this can only happen if homeless
+				moveInDirection(RobotPlayer.randomDirection());
+				return;
+			}
+			if(distFromHome < wallRadius || homeID == -1) {
 				Direction d = home.directionTo(rc.getLocation());
 				for(int i=0;i<4;i++) {
 					if(rc.canMove(d)) {
@@ -230,6 +255,16 @@ public class Politician extends Robot {
 		MapLocation me = rc.getLocation();
 		int x = 0;
 		int y = 0;
+		if(!home.equals(me)) {
+			if(home.distanceSquaredTo(me) > 25 && nearby.length < 20) {
+				x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+				y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
+			} else {
+				x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+				y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));	
+			}
+		}
+
 		if(nearby.length > 30)
 			nearby = rc.senseNearbyRobots(9);
 		for(RobotInfo r: nearby) {
@@ -244,16 +279,7 @@ public class Politician extends Robot {
 					//y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
 				}
 			}
-		}
-		if(!home.equals(me)) {
-			if(home.distanceSquaredTo(me) > 25) {
-				x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-				y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
-			} else {
-				x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-				y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));	
-			}
-		}
+		}		
 		//rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
 		//System.out.println("moving toward "+me.translate(x, y));
 		//this.moveInDirection(rc.getLocation().directionTo(me.translate(x, y)));
