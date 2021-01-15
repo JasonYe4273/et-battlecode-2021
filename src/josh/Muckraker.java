@@ -21,9 +21,12 @@ public class Muckraker extends Robot {
 		setRakerFlags();
 		if(rc.getRoundNum() % 4 == 0)
 			sendNonfriendlyHQ();
+
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
 		MapLocation nearestRaker = null;
+		boolean nearHome = false;
+		int enemyPStrength = 0;
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
 				if(r.team == rc.getTeam()) {
@@ -33,6 +36,8 @@ public class Muckraker extends Robot {
 							break;
 						}
 					}
+
+					nearHome = true;
 				} else {
 					nonfriendlyHQ = r.location;
 					nonfriendlyHQround = rc.getRoundNum();
@@ -45,12 +50,42 @@ public class Muckraker extends Robot {
 				else
 					moveToward(r.location);
 				return;
-			} else if(r.team == rc.getTeam() && r.type == RobotType.MUCKRAKER) {
+			} else if (r.team == rc.getTeam() && r.type == RobotType.MUCKRAKER) {
 				if(nearestRaker == null || rc.getLocation().distanceSquaredTo(nearestRaker) > rc.getLocation().distanceSquaredTo(r.location))
 					nearestRaker = r.location;
 			}
 		}
-		if(nearestRaker != null) {
+
+		if (nearHome && rc.getConviction() < 50) {
+			int polMinD = 9999;
+			MapLocation closeP = null;
+			for (RobotInfo r : nearby) {
+				if (r.team != rc.getTeam() && r.type == RobotType.POLITICIAN) {
+					int d = rc.getLocation().distanceSquaredTo(r.location);
+					if (d < polMinD) {
+						polMinD = d;
+						closeP = r.location;
+					}
+				}
+			}
+			if (closeP != null && polMinD > 2) {
+				moveToward(closeP);
+				return;
+			}
+		}
+
+		int minD = 9999;
+		for(int i=0;i<nonfriendlyHQs.length;i++) {
+			if(enemyHQs[i]) {
+				int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+				if (d < minD) {
+					minD = d;
+					target = nonfriendlyHQs[i];
+				}
+			}
+		}
+
+		if((target == null || rc.canSenseLocation(target)) && nearestRaker != null && rc.getConviction() < 50) {
 			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
 			target = null;
 			return;

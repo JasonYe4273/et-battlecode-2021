@@ -46,15 +46,19 @@ public class Center extends Robot {
 				}	
 			}
 		}
+		boolean neutralHQ = false;
 		boolean enemyHQ = false;
 		for(int i=0;i<10;i++) {
 			if(nonfriendlyHQs[i]!=null) {
-				enemyHQ = true;
+				if (enemyHQs[i]) enemyHQ = true;
+				else neutralHQ = true;
 				break;
 			}
 		}
+
 		if(rc.getInfluence() > 500 && enemyHQ) {
-			build(RobotType.POLITICIAN, 400);
+			if (Math.random() < 0.2) build(RobotType.MUCKRAKER, 400);
+			else build(RobotType.POLITICIAN, 400);
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
 			lastRakerRound = rc.getRoundNum();
@@ -71,7 +75,7 @@ public class Center extends Robot {
 		int income =  rc.getInfluence() - lastInf;
 		if(enemyPStrength + enemyRStrength > myPStrength + 20) {
 			build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength + enemyRStrength - myPStrength ));
-		} else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<250) && (income < 60 || politicians > 11)) {
+		} else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || politicians > 11)) {
 			build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
 		} else {
 			build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
