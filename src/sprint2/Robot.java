@@ -19,6 +19,7 @@ public class Robot {
 	 *  1-14 location
 	 *  15 1 if mine
 	 *  16 1 if enemy, 0 if neutral
+   *  17-20 strength of HQ / 64
 	 *  sent by rakers and by HQ
 	 */
 	
@@ -35,7 +36,8 @@ public class Robot {
 
 	MapLocation nonfriendlyHQ = null; //this robot's locally detected nonfriendly HQ
 	int nonfriendlyHQround = 0; //when such a nonfriendly HQ was last seen
-	MapLocation[] nonfriendlyHQs = new MapLocation [10]; //list of all nonfriendlyHQs broadcast by the our HQ
+	MapLocation[] nonfriendlyHQs = new MapLocation [10]; //list of all nonfriendlyHQs broadcast by our HQ
+	int[] nonfriendlyHQstrengths = new int [10]; //list of all nonfriendlyHQs strengths (divided by 64) broadcast by our HQ
 	boolean[] enemyHQs = new boolean[10]; //whether each HQ in the above list is neutral or enemy
 	int[] nonfriendlyHQrounds = new int[10]; //when we last heard about each HQ in the above list
 	MapLocation raker;
@@ -45,7 +47,7 @@ public class Robot {
 	public static final int FRIENDLY_HQ = 0x4000;
 	public static final int ENEMY_HQ = 0x8000;
 	public static final int NEUTRAL_HQ = 0;
-	public int politicanMask = 0x080000;
+	public int politicianMask = 0x080000;
 	int homeID;
 	public Robot(RobotController robot) {
 		rc = robot;
@@ -227,12 +229,14 @@ public class Robot {
 			//System.out.println("rakerRound = "+rakerRound);
 		if(rakerRound > RAKER_ROUNDS) {
 			if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
-				rc.setFlag(0 | politicanMask);
+				rc.setFlag(0 | politicianMask);
 			return;
 		}
-		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
+    if (raker == null) return;
+		rc.setFlag(0x100000 | politicianMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
 	boolean isEnemyHQ;
+  int nonfriendlyHQStrength;
 	public void sendNonfriendlyHQ() throws GameActionException {
 		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
 			nonfriendlyHQ = null;
@@ -240,13 +244,15 @@ public class Robot {
 				rc.setFlag(0);
 		}
 		if(nonfriendlyHQ == null) return;
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ));
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
+        | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
 		if(nonfriendlyHQ != null)
 			if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
-	public void recieveNonfriendlyHQ(int f) throws GameActionException {
+	public void receiveNonfriendlyHQ(int f) throws GameActionException {
 		if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
 		MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
+    System.out.println(l);
 		int empty = -1;
 		for(int i=0;i<nonfriendlyHQs.length;i++) {
 			if(l.equals(nonfriendlyHQs[i])) {
@@ -267,6 +273,7 @@ public class Robot {
 		nonfriendlyHQs[empty] = l;
 		enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
 		nonfriendlyHQrounds[empty] = rc.getRoundNum();
+    nonfriendlyHQstrengths[empty] = (f&0x0f0000) >> 10;
 	}
 	public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
 		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);

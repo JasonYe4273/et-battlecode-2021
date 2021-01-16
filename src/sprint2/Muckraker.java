@@ -17,7 +17,7 @@ public class Muckraker extends Robot {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
 		if(rc.canGetFlag(homeID))
-			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
+			super.receiveNonfriendlyHQ(rc.getFlag(homeID));
 		setRakerFlags();
 		if(rc.getRoundNum() % 4 == 0)
 			sendNonfriendlyHQ();
@@ -42,6 +42,7 @@ public class Muckraker extends Robot {
 					nonfriendlyHQ = r.location;
 					nonfriendlyHQround = rc.getRoundNum();
 					isEnemyHQ = (r.team == rc.getTeam().opponent());
+          nonfriendlyHQStrength = r.influence;
 				}
 			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {

@@ -17,7 +17,7 @@ public class Slanderer extends Politician {
 			if(rc.onTheMap(home.add(d)))
 				homeAdjLimit++;
 		}
-		politicanMask = 0;
+		politicianMask = 0;
 		patrolRadius = 1;
 	}
 
