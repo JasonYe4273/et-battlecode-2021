@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,8 +56,8 @@ public class Center extends Robot {
 			}
 		}
 
-		if(rc.getInfluence() > 500 && enemyHQ) {
-			if (Math.random() < 0.2) build(RobotType.MUCKRAKER, 400);
+		if(rc.getInfluence() > 500 && (enemyHQ || neutralHQ)) {
+			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, 400);
 			else build(RobotType.POLITICIAN, 400);
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
@@ -153,7 +153,7 @@ public class Center extends Robot {
 		}
 		MapLocation l = nonfriendlyHQs[hqIndex];
 		if(l!=null) {
-			int a = enemyHQs[hqIndex]? Robot.ENENMY_HQ : Robot.NEUTRAL_HQ;
+			int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
 			rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
 		} else {
 			rc.setFlag(0);

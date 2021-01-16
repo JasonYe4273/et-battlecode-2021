@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -43,7 +43,7 @@ public class Robot {
 	public static final int RAKER_ROUNDS = 12;
 	public static final int NONFRIENDLY_HQ = 0x200000;
 	public static final int FRIENDLY_HQ = 0x4000;
-	public static final int ENENMY_HQ = 0x8000;
+	public static final int ENEMY_HQ = 0x8000;
 	public static final int NEUTRAL_HQ = 0;
 	public int politicanMask = 0x080000;
 	int homeID;
@@ -240,7 +240,7 @@ public class Robot {
 				rc.setFlag(0);
 		}
 		if(nonfriendlyHQ == null) return;
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENENMY_HQ : Robot.NEUTRAL_HQ));
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ));
 		if(nonfriendlyHQ != null)
 			if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
@@ -253,7 +253,7 @@ public class Robot {
 				if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
 					nonfriendlyHQs[i] = null;
 				else {
-					enemyHQs[i] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+					enemyHQs[i] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
 					nonfriendlyHQrounds[i] = rc.getRoundNum();
 				}
 				return;
@@ -265,7 +265,7 @@ public class Robot {
 		if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) return; //its a friendly one, we don't need it
 		//now we need to store it in a new empty location
 		nonfriendlyHQs[empty] = l;
-		enemyHQs[empty] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+		enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
 		nonfriendlyHQrounds[empty] = rc.getRoundNum();
 	}
 	public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {

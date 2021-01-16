@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 import battlecode.common.*;
 
 /*
