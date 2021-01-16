@@ -230,6 +230,7 @@ public class Robot {
 				rc.setFlag(0 | politicanMask);
 			return;
 		}
+    if (raker == null) return;
 		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
 	boolean isEnemyHQ;
