@@ -86,7 +86,7 @@ public class Muckraker extends Robot {
 			}
 		}
 
-		if((target == null || rc.canSenseLocation(target)) && nearestRaker != null && rc.getConviction() < 50) {
+		if(nearestRaker != null && rc.getConviction() < 50) {
 			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
 			target = null;
 			return;

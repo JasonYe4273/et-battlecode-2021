@@ -74,12 +74,14 @@ public class Center extends Robot {
       if (neutralIndex != -1 && rc.getInfluence() > neutralStrength + 100 + 64 + 10) {
         build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
         builtPoliticianToKillNeutral[neutralIndex] = true;
+        return;
       }
     }
 
 		if(rc.getInfluence() > 500 && (enemyHQ || neutralHQ)) {
 			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, 400);
 			else build(RobotType.POLITICIAN, 400);
+      return;
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
 			lastRakerRound = rc.getRoundNum();
@@ -148,7 +150,6 @@ public class Center extends Robot {
 			if(rc.canGetFlag(id)) {
 				int f = rc.getFlag(id);
 				super.receiveNonfriendlyHQ(f);
-        System.out.println(f);
 			} else {
 				it.remove();
 			}

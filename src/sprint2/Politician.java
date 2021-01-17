@@ -52,9 +52,12 @@ public class Politician extends Robot {
 			if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
 			else walling(nearby);
 		}
-		else if(shouldAttackHQ(nearby))
+		else if(shouldAttackHQ(nearby)) {
+      System.out.println("attacking HQ");
 			attackHQ();
+    }
 		else {
+      System.out.println("not attacking HQ");
 			checkEmpower(nearby);
 			movement(nearby);
 		}
@@ -87,13 +90,15 @@ public class Politician extends Robot {
         }
 			}
 		}
+    System.out.println(nonfriendlyHQ);
     // see if you can sense something closer than reported
-    for (RobotInfo r : rc.senseNearbyRobots()) {
+    for (RobotInfo r : nearby) {
       if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()
           && (nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))) {
         nonfriendlyHQ = r.location;
         nonfriendlyHQStrength = r.influence;
         nonfriendlyHQIsEnemy = (r.team == rc.getTeam().opponent());
+        System.out.println("Saw nearby HQ, using that instead of what was read from flags");
       }
     }
 		if(nonfriendlyHQ == null)
@@ -104,7 +109,7 @@ public class Politician extends Robot {
 			int pow = (int)(rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0) - 10);
 			RobotInfo e = rc.senseRobotAtLocation(nonfriendlyHQ);
 			for(RobotInfo r:nearby) {
-				if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && (rc.getFlag(r.ID)&politicianMask)>0 && r.conviction > 300) {
+				if(r.team == rc.getTeam() && r.type == RobotType.POLITICIAN && r.conviction > 300) {
 					pow += r.conviction * rc.getEmpowerFactor(rc.getTeam(), 0) - 10;
 				}
 			}

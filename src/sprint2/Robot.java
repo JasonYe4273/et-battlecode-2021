@@ -120,8 +120,76 @@ public class Robot {
 				rc.move(d);
 			return;
 		}
-		Direction d = rc.getLocation().directionTo(l);
-		moveInDirection(d);
+    if (Clock.getBytecodesLeft() < 12000) {
+      Direction d = rc.getLocation().directionTo(l);
+      moveInDirection(d);
+    } else {
+      System.out.println(l);
+      System.out.println(Clock.getBytecodesLeft());
+      // try to do more intelligent navigation within a 7x7 square centered at the current unit
+      // TODO: Make this better and more bytecode efficient
+      double [][] passabilities = new double [7][7]; // actually inverse passabilities (cost of moving to the square)
+      double [][] distancesToTarget = new double [7][7];
+      boolean [][] unoccupiedLocs = new boolean[7][7];
+      // initialize arrays
+      MapLocation currentLoc = rc.getLocation();
+      for (int i = -3; i <= 3; i ++) {
+        for (int j = -3; j <= 3; j ++) {
+          MapLocation newLoc = currentLoc.translate(i, j);
+          if (!rc.onTheMap(newLoc)) {
+            passabilities[i+3][j+3] = Double.MAX_VALUE;
+            distancesToTarget[i+3][j+3] = Double.MAX_VALUE;
+            unoccupiedLocs[i+3][j+3] = false;
+          } else {
+            passabilities[i+3][j+3] = 1.0 / rc.sensePassability(newLoc);
+            distancesToTarget[i+3][j+3] = Math.max(Math.abs(newLoc.x - l.x), Math.abs(newLoc.y - l.y)) * 100;
+            unoccupiedLocs[i+3][j+3] = true;
+          }
+        }
+      }
+      // add in all nearby robots to their locations
+      for (RobotInfo r : rc.senseNearbyRobots()) {
+        MapLocation robotLoc = r.location;
+        if (-3 <= robotLoc.x - currentLoc.x && robotLoc.x - currentLoc.x <= 3 
+            && -3 <= robotLoc.y - currentLoc.y && robotLoc.y - currentLoc.y <= 3)
+          unoccupiedLocs[robotLoc.x - currentLoc.x + 3][robotLoc.y - currentLoc.y + 3] = false;
+      }
+      System.out.println(Clock.getBytecodesLeft());
+      int maxIterations = 2;
+      for (int counter = 0; counter < maxIterations; counter ++) {
+        for (int i = 1; i < 5; i ++) {
+          for (int j = 1; j < 5; j ++) {
+            // check all the edges to see if we can relax in either direction
+            // horizontal edge (-)
+            if (unoccupiedLocs[i+1][j] && distancesToTarget[i][j] - distancesToTarget[i+1][j] > passabilities[i+1][j]) distancesToTarget[i][j] = distancesToTarget[i+1][j] + passabilities[i+1][j];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i+1][j] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i+1][j] = distancesToTarget[i][j] + passabilities[i][j];
+            // vertical edge (|)
+            if (unoccupiedLocs[i][j+1] && distancesToTarget[i][j] - distancesToTarget[i][j+1] > passabilities[i][j+1]) distancesToTarget[i][j] = distancesToTarget[i][j+1] + passabilities[i][j+1];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i][j+1] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i][j+1] = distancesToTarget[i][j] + passabilities[i][j];
+            // diagonal edge (/)
+            if (unoccupiedLocs[i+1][j+1] && distancesToTarget[i][j] - distancesToTarget[i+1][j+1] > passabilities[i+1][j+1]) distancesToTarget[i][j] = distancesToTarget[i+1][j+1] + passabilities[i+1][j+1];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i+1][j+1] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i+1][j+1] = distancesToTarget[i][j] + passabilities[i][j];
+            // diagonal edge (\)
+            if (unoccupiedLocs[i+1][j] && distancesToTarget[i][j+1] - distancesToTarget[i+1][j] > passabilities[i+1][j]) distancesToTarget[i][j+1] = distancesToTarget[i+1][j] + passabilities[i+1][j];
+            if (unoccupiedLocs[i][j+1] && distancesToTarget[i+1][j] - distancesToTarget[i][j+1] > passabilities[i][j+1]) distancesToTarget[i+1][j] = distancesToTarget[i][j+1] + passabilities[i][j+1];
+          }
+        }
+      }
+      // move to adjacent location with the nearest cost
+      double closestNeighbor = Double.MAX_VALUE;
+      Direction bestDir = null;
+      if (unoccupiedLocs[2][4] && distancesToTarget[2][4] < closestNeighbor) { closestNeighbor = distancesToTarget[2][4]; bestDir = Direction.NORTHWEST; }
+      if (unoccupiedLocs[2][3] && distancesToTarget[2][3] < closestNeighbor) { closestNeighbor = distancesToTarget[2][3]; bestDir = Direction.WEST; }
+      if (unoccupiedLocs[2][2] && distancesToTarget[2][2] < closestNeighbor) { closestNeighbor = distancesToTarget[2][2]; bestDir = Direction.SOUTHWEST; }
+      if (unoccupiedLocs[3][2] && distancesToTarget[3][2] < closestNeighbor) { closestNeighbor = distancesToTarget[3][2]; bestDir = Direction.SOUTH; }
+      if (unoccupiedLocs[4][2] && distancesToTarget[4][2] < closestNeighbor) { closestNeighbor = distancesToTarget[4][2]; bestDir = Direction.SOUTHEAST; }
+      if (unoccupiedLocs[4][3] && distancesToTarget[4][3] < closestNeighbor) { closestNeighbor = distancesToTarget[4][3]; bestDir = Direction.EAST; }
+      if (unoccupiedLocs[4][4] && distancesToTarget[4][4] < closestNeighbor) { closestNeighbor = distancesToTarget[4][4]; bestDir = Direction.NORTHEAST; }
+      if (unoccupiedLocs[3][4] && distancesToTarget[3][4] < closestNeighbor) { closestNeighbor = distancesToTarget[3][4]; bestDir = Direction.NORTH; }
+      if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
+      System.out.println(closestNeighbor);
+      System.out.println(Clock.getBytecodesLeft());
+    }
 	}
 	public static int locToFlag(MapLocation to) {
 		return (to.x&0x7f)<< 7 | (to.y&0x7f);
@@ -252,7 +320,6 @@ public class Robot {
 	public void receiveNonfriendlyHQ(int f) throws GameActionException {
 		if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
 		MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
-    System.out.println(l);
 		int empty = -1;
 		for(int i=0;i<nonfriendlyHQs.length;i++) {
 			if(l.equals(nonfriendlyHQs[i])) {
