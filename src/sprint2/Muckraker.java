@@ -59,7 +59,6 @@ public class Muckraker extends Robot {
 			}
 		}
     if (slandererLoc != null) {
-      System.out.println("Found enemy slanderer; moving toward them");
       moveToward(slandererLoc);
       return;
     }

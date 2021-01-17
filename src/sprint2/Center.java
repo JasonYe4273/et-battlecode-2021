@@ -17,6 +17,7 @@ public class Center extends Robot {
   // only build one politician to kill each neutral, this keeps track of this
   boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
 	public void turn() throws Exception {
+    System.out.println(rc.getEmpowerFactor(rc.getTeam(), 0));
 		readNonfriendlyHQFlag();
 		//if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
@@ -79,12 +80,12 @@ public class Center extends Robot {
     }
 
     if (!neutralHQ && rc.getInfluence() > 1000 && Math.random() < 0.10) {
-      build(RobotType.MUCKRAKER, 400);
+      build(RobotType.MUCKRAKER, Math.max(400, rc.getInfluence() / 100));
       return;
     }
 		if(rc.getInfluence() > 500 && (enemyHQ || neutralHQ)) {
-			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, 400);
-			else build(RobotType.POLITICIAN, 400);
+			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, Math.max(400, rc.getInfluence() / 100));
+			else build(RobotType.POLITICIAN, Math.max(400, rc.getInfluence() / 100));
       return;
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)

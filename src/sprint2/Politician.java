@@ -48,6 +48,17 @@ public class Politician extends Robot {
 				}
 			}
 		}
+    // if empower factor > 5, politicians should consider suiciding into their own base
+    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && rc.getConviction() > 150) {
+      int distToHQ = -1;
+      for (RobotInfo r : nearby) 
+        if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
+          distToHQ = r.location.distanceSquaredTo(rc.getLocation());
+      if (distToHQ != -1) {
+        int numUnits = rc.senseNearbyRobots(distToHQ).length;
+        if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
+      }
+    }
     if (rc.getConviction() >= 200) {
       huntBeefyMuckrakers(nearby);
     }
@@ -56,11 +67,9 @@ public class Politician extends Robot {
 			else walling(nearby);
 		}
 		else if(shouldAttackHQ(nearby)) {
-      System.out.println("attacking HQ");
 			attackHQ();
     }
 		else {
-      System.out.println("not attacking HQ");
 			checkEmpower(nearby);
 			movement(nearby);
 		}
@@ -93,7 +102,6 @@ public class Politician extends Robot {
         }
 			}
 		}
-    System.out.println(nonfriendlyHQ);
     // see if you can sense something closer than reported
     for (RobotInfo r : nearby) {
       if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()
@@ -101,7 +109,6 @@ public class Politician extends Robot {
         nonfriendlyHQ = r.location;
         nonfriendlyHQStrength = r.influence;
         nonfriendlyHQIsEnemy = (r.team == rc.getTeam().opponent());
-        System.out.println("Saw nearby HQ, using that instead of what was read from flags");
       }
     }
 		if(nonfriendlyHQ == null)

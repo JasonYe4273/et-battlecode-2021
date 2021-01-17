@@ -124,8 +124,6 @@ public class Robot {
       Direction d = rc.getLocation().directionTo(l);
       moveInDirection(d);
     } else {
-      System.out.println(l);
-      System.out.println(Clock.getBytecodesLeft());
       // try to do more intelligent navigation within a 7x7 square centered at the current unit
       // TODO: Make this better and more bytecode efficient (probably just replace with Dijkstra)
       double [][] passabilities = new double [7][7]; // actually inverse passabilities (cost of moving to the square)
@@ -154,7 +152,6 @@ public class Robot {
             && -3 <= robotLoc.y - currentLoc.y && robotLoc.y - currentLoc.y <= 3)
           unoccupiedLocs[robotLoc.x - currentLoc.x + 3][robotLoc.y - currentLoc.y + 3] = false;
       }
-      System.out.println(Clock.getBytecodesLeft());
       int maxIterations = 2;
       for (int counter = 0; counter < maxIterations; counter ++) {
         for (int i = 1; i < 5; i ++) {
@@ -187,8 +184,6 @@ public class Robot {
       if (unoccupiedLocs[4][4] && distancesToTarget[4][4] < closestNeighbor) { closestNeighbor = distancesToTarget[4][4]; bestDir = Direction.NORTHEAST; }
       if (unoccupiedLocs[3][4] && distancesToTarget[3][4] < closestNeighbor) { closestNeighbor = distancesToTarget[3][4]; bestDir = Direction.NORTH; }
       if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
-      System.out.println(closestNeighbor);
-      System.out.println(Clock.getBytecodesLeft());
     }
 	}
 	public static int locToFlag(MapLocation to) {
