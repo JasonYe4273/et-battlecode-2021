@@ -17,7 +17,6 @@ public class Center extends Robot {
   // only build one politician to kill each neutral, this keeps track of this
   boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
 	public void turn() throws Exception {
-    System.out.println(rc.getEmpowerFactor(rc.getTeam(), 0));
 		readNonfriendlyHQFlag();
 		//if(rc.getRoundNum() > 1000) rc.resign();
 		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);

@@ -48,7 +48,7 @@ public class Politician extends Robot {
 				}
 			}
 		}
-    // if empower factor > 5, politicians should consider suiciding into their own base
+    // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
     if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && rc.getConviction() > 150) {
       int distToHQ = -1;
       for (RobotInfo r : nearby) 
