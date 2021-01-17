@@ -49,7 +49,7 @@ public class Politician extends Robot {
 			}
 		}
     // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
-    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && rc.getConviction() > 150) {
+    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && (rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) > 1000) {
       int distToHQ = -1;
       for (RobotInfo r : nearby) 
         if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
@@ -59,10 +59,18 @@ public class Politician extends Robot {
         if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
       }
     }
+    // if a beefy enemy is attacking a nearby weak base, then run home and defend it
+    if (home != null && rc.canSenseLocation(home)) {
+      int homeInfluence = rc.senseRobotAtLocation(home).influence;
+      for (RobotInfo r : nearby) {
+        if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
+          moveToward(home);
+      }
+    }
     if (rc.getConviction() >= 200) {
       huntBeefyMuckrakers(nearby);
     }
-		if(rc.getConviction() <= 10) {
+    if(rc.getConviction() <= 10) {
 			if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
 			else walling(nearby);
 		}
@@ -140,8 +148,19 @@ public class Politician extends Robot {
 	}
 	public void attackHQ() throws GameActionException {
 		int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQ);
-		if(d < 3 && rc.canEmpower(d))
+		if(d < 2 && rc.canEmpower(d))
 			rc.empower(d);
+		if(d < 3 && rc.canEmpower(d)) {
+      // First priority: empower if no other units nearby
+      if (rc.senseNearbyRobots(2).length == 1)
+  			rc.empower(d);
+      // Second priority: Move to one of the squares in a cardinal direction from HQ
+      Direction dirToHQ = rc.getLocation().directionTo(nonfriendlyHQ);
+      if (rc.canMove(dirToHQ.rotateRight())) rc.move(dirToHQ.rotateRight());
+      else if (rc.canMove(dirToHQ.rotateLeft())) rc.move(dirToHQ.rotateLeft());
+      // otherwise just empower anyway
+      else rc.empower(d);
+    }
 		this.moveToward(nonfriendlyHQ);
 	}
 	public void walling(RobotInfo[] nearby) throws GameActionException {

@@ -19,7 +19,12 @@ public class Center extends Robot {
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
 		//if(rc.getRoundNum() > 1000) rc.resign();
-		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) {
+      if (rc.getRoundNum() < 1000) rc.bid(rc.getInfluence()/100+1);
+      else if (rc.getRoundNum() < 1200) rc.bid(rc.getInfluence()/50+1);
+      else if (rc.getRoundNum() < 1350) rc.bid(rc.getInfluence()/30+1);
+      else rc.bid(rc.getInfluence()/20+1);
+    }
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 40) {
 			build(RobotType.MUCKRAKER, 1);
