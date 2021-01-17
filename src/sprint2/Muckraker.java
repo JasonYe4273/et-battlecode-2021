@@ -27,6 +27,7 @@ public class Muckraker extends Robot {
 		MapLocation nearestRaker = null;
 		boolean nearHome = false;
 		int enemyPStrength = 0;
+    MapLocation slandererLoc = null;
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
 				if(r.team == rc.getTeam()) {
@@ -46,16 +47,23 @@ public class Muckraker extends Robot {
 				}
 			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
-				if(rc.canExpose(r.location))
+				if(rc.canExpose(r.location)) {
 					rc.expose(r.location);
+          return;
+        }
 				else
-					moveToward(r.location);
-				return;
+					slandererLoc = r.location;
 			} else if (r.team == rc.getTeam() && r.type == RobotType.MUCKRAKER) {
 				if(nearestRaker == null || rc.getLocation().distanceSquaredTo(nearestRaker) > rc.getLocation().distanceSquaredTo(r.location))
 					nearestRaker = r.location;
 			}
 		}
+    if (slandererLoc != null) {
+      System.out.println("Found enemy slanderer; moving toward them");
+      moveToward(slandererLoc);
+      return;
+    }
+   
 
 		if (nearHome && rc.getConviction() < 50) {
 			int polMinD = 9999;

@@ -48,6 +48,9 @@ public class Politician extends Robot {
 				}
 			}
 		}
+    if (rc.getConviction() >= 200) {
+      huntBeefyMuckrakers(nearby);
+    }
 		if(rc.getConviction() <= 10) {
 			if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
 			else walling(nearby);
@@ -171,6 +174,27 @@ public class Politician extends Robot {
 			}
 		}
 	}
+
+  // special method to hunt down and attack rakers with > 100 influence
+  // (Should this be conviction or influence?)
+  public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
+    MapLocation nearbyBigRaker = null;
+    for (RobotInfo r : nearby) {
+      if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.influence > 100) {
+        nearbyBigRaker = r.location;
+        break;
+      }
+    }
+    if (nearbyBigRaker == null) return;
+    // move next to it
+    if (rc.getLocation().distanceSquaredTo(nearbyBigRaker) > 2) {
+      this.moveToward(nearbyBigRaker);
+    } else {
+      // maybe make sure there aren't other things that would absorb damage?
+      rc.empower(rc.getLocation().distanceSquaredTo(nearbyBigRaker));
+    }
+  }
+
 	/*
 	 * empower conditions:
 	 * a double kill

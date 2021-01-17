@@ -127,7 +127,7 @@ public class Robot {
       System.out.println(l);
       System.out.println(Clock.getBytecodesLeft());
       // try to do more intelligent navigation within a 7x7 square centered at the current unit
-      // TODO: Make this better and more bytecode efficient
+      // TODO: Make this better and more bytecode efficient (probably just replace with Dijkstra)
       double [][] passabilities = new double [7][7]; // actually inverse passabilities (cost of moving to the square)
       double [][] distancesToTarget = new double [7][7];
       boolean [][] unoccupiedLocs = new boolean[7][7];

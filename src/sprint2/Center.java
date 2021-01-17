@@ -78,6 +78,10 @@ public class Center extends Robot {
       }
     }
 
+    if (!neutralHQ && rc.getInfluence() > 1000 && Math.random() < 0.10) {
+      build(RobotType.MUCKRAKER, 400);
+      return;
+    }
 		if(rc.getInfluence() > 500 && (enemyHQ || neutralHQ)) {
 			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, 400);
 			else build(RobotType.POLITICIAN, 400);
