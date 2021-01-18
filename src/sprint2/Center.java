@@ -81,10 +81,6 @@ public class Center extends Robot {
           }
         }
 
-        if (!neutralHQ && inf > 1000 && Math.random() < 0.10) {
-          build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
-          return;
-        }
         if(inf > 500 && (enemyHQ || neutralHQ)) {
             if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
@@ -105,7 +101,7 @@ public class Center extends Robot {
         int income =  rc.getInfluence() - lastInf;
         if(enemyPStrength + enemyRStrength > myPStrength + 20) {
             build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength + enemyRStrength - myPStrength ));
-        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || politicians > 11)) {
+        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || politicians > 10)) {
             build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
         } else {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
