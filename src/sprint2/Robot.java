@@ -31,7 +31,7 @@ public class Robot {
 	public static final boolean DEBUG = true;
 
 	RobotController rc;
-	MapLocation home;
+	MapLocation home = null;
 	int lastMoveTurn = 0;
 
 	MapLocation nonfriendlyHQ = null; //this robot's locally detected nonfriendly HQ

@@ -30,7 +30,7 @@ public class Politician extends Robot {
 				}
 			}
 
-			if (homeID == -1) {
+			if (homeID == -1 && (rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0)) < 50) {
 				walling(nearby);
 				setRakerFlags();
 				return;
@@ -38,7 +38,7 @@ public class Politician extends Robot {
 		}
 
 		findRakerFlags(nearby);
-		if(rc.canGetFlag(homeID))
+		if(homeID != -1 && rc.canGetFlag(homeID))
 			super.receiveNonfriendlyHQ(rc.getFlag(homeID));
 		//remove old enemyHQs
 		if (DEBUG) {
@@ -61,10 +61,13 @@ public class Politician extends Robot {
     }
     // if a beefy enemy is attacking a nearby weak base, then run home and defend it
     if (home != null && rc.canSenseLocation(home)) {
-      int homeInfluence = rc.senseRobotAtLocation(home).influence;
-      for (RobotInfo r : nearby) {
-        if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
-          moveToward(home);
+      RobotInfo homeRobot = rc.senseRobotAtLocation(home);
+      if (homeRobot != null) {
+        int homeInfluence = homeRobot.influence;
+        for (RobotInfo r : nearby) {
+          if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
+            moveToward(home);
+        }
       }
     }
     if (rc.getConviction() >= 200) {
@@ -217,7 +220,8 @@ public class Politician extends Robot {
       this.moveToward(nearbyBigRaker);
     } else {
       // maybe make sure there aren't other things that would absorb damage?
-      rc.empower(rc.getLocation().distanceSquaredTo(nearbyBigRaker));
+      int empowerRadius = rc.getLocation().distanceSquaredTo(nearbyBigRaker);
+      if (rc.canEmpower(empowerRadius)) rc.empower(empowerRadius);
     }
   }
 
@@ -230,7 +234,7 @@ public class Politician extends Robot {
 	 */
 	public void checkEmpower(RobotInfo[] nearby) throws GameActionException {
 		if(rc.getCooldownTurns() >= 1) return;
-		if(rc.getConviction() <= 10) return;
+		if(rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0) <= 10) return;
 		int[] unitsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
 		int[] killsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
 		RobotInfo[] nearerby = rc.senseNearbyRobots(RobotType.POLITICIAN.actionRadiusSquared);

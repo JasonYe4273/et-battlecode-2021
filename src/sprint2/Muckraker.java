@@ -27,7 +27,9 @@ public class Muckraker extends Robot {
 		MapLocation nearestRaker = null;
 		boolean nearHome = false;
 		int enemyPStrength = 0;
-    MapLocation slandererLoc = null;
+    MapLocation slandererLoc = null; // closest one to move toward
+    MapLocation bestSlanderer = null; // best one to expose
+    int highestInfluence = 0; // influence of highest slanderer
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
 				if(r.team == rc.getTeam()) {
@@ -47,9 +49,9 @@ public class Muckraker extends Robot {
 				}
 			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
-				if(rc.canExpose(r.location)) {
-					rc.expose(r.location);
-          return;
+				if(rc.canExpose(r.location) && r.influence > highestInfluence ) {
+          highestInfluence = r.influence;
+          bestSlanderer = r.location;
         }
 				else
 					slandererLoc = r.location;
@@ -58,6 +60,10 @@ public class Muckraker extends Robot {
 					nearestRaker = r.location;
 			}
 		}
+    if (bestSlanderer != null) {
+      rc.expose(bestSlanderer);
+      return;
+    }
     if (slandererLoc != null) {
       moveToward(slandererLoc);
       return;
