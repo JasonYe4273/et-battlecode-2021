@@ -193,8 +193,6 @@ public class Politician extends Robot {
 				maxKills = killsAtDist[i];
 			}
 		}
-		if(rc.getID()==12180)
-			System.out.println(Arrays.toString(killsAtDist));
 		if(maxKills >= 2) {
 			rc.empower(maxKillD);
 			return;
