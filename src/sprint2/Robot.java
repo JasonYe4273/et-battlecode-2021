@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -19,6 +19,7 @@ public class Robot {
 	 *  1-14 location
 	 *  15 1 if mine
 	 *  16 1 if enemy, 0 if neutral
+   *  17-20 strength of HQ / 64
 	 *  sent by rakers and by HQ
 	 */
 	
@@ -30,12 +31,13 @@ public class Robot {
 	public static final boolean DEBUG = true;
 
 	RobotController rc;
-	MapLocation home;
+	MapLocation home = null;
 	int lastMoveTurn = 0;
 
 	MapLocation nonfriendlyHQ = null; //this robot's locally detected nonfriendly HQ
 	int nonfriendlyHQround = 0; //when such a nonfriendly HQ was last seen
-	MapLocation[] nonfriendlyHQs = new MapLocation [10]; //list of all nonfriendlyHQs broadcast by the our HQ
+	MapLocation[] nonfriendlyHQs = new MapLocation [10]; //list of all nonfriendlyHQs broadcast by our HQ
+	int[] nonfriendlyHQstrengths = new int [10]; //list of all nonfriendlyHQs strengths (divided by 64) broadcast by our HQ
 	boolean[] enemyHQs = new boolean[10]; //whether each HQ in the above list is neutral or enemy
 	int[] nonfriendlyHQrounds = new int[10]; //when we last heard about each HQ in the above list
 	MapLocation raker;
@@ -43,9 +45,9 @@ public class Robot {
 	public static final int RAKER_ROUNDS = 12;
 	public static final int NONFRIENDLY_HQ = 0x200000;
 	public static final int FRIENDLY_HQ = 0x4000;
-	public static final int ENENMY_HQ = 0x8000;
+	public static final int ENEMY_HQ = 0x8000;
 	public static final int NEUTRAL_HQ = 0;
-	public int politicanMask = 0x080000;
+	public int politicianMask = 0x080000;
 	int homeID;
 	public Robot(RobotController robot) {
 		rc = robot;
@@ -118,8 +120,71 @@ public class Robot {
 				rc.move(d);
 			return;
 		}
-		Direction d = rc.getLocation().directionTo(l);
-		moveInDirection(d);
+    if (Clock.getBytecodesLeft() < 12000) {
+      Direction d = rc.getLocation().directionTo(l);
+      moveInDirection(d);
+    } else {
+      // try to do more intelligent navigation within a 7x7 square centered at the current unit
+      // TODO: Make this better and more bytecode efficient (probably just replace with Dijkstra)
+      double [][] passabilities = new double [7][7]; // actually inverse passabilities (cost of moving to the square)
+      double [][] distancesToTarget = new double [7][7];
+      boolean [][] unoccupiedLocs = new boolean[7][7];
+      // initialize arrays
+      MapLocation currentLoc = rc.getLocation();
+      for (int i = -3; i <= 3; i ++) {
+        for (int j = -3; j <= 3; j ++) {
+          MapLocation newLoc = currentLoc.translate(i, j);
+          if (!rc.onTheMap(newLoc)) {
+            passabilities[i+3][j+3] = Double.MAX_VALUE;
+            distancesToTarget[i+3][j+3] = Double.MAX_VALUE;
+            unoccupiedLocs[i+3][j+3] = false;
+          } else {
+            passabilities[i+3][j+3] = 1.0 / rc.sensePassability(newLoc);
+            distancesToTarget[i+3][j+3] = Math.max(Math.abs(newLoc.x - l.x), Math.abs(newLoc.y - l.y)) * 100;
+            unoccupiedLocs[i+3][j+3] = true;
+          }
+        }
+      }
+      // add in all nearby robots to their locations
+      for (RobotInfo r : rc.senseNearbyRobots()) {
+        MapLocation robotLoc = r.location;
+        if (-3 <= robotLoc.x - currentLoc.x && robotLoc.x - currentLoc.x <= 3 
+            && -3 <= robotLoc.y - currentLoc.y && robotLoc.y - currentLoc.y <= 3)
+          unoccupiedLocs[robotLoc.x - currentLoc.x + 3][robotLoc.y - currentLoc.y + 3] = false;
+      }
+      int maxIterations = 2;
+      for (int counter = 0; counter < maxIterations; counter ++) {
+        for (int i = 1; i < 5; i ++) {
+          for (int j = 1; j < 5; j ++) {
+            // check all the edges to see if we can relax in either direction
+            // horizontal edge (-)
+            if (unoccupiedLocs[i+1][j] && distancesToTarget[i][j] - distancesToTarget[i+1][j] > passabilities[i+1][j]) distancesToTarget[i][j] = distancesToTarget[i+1][j] + passabilities[i+1][j];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i+1][j] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i+1][j] = distancesToTarget[i][j] + passabilities[i][j];
+            // vertical edge (|)
+            if (unoccupiedLocs[i][j+1] && distancesToTarget[i][j] - distancesToTarget[i][j+1] > passabilities[i][j+1]) distancesToTarget[i][j] = distancesToTarget[i][j+1] + passabilities[i][j+1];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i][j+1] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i][j+1] = distancesToTarget[i][j] + passabilities[i][j];
+            // diagonal edge (/)
+            if (unoccupiedLocs[i+1][j+1] && distancesToTarget[i][j] - distancesToTarget[i+1][j+1] > passabilities[i+1][j+1]) distancesToTarget[i][j] = distancesToTarget[i+1][j+1] + passabilities[i+1][j+1];
+            if (unoccupiedLocs[i][j] && distancesToTarget[i+1][j+1] - distancesToTarget[i][j] > passabilities[i][j]) distancesToTarget[i+1][j+1] = distancesToTarget[i][j] + passabilities[i][j];
+            // diagonal edge (\)
+            if (unoccupiedLocs[i+1][j] && distancesToTarget[i][j+1] - distancesToTarget[i+1][j] > passabilities[i+1][j]) distancesToTarget[i][j+1] = distancesToTarget[i+1][j] + passabilities[i+1][j];
+            if (unoccupiedLocs[i][j+1] && distancesToTarget[i+1][j] - distancesToTarget[i][j+1] > passabilities[i][j+1]) distancesToTarget[i+1][j] = distancesToTarget[i][j+1] + passabilities[i][j+1];
+          }
+        }
+      }
+      // move to adjacent location with the nearest cost
+      double closestNeighbor = Double.MAX_VALUE;
+      Direction bestDir = null;
+      if (unoccupiedLocs[2][4] && distancesToTarget[2][4] < closestNeighbor) { closestNeighbor = distancesToTarget[2][4]; bestDir = Direction.NORTHWEST; }
+      if (unoccupiedLocs[2][3] && distancesToTarget[2][3] < closestNeighbor) { closestNeighbor = distancesToTarget[2][3]; bestDir = Direction.WEST; }
+      if (unoccupiedLocs[2][2] && distancesToTarget[2][2] < closestNeighbor) { closestNeighbor = distancesToTarget[2][2]; bestDir = Direction.SOUTHWEST; }
+      if (unoccupiedLocs[3][2] && distancesToTarget[3][2] < closestNeighbor) { closestNeighbor = distancesToTarget[3][2]; bestDir = Direction.SOUTH; }
+      if (unoccupiedLocs[4][2] && distancesToTarget[4][2] < closestNeighbor) { closestNeighbor = distancesToTarget[4][2]; bestDir = Direction.SOUTHEAST; }
+      if (unoccupiedLocs[4][3] && distancesToTarget[4][3] < closestNeighbor) { closestNeighbor = distancesToTarget[4][3]; bestDir = Direction.EAST; }
+      if (unoccupiedLocs[4][4] && distancesToTarget[4][4] < closestNeighbor) { closestNeighbor = distancesToTarget[4][4]; bestDir = Direction.NORTHEAST; }
+      if (unoccupiedLocs[3][4] && distancesToTarget[3][4] < closestNeighbor) { closestNeighbor = distancesToTarget[3][4]; bestDir = Direction.NORTH; }
+      if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
+    }
 	}
 	public static int locToFlag(MapLocation to) {
 		return (to.x&0x7f)<< 7 | (to.y&0x7f);
@@ -227,13 +292,14 @@ public class Robot {
 			//System.out.println("rakerRound = "+rakerRound);
 		if(rakerRound > RAKER_ROUNDS) {
 			if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
-				rc.setFlag(0 | politicanMask);
+				rc.setFlag(0 | politicianMask);
 			return;
 		}
     if (raker == null) return;
-		rc.setFlag(0x100000 | politicanMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
+		rc.setFlag(0x100000 | politicianMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
 	}
 	boolean isEnemyHQ;
+  int nonfriendlyHQStrength;
 	public void sendNonfriendlyHQ() throws GameActionException {
 		if(rc.getRoundNum() > nonfriendlyHQround + 50) {
 			nonfriendlyHQ = null;
@@ -241,11 +307,12 @@ public class Robot {
 				rc.setFlag(0);
 		}
 		if(nonfriendlyHQ == null) return;
-		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENENMY_HQ : Robot.NEUTRAL_HQ));
+		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
+        | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
 		if(nonfriendlyHQ != null)
 			if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
 	}
-	public void recieveNonfriendlyHQ(int f) throws GameActionException {
+	public void receiveNonfriendlyHQ(int f) throws GameActionException {
 		if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
 		MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
 		int empty = -1;
@@ -254,7 +321,7 @@ public class Robot {
 				if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
 					nonfriendlyHQs[i] = null;
 				else {
-					enemyHQs[i] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+					enemyHQs[i] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
 					nonfriendlyHQrounds[i] = rc.getRoundNum();
 				}
 				return;
@@ -266,8 +333,9 @@ public class Robot {
 		if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) return; //its a friendly one, we don't need it
 		//now we need to store it in a new empty location
 		nonfriendlyHQs[empty] = l;
-		enemyHQs[empty] = (f&Robot.ENENMY_HQ)==Robot.ENENMY_HQ;
+		enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
 		nonfriendlyHQrounds[empty] = rc.getRoundNum();
+    nonfriendlyHQstrengths[empty] = (f&0x0f0000) >> 10;
 	}
 	public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
 		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);

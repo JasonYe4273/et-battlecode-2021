@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -17,7 +17,7 @@ public class Muckraker extends Robot {
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
 		if(rc.canGetFlag(homeID))
-			super.recieveNonfriendlyHQ(rc.getFlag(homeID));
+			super.receiveNonfriendlyHQ(rc.getFlag(homeID));
 		setRakerFlags();
 		if(rc.getRoundNum() % 4 == 0)
 			sendNonfriendlyHQ();
@@ -27,6 +27,9 @@ public class Muckraker extends Robot {
 		MapLocation nearestRaker = null;
 		boolean nearHome = false;
 		int enemyPStrength = 0;
+    MapLocation slandererLoc = null; // closest one to move toward
+    MapLocation bestSlanderer = null; // best one to expose
+    int highestInfluence = 0; // influence of highest slanderer
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
 				if(r.team == rc.getTeam()) {
@@ -42,19 +45,30 @@ public class Muckraker extends Robot {
 					nonfriendlyHQ = r.location;
 					nonfriendlyHQround = rc.getRoundNum();
 					isEnemyHQ = (r.team == rc.getTeam().opponent());
+          nonfriendlyHQStrength = r.influence;
 				}
 			}
 			if(r.team != rc.getTeam() && r.type == RobotType.SLANDERER) {
-				if(rc.canExpose(r.location))
-					rc.expose(r.location);
+				if(rc.canExpose(r.location) && r.influence > highestInfluence ) {
+          highestInfluence = r.influence;
+          bestSlanderer = r.location;
+        }
 				else
-					moveToward(r.location);
-				return;
+					slandererLoc = r.location;
 			} else if (r.team == rc.getTeam() && r.type == RobotType.MUCKRAKER) {
 				if(nearestRaker == null || rc.getLocation().distanceSquaredTo(nearestRaker) > rc.getLocation().distanceSquaredTo(r.location))
 					nearestRaker = r.location;
 			}
 		}
+    if (bestSlanderer != null) {
+      rc.expose(bestSlanderer);
+      return;
+    }
+    if (slandererLoc != null) {
+      moveToward(slandererLoc);
+      return;
+    }
+   
 
 		if (nearHome && rc.getConviction() < 50) {
 			int polMinD = 9999;
@@ -85,7 +99,7 @@ public class Muckraker extends Robot {
 			}
 		}
 
-		if((target == null || rc.canSenseLocation(target)) && nearestRaker != null && rc.getConviction() < 50) {
+		if(nearestRaker != null && rc.getConviction() < 50) {
 			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
 			target = null;
 			return;

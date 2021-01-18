@@ -1,4 +1,4 @@
-package josh;
+package sprint2;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,10 +14,17 @@ public class Center extends Robot {
 	int lastRakerRound = 0;
 	int rakersBuilt= 0;
 	Set<Integer> rakers = new HashSet<Integer>();
+  // only build one politician to kill each neutral, this keeps track of this
+  boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
 	public void turn() throws Exception {
 		readNonfriendlyHQFlag();
 		//if(rc.getRoundNum() > 1000) rc.resign();
-		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) rc.bid(rc.getInfluence()/100+1);
+		if(rc.getRoundNum() > 400 && rc.getInfluence() > 0) {
+      if (rc.getRoundNum() < 1000) rc.bid(rc.getInfluence()/100+1);
+      else if (rc.getRoundNum() < 1200) rc.bid(rc.getInfluence()/50+1);
+      else if (rc.getRoundNum() < 1350) rc.bid(rc.getInfluence()/30+1);
+      else rc.bid(rc.getInfluence()/20+1);
+    }
 		if(rc.getCooldownTurns() >= 1) return;
 		if(rc.getInfluence() < 40) {
 			build(RobotType.MUCKRAKER, 1);
@@ -56,9 +63,34 @@ public class Center extends Robot {
 			}
 		}
 
-		if(rc.getInfluence() > 500 && enemyHQ) {
-			if (Math.random() < 0.2) build(RobotType.MUCKRAKER, 400);
-			else build(RobotType.POLITICIAN, 400);
+    // if we are attacking a neutral HQ, find the influence of the nearest neutral
+    if (neutralHQ) {
+      int neutralStrength = -1;
+      int distanceToClosestNeutral = Integer.MAX_VALUE;
+      int neutralIndex = -1;
+      for (int i = 0; i < 10; i ++) {
+        if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
+          distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+          neutralStrength = nonfriendlyHQstrengths[i];
+          neutralIndex = i;
+        }
+      }
+      // spawn a politician of sufficient strength to take over this neutral HQ
+      if (neutralIndex != -1 && rc.getInfluence() > neutralStrength + 100 + 64 + 10) {
+        build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
+        builtPoliticianToKillNeutral[neutralIndex] = true;
+        return;
+      }
+    }
+
+    if (!neutralHQ && rc.getInfluence() > 1000 && Math.random() < 0.10) {
+      build(RobotType.MUCKRAKER, Math.max(400, rc.getInfluence() / 100));
+      return;
+    }
+		if(rc.getInfluence() > 500 && (enemyHQ || neutralHQ)) {
+			if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, Math.max(400, rc.getInfluence() / 100));
+			else build(RobotType.POLITICIAN, Math.max(400, rc.getInfluence() / 100));
+      return;
 		}
 		if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
 			lastRakerRound = rc.getRoundNum();
@@ -126,7 +158,7 @@ public class Center extends Robot {
 			int id = it.next();
 			if(rc.canGetFlag(id)) {
 				int f = rc.getFlag(id);
-				super.recieveNonfriendlyHQ(f);
+				super.receiveNonfriendlyHQ(f);
 			} else {
 				it.remove();
 			}
@@ -153,7 +185,7 @@ public class Center extends Robot {
 		}
 		MapLocation l = nonfriendlyHQs[hqIndex];
 		if(l!=null) {
-			int a = enemyHQs[hqIndex]? Robot.ENENMY_HQ : Robot.NEUTRAL_HQ;
+			int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
 			rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
 		} else {
 			rc.setFlag(0);
