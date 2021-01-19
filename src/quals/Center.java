@@ -121,30 +121,6 @@ public class Center extends Robot {
         }
         
     }
-    /*
-    public void readNonfriendlyHQFlag() throws GameActionException {
-        Iterator<Integer> i = rakers.iterator();
-        //System.out.println("num rakers " +rakers.size());
-        while(i.hasNext()) {
-            int id = i.next();
-            if(rc.canGetFlag(id)) {
-                int f = rc.getFlag(id);
-                if((f&0xf00000) == Robot.NONFRIENDLY_HQ) {
-                    MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
-                    if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) {
-                        if(nonfriendlyHQ.equals(l))
-                            nonfriendlyHQ = null;
-                    } else {
-                        nonfriendlyHQ = l;
-                        nonfriendlyHQround = rc.getRoundNum();
-                    }
-                }
-            } else {
-                i.remove();
-            }
-        }
-        sendNonfriendlyHQ();
-    }*/
     public void readNonfriendlyHQFlag() throws GameActionException {
         Iterator<Integer> it = rakers.iterator();
         //System.out.println("num rakers " +rakers.size());
