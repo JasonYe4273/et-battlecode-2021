@@ -1,4 +1,4 @@
-package sprint2;
+package quals;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;

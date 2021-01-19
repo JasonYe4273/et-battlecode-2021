@@ -1,4 +1,4 @@
-package sprint2;
+package quals;
 public final class Threshold {
 	public static final int slandererThreshold(int inf) {
 		switch(inf) {

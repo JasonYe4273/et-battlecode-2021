@@ -1,4 +1,4 @@
-package sprint2;
+package quals;
 
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -21,6 +21,13 @@ public class Robot {
 	 *  16 1 if enemy, 0 if neutral
    *  17-20 strength of HQ / 64
 	 *  sent by rakers and by HQ
+   * 0x400000: map edge location
+   *  1-7 x-coordinate
+   *  8 0 if min, 1 if max
+   *  9 1 if being communicated, 0 if intended to just be a 0
+   *  8-16 y-coordinate
+   *  17 0 if min, 1 if max
+   *  18 if being coordinated, 0 if intended to just be a 0
 	 */
 	
 	/*
