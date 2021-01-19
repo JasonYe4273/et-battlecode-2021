@@ -48,38 +48,38 @@ public class Politician extends Robot {
 				}
 			}
 		}
-    // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
-    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && (rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) > 1000) {
-      int distToHQ = -1;
-      for (RobotInfo r : nearby) 
-        if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
-          distToHQ = r.location.distanceSquaredTo(rc.getLocation());
-      if (distToHQ != -1) {
-        int numUnits = rc.senseNearbyRobots(distToHQ).length;
-        if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
-      }
-    }
-    // if a beefy enemy is attacking a nearby weak base, then run home and defend it
-    if (home != null && rc.canSenseLocation(home)) {
-      RobotInfo homeRobot = rc.senseRobotAtLocation(home);
-      if (homeRobot != null) {
-        int homeInfluence = homeRobot.influence;
-        for (RobotInfo r : nearby) {
-          if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
-            moveToward(home);
-        }
-      }
-    }
-    if (rc.getConviction() >= 200) {
-      huntBeefyMuckrakers(nearby);
-    }
-    if(rc.getConviction() <= 10) {
-			if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
-			else walling(nearby);
-		}
-		else if(shouldAttackHQ(nearby)) {
-			attackHQ();
-    }
+	    // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
+	    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && (rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) > 1000) {
+	      int distToHQ = -1;
+	      for (RobotInfo r : nearby) 
+	        if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
+	          distToHQ = r.location.distanceSquaredTo(rc.getLocation());
+	      if (distToHQ != -1) {
+	        int numUnits = rc.senseNearbyRobots(distToHQ).length;
+	        if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
+	      }
+	    }
+	    // if a beefy enemy is attacking a nearby weak base, then run home and defend it
+	    if (home != null && rc.canSenseLocation(home)) {
+	      RobotInfo homeRobot = rc.senseRobotAtLocation(home);
+	      if (homeRobot != null) {
+	        int homeInfluence = homeRobot.influence;
+	        for (RobotInfo r : nearby) {
+	          if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
+	            moveToward(home);
+	        }
+	      }
+	    }
+	    if (rc.getConviction() >= 200) {
+	      huntBeefyMuckrakers(nearby);
+	    }
+	    if(rc.getConviction() <= 10) {
+				if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
+				else walling(nearby);
+			}
+			else if(shouldAttackHQ(nearby)) {
+				attackHQ();
+	    }
 		else {
 			checkEmpower(nearby);
 			movement(nearby);
