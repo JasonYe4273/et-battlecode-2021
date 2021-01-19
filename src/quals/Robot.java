@@ -21,11 +21,11 @@ public class Robot {
 	 *  16 1 if enemy, 0 if neutral
    *  17-20 strength of HQ / 64
 	 *  sent by rakers and by HQ
-   * 0x400000: map edge location
+   * 0x300000: map edge location
    *  1-7 x-coordinate
    *  8 0 if min, 1 if max
    *  9 1 if being communicated, 0 if intended to just be a 0
-   *  8-16 y-coordinate
+   *  10-16 y-coordinate
    *  17 0 if min, 1 if max
    *  18 if being coordinated, 0 if intended to just be a 0
 	 */
@@ -50,6 +50,7 @@ public class Robot {
 	MapLocation raker;
 	int rakerRound;
 	public static final int RAKER_ROUNDS = 12;
+  public static final int EDGES = 0x300000;
 	public static final int NONFRIENDLY_HQ = 0x200000;
 	public static final int FRIENDLY_HQ = 0x4000;
 	public static final int ENEMY_HQ = 0x8000;
@@ -366,7 +367,7 @@ public class Robot {
 			}
 		}
 		//this location is not present in the nonfriendlyHQs array
-		if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) return; //its a friendly one, we don't need it
+		if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) return; //it's a friendly one, we don't need it
 		//now we need to store it in a new empty location
 		nonfriendlyHQs[empty] = l;
 		enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
@@ -376,4 +377,40 @@ public class Robot {
 	public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
 		rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
 	}
+
+  // map edge detection code
+  // NOTE: These are 1 off the actual map (i.e. mapXmin is 1 smaller than the minimum x on the map)
+  int mapXmin = -1; 
+  int mapXmax = 999999;
+  int mapYmin = -1; 
+  int mapYmax = 999999;
+  public void sendEdges() throws GameActionException {
+    int flag = Robot.EDGES;
+    if (mapXmin != -1 && (mapXmax == 999999 || Math.random() < 0.5)) flag |= (mapXmin % 128 + 0x100);
+    else if (mapXmax != 999999) flag |= (mapXmax % 128 + 0x180);
+    if (mapYmin != -1 && (mapYmax == 999999 || Math.random() < 0.5)) flag |= ((mapYmin % 128 + 0x100) << 9);
+    else if (mapYmax != 999999) flag |= ((mapYmax % 128 + 0x180) << 9);
+    if (rc.canSetFlag(flag)) rc.setFlag(flag);
+  }
+  public void receiveEdges(int f) throws GameActionException {
+    MapLocation myLoc = rc.getLocation();
+    if((f&0xF00000) != Robot.EDGES) return;
+    if ((f&0x180) == 0x100) {
+      mapXmin = (f&0x7f) + ((myLoc.x >> 7) << 7);
+      if (mapXmin >= myLoc.x) mapXmin -= 128;
+    }
+    else if ((f&0x180) == 0x180) {
+      mapXmax = (f&0x7f) + ((myLoc.x >> 7) << 7);
+      if (mapXmax <= myLoc.x) mapXmax += 128;
+    }
+    f >>= 9; // does this do what I think it does?
+    if ((f&0x180) == 0x100) {
+      mapYmin = (f&0x7f) + ((myLoc.y >> 7) << 7);
+      if (mapYmin >= myLoc.y) mapYmin -= 128;
+    }
+    else if ((f&0x180) == 0x180) {
+      mapYmax = (f&0x7f) + ((myLoc.y >> 7) << 7);
+      if (mapYmax <= myLoc.y) mapYmax += 128;
+    }
+  }
 }

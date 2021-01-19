@@ -14,13 +14,16 @@ public class Muckraker extends Robot {
 	MapLocation target = null;
 	public void turn() throws GameActionException {
 		checkEdges();
+    //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
 		if(rc.canGetFlag(homeID))
 			super.receiveNonfriendlyHQ(rc.getFlag(homeID));
 		setRakerFlags();
-		if(rc.getRoundNum() % 4 == 0)
+		if(rc.getRoundNum() % 4 == 0) {
 			sendNonfriendlyHQ();
+      if ((rc.getFlag(rc.getID()) & 0xF00000) != Robot.NONFRIENDLY_HQ) sendEdges();
+    }
 
 		//move away from nearby friendly rakers
 		//charge enemy slanderers
@@ -110,10 +113,6 @@ public class Muckraker extends Robot {
 		}
 		moveToward(target);
 	}
-	int mapXmin = -1;
-	int mapXmax = 999999;
-	int mapYmin = -1;
-	int mapYmax = 999999;
 	public void checkEdges() throws GameActionException {
 		if(mapXmin == -1) {
 			for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
