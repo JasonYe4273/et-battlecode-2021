@@ -131,7 +131,14 @@ public class Politician extends Robot {
                     pow += r.conviction * rc.getEmpowerFactor(rc.getTeam(), 0) - 10;
                 }
             }
-            return e != null && e.team != rc.getTeam() && e.influence < pow;
+            if( e != null && e.team != rc.getTeam() ) {
+                if (e.influence < pow) {
+                    // We don't yet have strength to attack HQ but we should at least move toward it
+                    moveToward(e.location);
+                    return false;
+                }
+                else return true;
+            } else return false;
         }
         return true;
         /*if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 128, 0, 255);
@@ -340,7 +347,7 @@ public class Politician extends Robot {
             nearby = rc.senseNearbyRobots(9);
         for(RobotInfo r: nearby) {
             if(r.type == RobotType.POLITICIAN) {
-                if((rc.getFlag(r.ID) & politicianMask)==politicianMask) {
+                if(rc.canGetFlag(r.ID) && (rc.getFlag(r.ID) & politicianMask)==politicianMask) {
                     //politician
                     x -= 1000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
                     y -= 1000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
