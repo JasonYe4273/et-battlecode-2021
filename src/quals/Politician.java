@@ -258,19 +258,19 @@ public class Politician extends Robot {
         int numberFriendlyP = 0;
         int numFriendlyS = 0;
         for(RobotInfo r:nearby) {
+            int d = r.location.distanceSquaredTo(rc.getLocation());
             if(r.team==rc.getTeam()) {
                 if(r.type == RobotType.POLITICIAN) {
                     if(rc.canGetFlag(r.ID) && (rc.getFlag(r.ID) & politicianMask) != politicianMask) {
                         if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
                         numFriendlyS++;
-                    } else numberFriendlyP++;
+                    } else if (d <= RobotType.POLITICIAN.actionRadiusSquared) numberFriendlyP++;
                 }
 
                 // Don't care about empowering own non-EC units
                 if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
             }
             int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
-            int d = r.location.distanceSquaredTo(rc.getLocation());
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
@@ -309,21 +309,31 @@ public class Politician extends Robot {
         }
         if(adjToEnemyCenter && numberFriendlyP > 5)
             rc.empower(1);
+
+        int best = 0;
+        int bestD = 0;
         int maxKills = 0;
         int maxKillD = 0;
-        for(int i=1;i<10;i++) {
-            if(killsAtDist[i] > maxKills) {
-                maxKillD = i;
+        for (int i = 1; i < 10; i++) {
+            int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - r.conviction;
+            if (metric > best) {
+                best = metric;
+                bestD = i;
+            }
+
+            if (killsAtDist[i] > maxKills) {
                 maxKills = killsAtDist[i];
+                maxKillD = i;
             }
         }
-        if(maxKills >= 2) {
-            rc.empower(maxKillD);
+
+        if(best > 0 && rc.canEmpower(bestD)) {
+            rc.empower(bestD);
             return;
         }
         //System.out.println("numFriendlyS = "+numFriendlyS);
         if(numFriendlyS >= 1 || numberFriendlyP > 8) {
-            if(maxKills == 1 && maxKillD < 9)
+            if(maxKills == 1 && rc.canEmpower(maxKillD))
                 rc.empower(maxKillD);
         }
     }
