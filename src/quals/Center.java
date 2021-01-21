@@ -64,22 +64,22 @@ public class Center extends Robot {
 
         // if we are attacking a neutral HQ, find the influence of the nearest neutral
         if (neutralHQ) {
-          int neutralStrength = -1;
-          int distanceToClosestNeutral = Integer.MAX_VALUE;
-          int neutralIndex = -1;
-          for (int i = 0; i < 10; i ++) {
-            if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
-              distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
-              neutralStrength = nonfriendlyHQstrengths[i];
-              neutralIndex = i;
+            int neutralStrength = -1;
+            int distanceToClosestNeutral = Integer.MAX_VALUE;
+            int neutralIndex = -1;
+            for (int i = 0; i < 10; i ++) {
+                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
+                    distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+                    neutralStrength = nonfriendlyHQstrengths[i];
+                    neutralIndex = i;
+                }
             }
-          }
-          // spawn a politician of sufficient strength to take over this neutral HQ
-          if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
-            build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
-            builtPoliticianToKillNeutral[neutralIndex] = true;
-            return;
-          }
+            // spawn a politician of sufficient strength to take over this neutral HQ
+            if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
+                build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
+                builtPoliticianToKillNeutral[neutralIndex] = true;
+                return;
+            }
         }
 
         if(inf > 500 && (enemyHQ || neutralHQ)) {
@@ -164,23 +164,23 @@ public class Center extends Robot {
         } else {
             // see if we can guess an enemy HQ location from map edges
             if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {
-              rc.setFlag(0);
-              // communicate this partial knowledge
-              sendEdges();
+                rc.setFlag(0);
+                // communicate this partial knowledge
+                sendEdges();
             }
             else {
-              System.out.println("No enemy HQ found; computing one from map edges");
-              MapLocation myLoc = rc.getLocation();
-              int oppX, oppY;
-              oppX = mapXmin + mapXmax - myLoc.x;
-              oppY = mapYmin + mapYmax - myLoc.y;
-              nonfriendlyHQs[0] = new MapLocation(oppX, oppY);
-              nonfriendlyHQs[1] = new MapLocation(myLoc.x, oppY);
-              nonfriendlyHQs[2] = new MapLocation(oppX, myLoc.y);
-              // putatively claim these are enemies rather than neutrals
-              enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
-              nonfriendlyHQrounds[0] = nonfriendlyHQrounds[1] = nonfriendlyHQrounds[2] = rc.getRoundNum();
-              rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
+                System.out.println("No enemy HQ found; computing one from map edges");
+                MapLocation myLoc = rc.getLocation();
+                int oppX, oppY;
+                oppX = mapXmin + mapXmax - myLoc.x;
+                oppY = mapYmin + mapYmax - myLoc.y;
+                nonfriendlyHQs[0] = new MapLocation(oppX, oppY);
+                nonfriendlyHQs[1] = new MapLocation(myLoc.x, oppY);
+                nonfriendlyHQs[2] = new MapLocation(oppX, myLoc.y);
+                // putatively claim these are enemies rather than neutrals
+                enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
+                nonfriendlyHQrounds[0] = nonfriendlyHQrounds[1] = nonfriendlyHQrounds[2] = rc.getRoundNum();
+                rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
             }
         }
     }
