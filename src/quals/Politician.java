@@ -315,7 +315,7 @@ public class Politician extends Robot {
         int maxKills = 0;
         int maxKillD = 0;
         for (int i = 1; i < 10; i++) {
-            int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - r.conviction;
+            int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - rc.getConviction();
             if (metric > best) {
                 best = metric;
                 bestD = i;
