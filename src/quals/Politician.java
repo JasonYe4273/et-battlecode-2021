@@ -11,6 +11,8 @@ import battlecode.common.RobotType;
 import java.util.Arrays;
 
 public class Politician extends Robot {
+
+	//TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
     /*
      * politicians want to stay slightly away from other politicians and your base, but near slanderers
      * 
@@ -55,7 +57,6 @@ public class Politician extends Robot {
             for (RobotInfo r : nearby) 
                 if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
                     distToHQ = r.location.distanceSquaredTo(rc.getLocation());
-
             if (distToHQ != -1) {
                 int numUnits = rc.senseNearbyRobots(distToHQ).length;
                 if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
@@ -215,7 +216,7 @@ public class Politician extends Robot {
   public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
     MapLocation nearbyBigRaker = null;
     for (RobotInfo r : nearby) {
-        if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.influence > 100) {
+        if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 70) {
             nearbyBigRaker = r.location;
             break;
         }
