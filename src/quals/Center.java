@@ -17,7 +17,7 @@ public class Center extends Robot {
     // only build one politician to kill each neutral, this keeps track of this
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
     public void turn() throws Exception {
-        //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+        System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         readNonfriendlyHQFlag();
         RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
@@ -157,14 +157,19 @@ public class Center extends Robot {
                 break;
         }
         MapLocation l = nonfriendlyHQs[hqIndex];
+        System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
             rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
         } else {
             // see if we can guess an enemy HQ location from map edges
-            if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999)
+            if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {
               rc.setFlag(0);
+              // communicate this partial knowledge
+              sendEdges();
+            }
             else {
+              System.out.println("No enemy HQ found; computing one from map edges");
               MapLocation myLoc = rc.getLocation();
               int oppX, oppY;
               oppX = mapXmin + mapXmax - myLoc.x;
@@ -174,6 +179,7 @@ public class Center extends Robot {
               nonfriendlyHQs[2] = new MapLocation(oppX, myLoc.y);
               // putatively claim these are enemies rather than neutrals
               enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
+              nonfriendlyHQrounds[0] = nonfriendlyHQrounds[1] = nonfriendlyHQrounds[2] = rc.getRoundNum();
               rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
             }
         }

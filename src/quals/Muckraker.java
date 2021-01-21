@@ -14,11 +14,14 @@ public class Muckraker extends Robot {
 	MapLocation target = null;
 	public void turn() throws GameActionException {
 		checkEdges();
-    //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+    System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+    System.out.println(target);
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		findRakerFlags(nearby);
-		if(rc.canGetFlag(homeID))
+		if(rc.canGetFlag(homeID)) {
 			super.receiveNonfriendlyHQ(rc.getFlag(homeID));
+      receiveEdges(rc.getFlag(homeID));
+    }
 		setRakerFlags();
 		if(rc.getRoundNum() % 4 == 0) {
 			sendNonfriendlyHQ();
@@ -33,6 +36,13 @@ public class Muckraker extends Robot {
     MapLocation slandererLoc = null; // closest one to move toward
     MapLocation bestSlanderer = null; // best one to expose
     int highestInfluence = 0; // influence of highest slanderer
+    // see if any elements of nonfriendlyHQs are null
+    for(int i=0;i<nonfriendlyHQs.length;i++) {
+      if(nonfriendlyHQs[i] != null && rc.canSenseLocation(nonfriendlyHQs[i]) && rc.senseRobotAtLocation(nonfriendlyHQs[i]) == null) {
+        super.unsendNonfriendlyHQ(nonfriendlyHQs[i]);
+      }
+    }
+
 		for(RobotInfo r:nearby) {
 			if(r.type == RobotType.ENLIGHTENMENT_CENTER) {
 				if(r.team == rc.getTeam()) {
@@ -104,7 +114,7 @@ public class Muckraker extends Robot {
 
 		if(nearestRaker != null && rc.getConviction() < 50) {
 			moveInDirection(nearestRaker.directionTo(rc.getLocation()));
-			target = null;
+			//target = null;
 			return;
 		}
 		while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {

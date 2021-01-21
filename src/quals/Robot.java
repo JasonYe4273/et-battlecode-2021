@@ -17,7 +17,7 @@ public class Robot {
 	 *  20 am i a politician or a slanderer
 	 * 0x200000: enemy/neutral HQ
 	 *  1-14 location
-	 *  15 1 if mine
+	 *  15 1 if mine or null (changed for quals)
 	 *  16 1 if enemy, 0 if neutral
    *  17-20 strength of HQ / 64
 	 *  sent by rakers and by HQ
