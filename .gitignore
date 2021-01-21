@@ -33,3 +33,6 @@ battlecode-scaffold.iws
 
 access.txt
 src/.DS_Store
+
+gradle.properties
+version.txt

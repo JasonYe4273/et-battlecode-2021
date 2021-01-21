@@ -271,7 +271,7 @@ public class Politician extends Robot {
             }
             int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
             int d = r.location.distanceSquaredTo(rc.getLocation());
-            if(r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
+            if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
                 case 1:
