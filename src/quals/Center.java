@@ -17,7 +17,7 @@ public class Center extends Robot {
     // only build one politician to kill each neutral, this keeps track of this
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
     public void turn() throws Exception {
-        //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+        System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         readNonfriendlyHQFlag();
         RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
@@ -48,7 +48,7 @@ public class Center extends Robot {
         if(rc.getRoundNum() > 400 && inf > 0) {
             if (rc.getRoundNum() < 1000) bid(inf / 100 + 1);
             else if (rc.getRoundNum() < 1200) bid(inf / 50 + 1);
-            else if (rc.getRoundNum() < 1350)bid(inf / 30 + 1);
+            else if (rc.getRoundNum() < 1350) bid(inf / 30 + 1);
             else bid(inf / 20 + 1);
         }
         if(rc.getCooldownTurns() >= 1) return;
@@ -64,22 +64,22 @@ public class Center extends Robot {
 
         // if we are attacking a neutral HQ, find the influence of the nearest neutral
         if (neutralHQ) {
-          int neutralStrength = -1;
-          int distanceToClosestNeutral = Integer.MAX_VALUE;
-          int neutralIndex = -1;
-          for (int i = 0; i < 10; i ++) {
-            if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
-              distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
-              neutralStrength = nonfriendlyHQstrengths[i];
-              neutralIndex = i;
+            int neutralStrength = -1;
+            int distanceToClosestNeutral = Integer.MAX_VALUE;
+            int neutralIndex = -1;
+            for (int i = 0; i < 10; i ++) {
+                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
+                    distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
+                    neutralStrength = nonfriendlyHQstrengths[i];
+                    neutralIndex = i;
+                }
             }
-          }
-          // spawn a politician of sufficient strength to take over this neutral HQ
-          if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
-            build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
-            builtPoliticianToKillNeutral[neutralIndex] = true;
-            return;
-          }
+            // spawn a politician of sufficient strength to take over this neutral HQ
+            if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
+                build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
+                builtPoliticianToKillNeutral[neutralIndex] = true;
+                return;
+            }
         }
 
         if(inf > 500 && (enemyHQ || neutralHQ)) {
@@ -157,24 +157,30 @@ public class Center extends Robot {
                 break;
         }
         MapLocation l = nonfriendlyHQs[hqIndex];
+        System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
             rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
         } else {
             // see if we can guess an enemy HQ location from map edges
-            if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999)
-              rc.setFlag(0);
+            if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {
+                rc.setFlag(0);
+                // communicate this partial knowledge
+                sendEdges();
+            }
             else {
-              MapLocation myLoc = rc.getLocation();
-              int oppX, oppY;
-              oppX = mapXmin + mapXmax - myLoc.x;
-              oppY = mapYmin + mapYmax - myLoc.y;
-              nonfriendlyHQs[0] = new MapLocation(oppX, oppY);
-              nonfriendlyHQs[1] = new MapLocation(myLoc.x, oppY);
-              nonfriendlyHQs[2] = new MapLocation(oppX, myLoc.y);
-              // putatively claim these are enemies rather than neutrals
-              enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
-              rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
+                System.out.println("No enemy HQ found; computing one from map edges");
+                MapLocation myLoc = rc.getLocation();
+                int oppX, oppY;
+                oppX = mapXmin + mapXmax - myLoc.x;
+                oppY = mapYmin + mapYmax - myLoc.y;
+                nonfriendlyHQs[0] = new MapLocation(oppX, oppY);
+                nonfriendlyHQs[1] = new MapLocation(myLoc.x, oppY);
+                nonfriendlyHQs[2] = new MapLocation(oppX, myLoc.y);
+                // putatively claim these are enemies rather than neutrals
+                enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
+                nonfriendlyHQrounds[0] = nonfriendlyHQrounds[1] = nonfriendlyHQrounds[2] = rc.getRoundNum();
+                rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
             }
         }
     }
@@ -187,7 +193,7 @@ public class Center extends Robot {
         if (lostVote) opponentVotes++;
         myVotes = rc.getTeamVotes();
 
-        if (myVotes >= 750 || opponentVotes - myVotes > 1501 - rc.getRoundNum()) {
+        if (myVotes > 750 || opponentVotes - myVotes > 1501 - rc.getRoundNum()) {
             attemptedVote = false;
             return;
         }
