@@ -122,24 +122,6 @@ public class Muckraker extends Robot {
         }
         moveToward(target);
     }
-    public void checkEdges() throws GameActionException {
-        if(mapXmin == -1) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
-                mapXmin = rc.getLocation().x - i;
-        }
-        if(mapXmax == 999999) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
-                mapXmax = rc.getLocation().x + i;
-        }
-        if(mapYmin == -1) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
-                mapYmin = rc.getLocation().y - i;
-        }
-        if(mapYmax == 999999) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
-                mapYmax = rc.getLocation().y + i;
-        }
-    }
     public boolean onTheMap(MapLocation l) {
         return l.x > mapXmin && l.x < mapXmax && l.y > mapYmin && l.y < mapYmax;
     }

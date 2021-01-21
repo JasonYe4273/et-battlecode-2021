@@ -15,13 +15,14 @@ public class Politician extends Robot {
      * politicians want to stay slightly away from other politicians and your base, but near slanderers
      * 
      */
-    public Politician(RobotController r) {
+    public Politician(RobotController r) throws GameActionException {
         super(r);
+        rc.setFlag(politicianMask);
     }
     public void turn() throws Exception {
         politicianMask = 0x080000; // reset to default value (in case this got changed during former life as a slanderer)
         RobotInfo[] nearby = rc.senseNearbyRobots();
-
+        checkEdges();
         if (homeID == -1) {
             for (RobotInfo r : nearby) {
                 if (r.team == rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER) {
@@ -381,7 +382,15 @@ public class Politician extends Robot {
                     //y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
                 }
             }
-        }       
+        }
+        if(mapXmin != -1)
+        	x += 1000 / (me.x - mapXmin);
+        if(mapYmin != -1)
+        	y += 1000 / (me.y - mapYmin);
+        if(mapXmax != 999999)
+        	x += 1000 / (me.x - mapXmax);
+        if(mapYmax != 999999)
+        	y += 1000 / (me.y - mapYmax);
         //rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
         //System.out.println("moving toward "+me.translate(x, y));
         //this.moveInDirection(rc.getLocation().directionTo(me.translate(x, y)));

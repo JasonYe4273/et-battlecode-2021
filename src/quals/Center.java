@@ -7,6 +7,8 @@ import java.util.Set;
 import battlecode.common.*;
 
 public class Center extends Robot {
+	//TODO: allow for reading poly flags
+	//TODO: build fewer polys when we aren't getting raker rushed.
     public Center(RobotController r) {
         super(r);
     }
