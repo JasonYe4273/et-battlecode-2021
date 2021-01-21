@@ -91,7 +91,7 @@ public class Center extends Robot {
             lastRakerRound = rc.getRoundNum();
         //System.out.println("p = "+politicians+" s="+slanderers);
         
-        if(inf < 11) {
+        if(inf < 11 || rc.getInfluence()<40) {
             build(RobotType.MUCKRAKER, 1);
             return;
         }
