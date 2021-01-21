@@ -265,6 +265,9 @@ public class Politician extends Robot {
                         numFriendlyS++;
                     } else numberFriendlyP++;
                 }
+
+                // Don't care about empowering own non-EC units
+                if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
             }
             int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
             int d = r.location.distanceSquaredTo(rc.getLocation());
