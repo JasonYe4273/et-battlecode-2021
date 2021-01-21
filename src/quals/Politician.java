@@ -19,6 +19,7 @@ public class Politician extends Robot {
         super(r);
     }
     public void turn() throws Exception {
+        politicianMask = 0x080000; // reset to default value (in case this got changed during former life as a slanderer)
         RobotInfo[] nearby = rc.senseNearbyRobots();
 
         if (homeID == -1) {
@@ -132,7 +133,7 @@ public class Politician extends Robot {
                 }
             }
             if( e != null && e.team != rc.getTeam() ) {
-                if (e.influence < pow) {
+                if (e.influence > pow) {
                     // We don't yet have strength to attack HQ but we should at least move toward it
                     moveToward(e.location);
                     return false;
@@ -307,8 +308,10 @@ public class Politician extends Robot {
                 default:
             }
         }
+        /*
         if(adjToEnemyCenter && numberFriendlyP > 5)
             rc.empower(1);
+        */
 
         int best = 0;
         int bestD = 0;
@@ -333,7 +336,7 @@ public class Politician extends Robot {
         }
         //System.out.println("numFriendlyS = "+numFriendlyS);
         if(numFriendlyS >= 1 || numberFriendlyP > 8) {
-            if(maxKills == 1 && rc.canEmpower(maxKillD))
+            if(maxKills >= 1 && rc.canEmpower(maxKillD))
                 rc.empower(maxKillD);
         }
     }
