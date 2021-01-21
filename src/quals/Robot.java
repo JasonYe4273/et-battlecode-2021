@@ -393,8 +393,8 @@ public class Robot {
     if (rc.canSetFlag(flag)) rc.setFlag(flag);
   }
   public void receiveEdges(int f) throws GameActionException {
-    MapLocation myLoc = rc.getLocation();
     if((f&0xF00000) != Robot.EDGES) return;
+    MapLocation myLoc = rc.getLocation();
     if ((f&0x180) == 0x100) {
       mapXmin = (f&0x7f) + ((myLoc.x >> 7) << 7);
       if (mapXmin >= myLoc.x) mapXmin -= 128;

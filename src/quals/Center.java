@@ -46,10 +46,10 @@ public class Center extends Robot {
 
         //if(rc.getRoundNum() > 1000) rc.resign();
         if(rc.getRoundNum() > 400 && inf > 0) {
-            if (rc.getRoundNum() < 1000) rc.bid(inf / 100 + 1);
-            else if (rc.getRoundNum() < 1200) rc.bid(inf / 50 + 1);
-            else if (rc.getRoundNum() < 1350) rc.bid(inf / 30 + 1);
-            else rc.bid(inf / 20 + 1);
+            if (rc.getRoundNum() < 1000) bid(inf / 100 + 1);
+            else if (rc.getRoundNum() < 1200) bid(inf / 50 + 1);
+            else if (rc.getRoundNum() < 1350)bid(inf / 30 + 1);
+            else bid(inf / 20 + 1);
         }
         if(rc.getCooldownTurns() >= 1) return;
         boolean neutralHQ = false;

@@ -49,6 +49,7 @@ public class Politician extends Robot {
 			}
 		}
 	    // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
+		//empowers the nearest HQ with at most 50 million influence if it would receive at least 5x this poly's conviction of damage.
 	    if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && (rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) > 1000) {
 	      int distToHQ = -1;
 	      for (RobotInfo r : nearby) 
@@ -59,7 +60,7 @@ public class Politician extends Robot {
 	        if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
 	      }
 	    }
-	    // if a beefy enemy is attacking a nearby weak base, then run home and defend it
+	    // if a beefy enemy poly is attacking a nearby weak base, then run home and defend it
 	    if (home != null && rc.canSenseLocation(home)) {
 	      RobotInfo homeRobot = rc.senseRobotAtLocation(home);
 	      if (homeRobot != null) {
@@ -74,8 +75,8 @@ public class Politician extends Robot {
 	      huntBeefyMuckrakers(nearby);
 	    }
 	    if(rc.getConviction() <= 10) {
-				if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
-				else walling(nearby);
+				if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1); //get out of the way
+				else walling(nearby); //get more in the way
 			}
 			else if(shouldAttackHQ(nearby)) {
 				attackHQ();
@@ -206,10 +207,11 @@ public class Politician extends Robot {
 
   // special method to hunt down and attack rakers with > 100 influence
   // (Should this be conviction or influence?)
+	// this should be conviction. If a raker has like 10hp left, it's not a beefy raker, no matter how much initial hp it had.
   public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
     MapLocation nearbyBigRaker = null;
     for (RobotInfo r : nearby) {
-      if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.influence > 100) {
+      if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 70) {
         nearbyBigRaker = r.location;
         break;
       }
@@ -322,6 +324,8 @@ public class Politician extends Robot {
 					nonfriendlyHQ = nonfriendlyHQs[i];
 			}
 		}
+		//half of robots should move toward enemy hqs as a means of defense. 
+		//The idea is to blow up robots when they spawn.
 		if(nonfriendlyHQ!=null && rc.getID()%2 == 0 && rc.getLocation().distanceSquaredTo(nonfriendlyHQ) > 9) {
 			moveToward(nonfriendlyHQ);
 			return;
@@ -329,6 +333,7 @@ public class Politician extends Robot {
 		MapLocation me = rc.getLocation();
 		int x = 0;
 		int y = 0;
+		//move away from base if within r2 25 of it, otherwise move closer.
 		if(!home.equals(me)) {
 			if(home.distanceSquaredTo(me) > 25 && nearby.length < 20) {
 				x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
@@ -341,6 +346,7 @@ public class Politician extends Robot {
 
 		if(nearby.length > 30)
 			nearby = rc.senseNearbyRobots(9);
+		//move away from other politicians
 		for(RobotInfo r: nearby) {
 			if(r.type == RobotType.POLITICIAN) {
 				if((rc.getFlag(r.ID) & politicianMask)==politicianMask) {
