@@ -231,9 +231,12 @@ public class Politician extends Robot {
      */
     public void checkEmpower(RobotInfo[] nearby) throws GameActionException {
         if(rc.getCooldownTurns() >= 1) return;
-        if(rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0) <= 10) return;
+
+        int damage = (int)(rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) - GameConstants.EMPOWER_TAX;
+        if(damage <= 0) return;
         int[] unitsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
         int[] killsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
+        int[] infDrainAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
         RobotInfo[] nearerby = rc.senseNearbyRobots(RobotType.POLITICIAN.actionRadiusSquared);
         for(RobotInfo r:nearerby) {
             int d = r.location.distanceSquaredTo(rc.getLocation());
@@ -244,39 +247,54 @@ public class Politician extends Robot {
         unitsAtDist[5] += unitsAtDist[4];
         unitsAtDist[8] += unitsAtDist[5];
         unitsAtDist[9] += unitsAtDist[8];
-        int damage = (int)(rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) - GameConstants.EMPOWER_TAX;
         boolean adjToEnemyCenter = false;
         int numberFriendlyP = 0;
-        for(RobotInfo r:nearerby) {
+        int numFriendlyS = 0;
+        for(RobotInfo r:nearby) {
             if(r.team==rc.getTeam()) {
-                if(r.type == RobotType.POLITICIAN)
-                    numberFriendlyP++;
-                continue;
+                if(r.type == RobotType.POLITICIAN) {
+                    if(rc.canGetFlag(r.ID) && (rc.getFlag(r.ID) & politicianMask) != politicianMask) {
+                        if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
+                        numFriendlyS++;
+                    } else numberFriendlyP++;
+                }
             }
-            int a = (r.type == RobotType.ENLIGHTENMENT_CENTER)?10:1;
+            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
             int d = r.location.distanceSquaredTo(rc.getLocation());
             if(r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
-            case 1:
-            if(r.conviction < damage/unitsAtDist[1]) 
-                killsAtDist[1]+=a;
-            case 2:
-            if(r.conviction < damage/unitsAtDist[2]) 
-                killsAtDist[2]+=a;
-            case 4:
-            if(r.conviction < damage/unitsAtDist[4]) 
-                killsAtDist[4]+=a;
-            case 5:
-            if(r.conviction < damage/unitsAtDist[5]) 
-                killsAtDist[5]+=a;
-            case 8:
-            if(r.conviction < damage/unitsAtDist[8]) 
-                killsAtDist[8]+=a;
-            case 9:
-            if(r.conviction < damage/unitsAtDist[9]) 
-                killsAtDist[9]+=a;
-            default:
+                case 1:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[1]) {
+                        killsAtDist[1] += k;
+                        infDrainAtDist[1] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[1] += (int) ((damage / unitsAtDist[1]) / r.type.convictionRatio);
+                case 2:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[2]) {
+                        killsAtDist[2] += k;
+                        infDrainAtDist[2] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[2] += (int) ((damage / unitsAtDist[2]) / r.type.convictionRatio);
+                case 4:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[4]) {
+                        killsAtDist[4] += k;
+                        infDrainAtDist[4] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[4] += (int) ((damage / unitsAtDist[4]) / r.type.convictionRatio);
+                case 5:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[5]) {
+                        killsAtDist[5] += k;
+                        infDrainAtDist[5] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[5] += (int) ((damage / unitsAtDist[5]) / r.type.convictionRatio);
+                case 8:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[8]) {
+                        killsAtDist[8] += k;
+                        infDrainAtDist[8] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[8] += (int) ((damage / unitsAtDist[8]) / r.type.convictionRatio);
+                case 9:
+                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[9]) {
+                        killsAtDist[9] += k;
+                        infDrainAtDist[9] += (int) (r.conviction / r.type.convictionRatio);
+                    } else infDrainAtDist[9] += (int) ((damage / unitsAtDist[9]) / r.type.convictionRatio);
+                default:
             }
         }
         if(adjToEnemyCenter && numberFriendlyP > 5)
@@ -289,22 +307,12 @@ public class Politician extends Robot {
                 maxKills = killsAtDist[i];
             }
         }
-        if(rc.getID()==12180)
-            System.out.println(Arrays.toString(killsAtDist));
         if(maxKills >= 2) {
             rc.empower(maxKillD);
             return;
         }
-        int slanderers = 0;
-        for(RobotInfo r:nearby) {
-            if(r.team!=rc.getTeam() || r.type != RobotType.POLITICIAN) continue;
-            if((rc.getFlag(r.ID) & politicianMask) != politicianMask) {
-                if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
-                slanderers++;
-            }
-        }
-        //System.out.println("slanderers = "+slanderers);
-        if(slanderers >= 1 || numberFriendlyP > 8) {
+        //System.out.println("numFriendlyS = "+numFriendlyS);
+        if(numFriendlyS >= 1 || numberFriendlyP > 8) {
             if(maxKills == 1 && maxKillD < 9)
                 rc.empower(maxKillD);
         }
