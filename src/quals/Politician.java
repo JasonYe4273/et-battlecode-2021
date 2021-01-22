@@ -84,14 +84,22 @@ public class Politician extends Robot {
             checkEmpower(nearby);
             movement(nearby);
         }
+        if(rc.canGetFlag(homeID)) {
+            super.receiveNonfriendlyHQ(rc.getFlag(homeID));
+            receiveEdges(rc.getFlag(homeID));
+        }
         setRakerFlags();
-        /*
+        if(rc.getRoundNum() % 4 == 0) {
+            sendNonfriendlyHQ();
+            if ((rc.getFlag(rc.getID()) & 0xF00000) != Robot.NONFRIENDLY_HQ) sendEdges();
+        }
         if(nonfriendlyHQ != null && rc.canSenseLocation(nonfriendlyHQ)) {
             RobotInfo r = rc.senseRobotAtLocation(nonfriendlyHQ);
-            if(r.team == rc.getTeam())
-                super.unsendNonfriendlyHQ();
+            if(r == null || r.team == rc.getTeam()) {
+                super.unsendNonfriendlyHQ(nonfriendlyHQ);
+                nonfriendlyHQ = null;
+            }
         }
-        */
     }
     public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
         //System.out.println("homeID = "+homeID);

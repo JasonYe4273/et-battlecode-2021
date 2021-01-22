@@ -9,7 +9,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Robot {
-	//TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
+    //TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
     /*
      * first 4 bits of flag determine type
      * 0x100000: raker

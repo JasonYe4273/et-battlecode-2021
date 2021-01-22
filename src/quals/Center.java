@@ -16,6 +16,7 @@ public class Center extends Robot {
     int lastRakerRound = 0;
     int rakersBuilt= 0;
     Set<Integer> rakers = new HashSet<Integer>();
+    Set<Integer> others = new HashSet<Integer>(); // units that aren't rakers (pols and slanderers)
     // only build one politician to kill each neutral, this keeps track of this
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
     public void turn() throws Exception {
@@ -120,14 +121,17 @@ public class Center extends Robot {
                 rc.buildRobot(t, dir, influence);
                 if(t == RobotType.MUCKRAKER)
                     rakers.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
+                else
+                    others.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
             }
         }
         
     }
     // this method now receives edges as well as non-friendly HQs
     public void readNonfriendlyHQFlag() throws GameActionException {
+        System.out.println("Starting reading: " + Clock.getBytecodesLeft());
         Iterator<Integer> it = rakers.iterator();
-        //System.out.println("num rakers " +rakers.size());
+        System.out.println("num rakers " +rakers.size());
         while(it.hasNext()) {
             int id = it.next();
             if(rc.canGetFlag(id)) {
@@ -138,6 +142,19 @@ public class Center extends Robot {
                 it.remove();
             }
         }
+        System.out.println("Read rakers: " + Clock.getBytecodesLeft());
+        it = others.iterator();
+        while(it.hasNext()) {
+            int id = it.next();
+            if(rc.canGetFlag(id)) {
+                int f = rc.getFlag(id);
+                receiveNonfriendlyHQ(f);
+                receiveEdges(f);
+            } else {
+                it.remove();
+            }
+        }
+        System.out.println("Read others: " + Clock.getBytecodesLeft());
         sendNonfriendlyHQ();
     }
     int hqIndex=0;

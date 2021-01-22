@@ -40,6 +40,8 @@ public class Muckraker extends Robot {
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(nonfriendlyHQs[i] != null && rc.canSenseLocation(nonfriendlyHQs[i]) && rc.senseRobotAtLocation(nonfriendlyHQs[i]) == null) {
                 super.unsendNonfriendlyHQ(nonfriendlyHQs[i]);
+                nonfriendlyHQs[i] = null;
+                enemyHQs[i] = false;
             }
         }
 
@@ -117,8 +119,16 @@ public class Muckraker extends Robot {
             return;
         }
         while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {
-            double angle = Math.random() * Math.PI * 2;
-            target = rc.getLocation().translate((int)(Math.cos(angle) * 30),(int)( Math.sin(angle) * 30));
+            // if target is an enemy HQ, orbit it
+            if (target != null && rc.canSenseLocation(target) && rc.senseRobotAtLocation(target) != null
+                    && rc.senseRobotAtLocation(target).type == RobotType.ENLIGHTENMENT_CENTER && rc.senseRobotAtLocation(target).team == rc.getTeam().opponent()) {
+                if (rc.getLocation().distanceSquaredTo(target) >= 9) moveInDirection(rc.getLocation().directionTo(target));
+                else moveInDirection(rc.getLocation().directionTo(target).rotateRight().rotateRight());
+                break;
+            } else {
+                double angle = Math.random() * Math.PI * 2;
+                target = rc.getLocation().translate((int)(Math.cos(angle) * 30),(int)( Math.sin(angle) * 30));
+            }
         }
         moveToward(target);
     }
