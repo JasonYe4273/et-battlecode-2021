@@ -14,8 +14,8 @@ public class Muckraker extends Robot {
     MapLocation target = null;
     public void turn() throws GameActionException {
         checkEdges();
-        System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
-        System.out.println(target);
+        //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+        //System.out.println(target);
         RobotInfo[] nearby = rc.senseNearbyRobots();
         findRakerFlags(nearby);
         if(rc.canGetFlag(homeID)) {
