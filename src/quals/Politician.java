@@ -361,8 +361,8 @@ public class Politician extends Robot {
         int y = 0;
         if(!home.equals(me)) {
             if(home.distanceSquaredTo(me) > 25 && nearby.length < 20) {
-                x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-                y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
+                //x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
+                //y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
             } else {
                 x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
                 y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));  
