@@ -18,11 +18,13 @@ public class Muckraker extends Robot {
         //System.out.println(target);
         RobotInfo[] nearby = rc.senseNearbyRobots();
         findRakerFlags(nearby);
+        readNearbyFlags(nearby);
         if(rc.canGetFlag(homeID)) {
             super.receiveNonfriendlyHQ(rc.getFlag(homeID));
             receiveEdges(rc.getFlag(homeID));
         }
         setRakerFlags();
+        System.out.println(nonfriendlyHQ + " " + nonfriendlyHQround);
         if(rc.getRoundNum() % 4 == 0) {
             sendNonfriendlyHQ();
             if ((rc.getFlag(rc.getID()) & 0xF00000) != Robot.NONFRIENDLY_HQ) sendEdges();
@@ -108,7 +110,9 @@ public class Muckraker extends Robot {
                 int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
                 if (d < minD) {
                     minD = d;
-                    target = nonfriendlyHQs[i];
+                    target = nonfriendlyHQ = nonfriendlyHQs[i];
+                    nonfriendlyHQround = nonfriendlyHQrounds[i];
+                    isEnemyHQ = true;
                 }
             }
         }

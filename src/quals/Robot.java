@@ -364,13 +364,15 @@ public class Robot {
     }
     public void receiveNonfriendlyHQ(int f) throws GameActionException {
         if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
+        //System.out.println("Receiving non-friendly HQ flag: " + f);
         MapLocation l = Robot.flagToLoc(rc.getLocation(), f);
         int empty = -1;
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(l.equals(nonfriendlyHQs[i])) {
-                if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
+                if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ) {
+                    System.out.println("Removing " + l + " from list of nonfriendly HQs");
                     nonfriendlyHQs[i] = null;
-                else {
+                } else {
                     enemyHQs[i] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
                     nonfriendlyHQrounds[i] = rc.getRoundNum();
                 }
@@ -389,6 +391,21 @@ public class Robot {
     }
     public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
         setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
+    }
+
+    // read flags of nearby units to see if any of them have found a nearby HQ
+    public void readNearbyFlags(RobotInfo [] nearby) throws GameActionException {
+        MapLocation currentLoc = rc.getLocation();
+        for (RobotInfo r : nearby) {
+            if (r.team != rc.getTeam()) continue;
+            if (!(rc.canGetFlag(r.ID))) continue;
+            int flag = rc.getFlag(r.ID);
+            if ((flag & 0xF00000) != Robot.NONFRIENDLY_HQ) continue;
+            MapLocation loc = flagToLoc(currentLoc, flag);
+            if (r.location.distanceSquaredTo(loc) < rc.getLocation().distanceSquaredTo(loc)) {
+                receiveNonfriendlyHQ(flag);
+            }
+        }
     }
 
     // map edge detection code

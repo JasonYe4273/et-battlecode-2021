@@ -82,6 +82,8 @@ public class Politician extends Robot {
             receiveEdges(rc.getFlag(homeID));
         }
         if(rc.getRoundNum() % 4 == 0) {
+            readNearbyFlags(nearby);
+            System.out.println(nonfriendlyHQ);
             sendNonfriendlyHQ();
             if ((rc.getFlag(rc.getID()) & 0xF00000) != Robot.NONFRIENDLY_HQ) sendEdges();
         }
@@ -109,6 +111,7 @@ public class Politician extends Robot {
                     nonfriendlyHQ = nonfriendlyHQs[i];
                     nonfriendlyHQStrength = nonfriendlyHQstrengths[i];
                     nonfriendlyHQIsEnemy = enemyHQs[i];
+                    nonfriendlyHQround = nonfriendlyHQrounds[i];
                 }
             }
         }

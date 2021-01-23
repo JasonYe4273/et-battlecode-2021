@@ -27,6 +27,7 @@ public class Center extends Robot {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
         readAllFlags();
+        //System.out.println(nonfriendlyHQs[9]);
         RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
         int slanderers = 0;
