@@ -132,7 +132,6 @@ public class Center extends Robot {
                 allBuilds[rc.getRoundNum()] = r;
             }
         }
-        
     }
     int rakerCount = 0;
     int polyCount = 0;
