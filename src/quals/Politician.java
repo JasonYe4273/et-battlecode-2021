@@ -53,17 +53,6 @@ public class Politician extends Robot {
                 }
             }
         }
-        // if empower factor > 5, politicians should consider empowering their own base (or an enemy base)
-        if (rc.getEmpowerFactor(rc.getTeam(), 0) > 5 && (rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) > 1000) {
-            int distToHQ = -1;
-            for (RobotInfo r : nearby) 
-                if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.influence < GameConstants.ROBOT_INFLUENCE_LIMIT/2) 
-                    distToHQ = r.location.distanceSquaredTo(rc.getLocation());
-            if (distToHQ != -1) {
-                int numUnits = rc.senseNearbyRobots(distToHQ).length;
-                if (rc.getEmpowerFactor(rc.getTeam(), 0) > (numUnits * 5) && rc.canEmpower(distToHQ)) rc.empower(distToHQ);
-            }
-        }
         // if a beefy enemy is attacking a nearby weak base, then run home and defend it
         if (home != null && rc.canSenseLocation(home)) {
             RobotInfo homeRobot = rc.senseRobotAtLocation(home);
@@ -295,7 +284,7 @@ public class Politician extends Robot {
         unitsAtDist[8] += unitsAtDist[5];
         unitsAtDist[9] += unitsAtDist[8];
         boolean adjToEnemyCenter = false;
-        int numberFriendlyP = 0;
+        int numFriendlyP = 0;
         int numFriendlyS = 0;
         for(RobotInfo r:nearby) {
             int d = r.location.distanceSquaredTo(rc.getLocation());
@@ -304,7 +293,7 @@ public class Politician extends Robot {
                     if(rc.canGetFlag(r.ID) && ((rc.getFlag(r.ID) & politicianMask) != politicianMask)) {
                         if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
                         numFriendlyS++;
-                    } else if (d <= RobotType.POLITICIAN.actionRadiusSquared) numberFriendlyP++;
+                    } else if (d <= RobotType.POLITICIAN.actionRadiusSquared) numFriendlyP++;
                 }
 
                 // Don't care about empowering own non-EC units
@@ -315,73 +304,73 @@ public class Politician extends Robot {
                 adjToEnemyCenter = true;
             switch(d) {
                 case 1:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[1]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[1]))) {
                         // Killed enemy units
                         killsAtDist[1] += k;
                         infDrainAtDist[1] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[1] += damage / unitsAtDist[1]; 
+                        infDrainAtDist[1] += damage / unitsAtDist[1];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[1] += (int) ((int) (buff * (damage / unitsAtDist[1])) / r.type.convictionRatio);
                     }
                 case 2:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[2]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[2]))) {
                         // Killed enemy units
                         killsAtDist[2] += k;
                         infDrainAtDist[2] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[2] += damage / unitsAtDist[2]; 
+                        infDrainAtDist[2] += damage / unitsAtDist[2];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[2] += (int) ((int) (buff * (damage / unitsAtDist[2])) / r.type.convictionRatio);
                     }
                 case 4:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[4]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[4]))) {
                         // Killed enemy units
                         killsAtDist[4] += k;
                         infDrainAtDist[4] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[4] += damage / unitsAtDist[4]; 
+                        infDrainAtDist[4] += damage / unitsAtDist[4];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[4] += (int) ((int) (buff * (damage / unitsAtDist[4])) / r.type.convictionRatio);
                     }
                 case 5:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[5]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[5]))) {
                         // Killed enemy units
                         killsAtDist[5] += k;
                         infDrainAtDist[5] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[5] += damage / unitsAtDist[5]; 
+                        infDrainAtDist[5] += damage / unitsAtDist[5];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[5] += (int) ((int) (buff * (damage / unitsAtDist[5])) / r.type.convictionRatio);
                     }
                 case 8:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[8]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[8]))) {
                         // Killed enemy units
                         killsAtDist[8] += k;
                         infDrainAtDist[8] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[8] += damage / unitsAtDist[8]; 
+                        infDrainAtDist[8] += damage / unitsAtDist[8];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[8] += (int) ((int) (buff * (damage / unitsAtDist[8])) / r.type.convictionRatio);
                     }
                 case 9:
-                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[9]) {
+                    if (r.team != rc.getTeam() && ((r.conviction / buff) < (damage / unitsAtDist[9]))) {
                         // Killed enemy units
                         killsAtDist[9] += k;
                         infDrainAtDist[9] += (int) (r.conviction / r.type.convictionRatio);
                     } else if (r.team == rc.getTeam()) {
                         // Friendly ECs don't get affected by buff
-                        infDrainAtDist[9] += damage / unitsAtDist[9]; 
+                        infDrainAtDist[9] += damage / unitsAtDist[9];
                     } else {
                         // Enemy non-killed units
                         infDrainAtDist[9] += (int) ((int) (buff * (damage / unitsAtDist[9])) / r.type.convictionRatio);
@@ -390,13 +379,14 @@ public class Politician extends Robot {
             }
         }
         /*
-        if(adjToEnemyCenter && numberFriendlyP > 5)
+        if(adjToEnemyCenter && numFriendlyP > 5)
             rc.empower(1);
         */
 
         int best = 0;
         int bestD = 0;
         int maxKills = 0;
+        int maxKillInfDrain = 0;
         int maxKillD = 0;
         for (int i = 1; i < 10; i++) {
             int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - rc.getConviction();
@@ -405,8 +395,9 @@ public class Politician extends Robot {
                 bestD = i;
             }
 
-            if (killsAtDist[i] > maxKills) {
+            if (killsAtDist[i] > maxKills || (killsAtDist[i] == maxKills && infDrainAtDist[i] > maxKillInfDrain)) {
                 maxKills = killsAtDist[i];
+                maxKillInfDrain = infDrainAtDist[i];
                 maxKillD = i;
             }
         }
@@ -417,9 +408,9 @@ public class Politician extends Robot {
             return;
         }
         //System.out.println("numFriendlyS = "+numFriendlyS);
-        if(numFriendlyS >= 1 || numberFriendlyP > 8) {
+        if(numFriendlyS >= 1 || numFriendlyP > 8) {
             if(maxKills >= 1 && rc.canEmpower(maxKillD)) {
-                System.out.println("Empowering to defend slanderers: " + numFriendlyS + " " + numberFriendlyP);
+                System.out.println("Empowering to defend slanderers: " + numFriendlyS + " " + numFriendlyP);
                 rc.empower(maxKillD);
             }
         }
