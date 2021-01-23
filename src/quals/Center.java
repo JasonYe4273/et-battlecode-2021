@@ -149,7 +149,7 @@ public class Center extends Robot {
     	}
     	flagsIndex = empty;
         sendNonfriendlyHQ();
-    	System.out.println((Clock.getBytecodeNum()-t0)+" bytecodes spent");
+    	//System.out.println((Clock.getBytecodeNum()-t0)+" bytecodes spent");
     	//System.out.println("robots length "+flagsIndex);
     	//System.out.println("rakers "+rakerCount);
     }
@@ -206,11 +206,11 @@ public class Center extends Robot {
         //System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
-            rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
+            setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
         } else {
             // see if we can guess an enemy HQ location from map edges
             if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {
-                rc.setFlag(0);
+                setFlag(0);
                 // communicate this partial knowledge
                 sendEdges();
             }
@@ -226,7 +226,7 @@ public class Center extends Robot {
                 // putatively claim these are enemies rather than neutrals
                 enemyHQs[0] = enemyHQs[1] = enemyHQs[2] = true;
                 nonfriendlyHQrounds[0] = nonfriendlyHQrounds[1] = nonfriendlyHQrounds[2] = rc.getRoundNum();
-                rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
+                setFlag(NONFRIENDLY_HQ | Robot.locToFlag(nonfriendlyHQs[0]) | Robot.ENEMY_HQ);
             }
         }
     }

@@ -224,6 +224,15 @@ public class Robot {
             //System.out.println("Finished navigation: " + Clock.getBytecodesLeft());
         }
     }
+
+    public boolean setFlag(int flag) throws GameActionException {
+        if (rc.canSetFlag(flag | politicianMask)) {
+            rc.setFlag(flag | politicianMask);
+            return true;
+        }
+        return false;
+    }
+
     public static int locToFlag(MapLocation to) {
         return (to.x&0x7f)<< 7 | (to.y&0x7f);
     }
@@ -331,11 +340,11 @@ public class Robot {
             //System.out.println("rakerRound = "+rakerRound);
         if(rakerRound > RAKER_ROUNDS) {
             if((rc.getFlag(rc.getID())&0xf00000)==0x100000)
-                rc.setFlag(0 | politicianMask);
+                setFlag(0);
             return;
         }
         if (raker == null) return;
-        rc.setFlag(0x100000 | politicianMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
+        setFlag(0x100000 | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
     }
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
@@ -343,10 +352,10 @@ public class Robot {
         if(rc.getRoundNum() > nonfriendlyHQround + 10) {
             nonfriendlyHQ = null;
             if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
-                rc.setFlag(0);
+                setFlag(0);
         }
         if(nonfriendlyHQ == null) return;
-        rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
+        setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
         | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
         if(nonfriendlyHQ != null)
             if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
@@ -377,7 +386,7 @@ public class Robot {
         nonfriendlyHQstrengths[empty] = (f&0x0f0000) >> 10;
     }
     public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
-        rc.setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
+        setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
     }
 
     // map edge detection code
@@ -392,7 +401,7 @@ public class Robot {
         else if (mapXmax != 999999) flag |= (mapXmax % 128 + 0x180);
         if (mapYmin != -1 && (mapYmax == 999999 || Math.random() < 0.5)) flag |= ((mapYmin % 128 + 0x100) << 9);
         else if (mapYmax != 999999) flag |= ((mapYmax % 128 + 0x180) << 9);
-        if (rc.canSetFlag(flag)) rc.setFlag(flag);
+        setFlag(flag);
     }
     public void receiveEdges(int f) throws GameActionException {
         MapLocation myLoc = rc.getLocation();

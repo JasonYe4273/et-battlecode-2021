@@ -236,7 +236,10 @@ public class Politician extends Robot {
     } else {
         // maybe make sure there aren't other things that would absorb damage?
         int empowerRadius = rc.getLocation().distanceSquaredTo(nearbyBigRaker);
-        if (rc.canEmpower(empowerRadius)) rc.empower(empowerRadius);
+        if (rc.canEmpower(empowerRadius)) {
+            System.out.println("Empowering to attack beefyraker");
+            rc.empower(empowerRadius);
+        }
     }
   }
 
@@ -273,7 +276,7 @@ public class Politician extends Robot {
             int d = r.location.distanceSquaredTo(rc.getLocation());
             if(r.team==rc.getTeam()) {
                 if(r.type == RobotType.POLITICIAN) {
-                    if(rc.canGetFlag(r.ID) && (rc.getFlag(r.ID) & politicianMask) != politicianMask) {
+                    if(rc.canGetFlag(r.ID) && ((rc.getFlag(r.ID) & politicianMask) != politicianMask)) {
                         if (DEBUG) rc.setIndicatorDot(r.location, 0, 0, 255);
                         numFriendlyS++;
                     } else if (d <= RobotType.POLITICIAN.actionRadiusSquared) numberFriendlyP++;
@@ -384,13 +387,16 @@ public class Politician extends Robot {
         }
 
         if(best > 0 && rc.canEmpower(bestD)) {
+            System.out.println("Empowering with metric: " + best);
             rc.empower(bestD);
             return;
         }
         //System.out.println("numFriendlyS = "+numFriendlyS);
         if(numFriendlyS >= 1 || numberFriendlyP > 8) {
-            if(maxKills >= 1 && rc.canEmpower(maxKillD))
+            if(maxKills >= 1 && rc.canEmpower(maxKillD)) {
+                System.out.println("Empowering to defend slanderers: " + numFriendlyS + " " + numberFriendlyP);
                 rc.empower(maxKillD);
+            }
         }
     }
     public void defend(RobotInfo[] nearby) throws GameActionException {
