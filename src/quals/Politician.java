@@ -33,12 +33,13 @@ public class Politician extends Robot {
                     break;
                 }
             }
-
+            /*
             if (homeID == -1 && (rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0)) < 50) {
                 walling(nearby);
                 setRakerFlags();
                 return;
             }
+            */
         }
         findRakerFlags(nearby);
         if(homeID != -1 && rc.canGetFlag(homeID))
@@ -48,6 +49,7 @@ public class Politician extends Robot {
             for(int i=0;i<nonfriendlyHQs.length;i++) {
                 if(nonfriendlyHQs[i]!=null) {
                     rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
+                    rc.setIndicatorDot(nonfriendlyHQs[i], 255, 0, 0);
                 }
             }
         }
@@ -108,7 +110,7 @@ public class Politician extends Robot {
         boolean nonfriendlyHQIsEnemy = false;
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(nonfriendlyHQs[i] != null) {
-                if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 20) {
+                if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 10) {
                     nonfriendlyHQs[i] = null;
                     continue;
                 }
