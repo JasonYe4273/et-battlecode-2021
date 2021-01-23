@@ -118,6 +118,7 @@ public class Muckraker extends Robot {
             //target = null;
             return;
         }
+        int distToTarget = 64;
         while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {
             // if target is an enemy HQ, orbit it
             if (target != null && rc.canSenseLocation(target) && rc.senseRobotAtLocation(target) != null
@@ -127,7 +128,8 @@ public class Muckraker extends Robot {
                 break;
             } else {
                 double angle = Math.random() * Math.PI * 2;
-                target = rc.getLocation().translate((int)(Math.cos(angle) * 30),(int)( Math.sin(angle) * 30));
+                target = rc.getLocation().translate((int)(Math.cos(angle) * distToTarget),(int)( Math.sin(angle) * distToTarget));
+                distToTarget --;
             }
         }
         moveToward(target);
