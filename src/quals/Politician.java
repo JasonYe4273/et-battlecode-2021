@@ -239,7 +239,8 @@ public class Politician extends Robot {
     public void checkEmpower(RobotInfo[] nearby) throws GameActionException {
         if(rc.getCooldownTurns() >= 1) return;
 
-        int damage = (int)(rc.getEmpowerFactor(rc.getTeam(), 0) * rc.getConviction()) - GameConstants.EMPOWER_TAX;
+        double buff = rc.getEmpowerFactor(rc.getTeam(), 0);
+        int damage = rc.getConviction() - GameConstants.EMPOWER_TAX;
         if(damage <= 0) return;
         int[] unitsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
         int[] killsAtDist = new int[RobotType.POLITICIAN.actionRadiusSquared+1];
@@ -275,35 +276,77 @@ public class Politician extends Robot {
                 adjToEnemyCenter = true;
             switch(d) {
                 case 1:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[1]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[1]) {
+                        // Killed enemy units
                         killsAtDist[1] += k;
                         infDrainAtDist[1] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[1] += (int) ((damage / unitsAtDist[1]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[1] += damage / unitsAtDist[1]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[1] += (int) ((int) (buff * (damage / unitsAtDist[1])) / r.type.convictionRatio);
+                    }
                 case 2:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[2]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[2]) {
+                        // Killed enemy units
                         killsAtDist[2] += k;
                         infDrainAtDist[2] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[2] += (int) ((damage / unitsAtDist[2]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[2] += damage / unitsAtDist[2]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[2] += (int) ((int) (buff * (damage / unitsAtDist[2])) / r.type.convictionRatio);
+                    }
                 case 4:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[4]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[4]) {
+                        // Killed enemy units
                         killsAtDist[4] += k;
                         infDrainAtDist[4] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[4] += (int) ((damage / unitsAtDist[4]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[4] += damage / unitsAtDist[4]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[4] += (int) ((int) (buff * (damage / unitsAtDist[4])) / r.type.convictionRatio);
+                    }
                 case 5:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[5]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[5]) {
+                        // Killed enemy units
                         killsAtDist[5] += k;
                         infDrainAtDist[5] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[5] += (int) ((damage / unitsAtDist[5]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[5] += damage / unitsAtDist[5]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[5] += (int) ((int) (buff * (damage / unitsAtDist[5])) / r.type.convictionRatio);
+                    }
                 case 8:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[8]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[8]) {
+                        // Killed enemy units
                         killsAtDist[8] += k;
                         infDrainAtDist[8] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[8] += (int) ((damage / unitsAtDist[8]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[8] += damage / unitsAtDist[8]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[8] += (int) ((int) (buff * (damage / unitsAtDist[8])) / r.type.convictionRatio);
+                    }
                 case 9:
-                    if (r.team != rc.getTeam() && r.conviction < damage / unitsAtDist[9]) {
+                    if (r.team != rc.getTeam() && (int) (r.conviction / buff) < damage / unitsAtDist[9]) {
+                        // Killed enemy units
                         killsAtDist[9] += k;
                         infDrainAtDist[9] += (int) (r.conviction / r.type.convictionRatio);
-                    } else infDrainAtDist[9] += (int) ((damage / unitsAtDist[9]) / r.type.convictionRatio);
+                    } else if (r.team == rc.getTeam()) {
+                        // Friendly ECs don't get affected by buff
+                        infDrainAtDist[9] += damage / unitsAtDist[9]; 
+                    } else {
+                        // Enemy non-killed units
+                        infDrainAtDist[9] += (int) ((int) (buff * (damage / unitsAtDist[9])) / r.type.convictionRatio);
+                    }
                 default:
             }
         }
