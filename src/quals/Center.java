@@ -19,7 +19,11 @@ public class Center extends Robot {
     Set<Integer> others = new HashSet<Integer>(); // units that aren't rakers (pols and slanderers)
     // only build one politician to kill each neutral, this keeps track of this
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
-    public void turn() throws Exception {
+    public void turn() throws GameActionException {
+        mainturn();
+        lastInf = rc.getInfluence();
+    }
+    public void mainturn() throws GameActionException {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
         readAllFlags();
@@ -55,7 +59,9 @@ public class Center extends Robot {
             else if (rc.getRoundNum() < 1350) bid(inf / 30 + 1);
             else bid(inf / 20 + 1);
         }
-        if(rc.getCooldownTurns() >= 1) return;
+        if(rc.getCooldownTurns() >= 1) {
+            return;
+        }
         boolean neutralHQ = false;
         boolean enemyHQ = false;
         for(int i=0;i<10;i++) {
@@ -107,11 +113,14 @@ public class Center extends Robot {
         if(enemyPStrength + enemyRStrength > myPStrength + 20) {
             build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength + enemyRStrength - myPStrength ));
         } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || polyCount > 10)) {
-            build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+            if(inf < 949 && income * 8 > Threshold.slandererThreshold(inf)) {
+                System.out.println("inf "+inf+" income "+income);
+                build(RobotType.MUCKRAKER,1);
+            } else
+                build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
         } else {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
         }
-        lastInf = rc.getInfluence();
     }
     private void build(RobotType t, int influence) throws GameActionException {
         //System.out.println("building "+t+" with inf "+influence);
