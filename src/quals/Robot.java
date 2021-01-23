@@ -340,7 +340,7 @@ public class Robot {
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
     public void sendNonfriendlyHQ() throws GameActionException {
-        if(rc.getRoundNum() > nonfriendlyHQround + 10) {
+        if(rc.getRoundNum() > nonfriendlyHQround + 5) {
             nonfriendlyHQ = null;
             if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
                 rc.setFlag(0);
@@ -350,6 +350,12 @@ public class Robot {
         | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
         if(nonfriendlyHQ != null)
             if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
+    }
+    public void clearOldNonfriendlyHQs() {
+    	for(int i=0;i<nonfriendlyHQs.length;i++) {
+    		if(nonfriendlyHQrounds[i] + nonfriendlyHQs.length > rc.getRoundNum())
+    			nonfriendlyHQs[i] = null;
+    	}
     }
     public void receiveNonfriendlyHQ(int f) throws GameActionException {
         if((f&0xf00000)!=Robot.NONFRIENDLY_HQ) return;
