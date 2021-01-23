@@ -9,6 +9,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Robot {
+	//TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
     /*
      * first 4 bits of flag determine type
      * 0x100000: raker
@@ -336,7 +337,6 @@ public class Robot {
         if (raker == null) return;
         rc.setFlag(0x100000 | politicianMask | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
     }
-
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
     public void sendNonfriendlyHQ() throws GameActionException {
@@ -412,6 +412,24 @@ public class Robot {
         } else if ((f&0x180) == 0x180) {
             mapYmax = (f&0x7f) + ((myLoc.y >> 7) << 7);
             if (mapYmax <= myLoc.y) mapYmax += 128;
+        }
+    }
+    public void checkEdges() throws GameActionException {
+        if(mapXmin == -1) {
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
+                mapXmin = rc.getLocation().x - i;
+        }
+        if(mapXmax == 999999) {
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
+                mapXmax = rc.getLocation().x + i;
+        }
+        if(mapYmin == -1) {
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
+                mapYmin = rc.getLocation().y - i;
+        }
+        if(mapYmax == 999999) {
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
+                mapYmax = rc.getLocation().y + i;
         }
     }
 }

@@ -7,6 +7,8 @@ import java.util.Set;
 import battlecode.common.*;
 
 public class Center extends Robot {
+	//TODO: allow for reading poly flags
+	//TODO: build fewer polys when we aren't getting raker rushed.
     public Center(RobotController r) {
         super(r);
     }
@@ -17,7 +19,7 @@ public class Center extends Robot {
     // only build one politician to kill each neutral, this keeps track of this
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
     public void turn() throws Exception {
-        System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
+        //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         readNonfriendlyHQFlag();
         RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
@@ -91,7 +93,7 @@ public class Center extends Robot {
             lastRakerRound = rc.getRoundNum();
         //System.out.println("p = "+politicians+" s="+slanderers);
         
-        if(inf < 11) {
+        if(inf < 11 || rc.getInfluence()<40) {
             build(RobotType.MUCKRAKER, 1);
             return;
         }
@@ -157,7 +159,7 @@ public class Center extends Robot {
                 break;
         }
         MapLocation l = nonfriendlyHQs[hqIndex];
-        System.out.println(l);
+        //System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
             rc.setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
@@ -169,7 +171,7 @@ public class Center extends Robot {
                 sendEdges();
             }
             else {
-                System.out.println("No enemy HQ found; computing one from map edges");
+                //System.out.println("No enemy HQ found; computing one from map edges");
                 MapLocation myLoc = rc.getLocation();
                 int oppX, oppY;
                 oppX = mapXmin + mapXmax - myLoc.x;
