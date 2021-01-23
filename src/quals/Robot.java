@@ -340,7 +340,7 @@ public class Robot {
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
     public void sendNonfriendlyHQ() throws GameActionException {
-        if(rc.getRoundNum() > nonfriendlyHQround + 50) {
+        if(rc.getRoundNum() > nonfriendlyHQround + 10) {
             nonfriendlyHQ = null;
             if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
                 rc.setFlag(0);

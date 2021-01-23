@@ -21,8 +21,9 @@ public class Center extends Robot {
     boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
     public void turn() throws Exception {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
-        readNonfriendlyHQFlag();
-        RobotInfo[] nearby = rc.senseNearbyRobots();
+        //readNonfriendlyHQFlag();
+        readAllFlags();
+    	RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
         int slanderers = 0;
         int myPStrength = 0;
@@ -98,7 +99,7 @@ public class Center extends Robot {
             build(RobotType.MUCKRAKER, 1);
             return;
         }
-        if(slanderers > 0 && Math.random() < 1.0/(1.0+rakers.size())) {
+        if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/)) {
             build(RobotType.MUCKRAKER, 1);
             rakersBuilt++;
         }
@@ -119,14 +120,40 @@ public class Center extends Robot {
             Direction dir = RobotPlayer.directions[(i+offset)%8];
             if (rc.canBuildRobot(t, dir, influence)) {
                 rc.buildRobot(t, dir, influence);
-                if(t == RobotType.MUCKRAKER)
+                if(t == RobotType.MUCKRAKER) {
                     rakers.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
-                else
-                    others.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
+                    rakerCount++;
+                } else {
+                    //others.add(rc.senseRobotAtLocation(rc.getLocation().add(dir)).ID);
+                }
+                allRobots[flagsIndex++] = rc.senseRobotAtLocation(rc.getLocation().add(dir));
             }
         }
         
     }
+    int rakerCount = 0;
+    int flagsIndex = 0;
+    RobotInfo[] allRobots = new RobotInfo[750];
+    public void readAllFlags() throws GameActionException {
+    	int t0 = Clock.getBytecodeNum();
+    	int empty = 0;
+    	for(int i=0; i<flagsIndex;i++) {
+    		int id = allRobots[i].ID;
+    		if(rc.canGetFlag(id)) {
+                int f = rc.getFlag(id);
+                receiveNonfriendlyHQ(f);
+                receiveEdges(f);
+                allRobots[empty++] = allRobots[i];
+            } else if(allRobots[i].type == RobotType.MUCKRAKER)
+            	rakerCount--;
+    	}
+    	flagsIndex = empty;
+        sendNonfriendlyHQ();
+    	System.out.println((Clock.getBytecodeNum()-t0)+" bytecodes spent");
+    	//System.out.println("robots length "+flagsIndex);
+    	//System.out.println("rakers "+rakerCount);
+    }
+    
     // this method now receives edges as well as non-friendly HQs
     public void readNonfriendlyHQFlag() throws GameActionException {
         System.out.println("Starting reading: " + Clock.getBytecodesLeft());
@@ -163,7 +190,7 @@ public class Center extends Robot {
             for(int i=0;i<nonfriendlyHQs.length;i++) {
                 if(nonfriendlyHQs[i]!=null) {
                     if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
-                    if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 50)
+                    if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 5000)
                         nonfriendlyHQs[i] = null;
                 }
             }
