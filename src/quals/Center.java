@@ -7,8 +7,8 @@ import java.util.Set;
 import battlecode.common.*;
 
 public class Center extends Robot {
-	//TODO: allow for reading poly flags
-	//TODO: build fewer polys when we aren't getting raker rushed.
+    //TODO: allow for reading poly flags
+    //TODO: build fewer polys when we aren't getting raker rushed.
     public Center(RobotController r) {
         super(r);
     }
@@ -23,7 +23,7 @@ public class Center extends Robot {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
         readAllFlags();
-    	RobotInfo[] nearby = rc.senseNearbyRobots();
+        RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
         int slanderers = 0;
         int myPStrength = 0;
@@ -125,7 +125,7 @@ public class Center extends Robot {
                     //rakers.add(r.ID);
                     rakerCount++;
                 } else if(t == RobotType.POLITICIAN) {
-                	polyCount++;
+                    polyCount++;
                     //others.add(r.ID);
                 }
                 allRobots[flagsIndex++] = r;
@@ -141,33 +141,33 @@ public class Center extends Robot {
     RobotInfo[] allBuilds = new RobotInfo[1500]; //all robots ever built, indexed by round.
     int lastSlandererRoundChecked = 0;
     public void readAllFlags() throws GameActionException {
-    	int t0 = Clock.getBytecodeNum();
-    	int empty = 0;
-    	for(int i=0; i<flagsIndex;i++) {
-    		int id = allRobots[i].ID;
-    		if(rc.canGetFlag(id)) {
+        int t0 = Clock.getBytecodeNum();
+        int empty = 0;
+        for(int i=0; i<flagsIndex;i++) {
+            int id = allRobots[i].ID;
+            if(rc.canGetFlag(id)) {
                 int f = rc.getFlag(id);
                 receiveNonfriendlyHQ(f);
                 receiveEdges(f);
                 allRobots[empty++] = allRobots[i];
             } else {
-            	if(allRobots[i].type == RobotType.MUCKRAKER)
-            		rakerCount--;
-            	else if(allRobots[i].type == RobotType.POLITICIAN || allRobots[i].type == RobotType.SLANDERER)
-            		polyCount--;
+                if(allRobots[i].type == RobotType.MUCKRAKER)
+                    rakerCount--;
+                else if(allRobots[i].type == RobotType.POLITICIAN || allRobots[i].type == RobotType.SLANDERER)
+                    polyCount--;
             }
-    	}
-    	flagsIndex = empty;
+        }
+        flagsIndex = empty;
         sendNonfriendlyHQ();
         while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
-        	RobotInfo r = allBuilds[lastSlandererRoundChecked];
-        	if(r != null && r.type == RobotType.SLANDERER)// && rc.canGetFlag(r.ID))
-        		polyCount++;
-        	lastSlandererRoundChecked++;
+            RobotInfo r = allBuilds[lastSlandererRoundChecked];
+            if(r != null && r.type == RobotType.SLANDERER)// && rc.canGetFlag(r.ID))
+                polyCount++;
+            lastSlandererRoundChecked++;
         }
 
-    	//System.out.println("robots length "+flagsIndex);
-    	System.out.println(" r "+rakerCount+" p "+polyCount+" s "+(flagsIndex-rakerCount-polyCount));
+        //System.out.println("robots length "+flagsIndex);
+        System.out.println(" r "+rakerCount+" p "+polyCount+" s "+(flagsIndex-rakerCount-polyCount));
     }
     
     // this method now receives edges as well as non-friendly HQs

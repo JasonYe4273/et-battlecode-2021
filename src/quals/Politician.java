@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Politician extends Robot {
 
-	//TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
+    //TODO: occasionally form attack squads that charge the enemy in a big ball of rushing.
     /*
      * politicians want to stay slightly away from other politicians and your base, but near slanderers
      * 
@@ -220,30 +220,30 @@ public class Politician extends Robot {
         }
     }
 
-  // special method to hunt down and attack rakers with > 100 influence
-  // (Should this be conviction or influence?)
-	// this should be conviction. If a raker has like 10hp left, it's not a beefy raker, no matter how much initial hp it had.
-  public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
-    MapLocation nearbyBigRaker = null;
-    for (RobotInfo r : nearby) {
-        if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 70) {
-            nearbyBigRaker = r.location;
-            break;
+    // special method to hunt down and attack rakers with > 100 influence
+    // (Should this be conviction or influence?)
+    // this should be conviction. If a raker has like 10hp left, it's not a beefy raker, no matter how much initial hp it had.
+    public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
+        MapLocation nearbyBigRaker = null;
+        for (RobotInfo r : nearby) {
+            if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 70) {
+                nearbyBigRaker = r.location;
+                break;
+            }
+        }
+        if (nearbyBigRaker == null) return;
+        // move next to it
+        if (rc.getLocation().distanceSquaredTo(nearbyBigRaker) > 2) {
+            this.moveToward(nearbyBigRaker);
+        } else {
+            // maybe make sure there aren't other things that would absorb damage?
+            int empowerRadius = rc.getLocation().distanceSquaredTo(nearbyBigRaker);
+            if (rc.canEmpower(empowerRadius)) {
+                System.out.println("Empowering to attack beefyraker");
+                rc.empower(empowerRadius);
+            }
         }
     }
-    if (nearbyBigRaker == null) return;
-    // move next to it
-    if (rc.getLocation().distanceSquaredTo(nearbyBigRaker) > 2) {
-        this.moveToward(nearbyBigRaker);
-    } else {
-        // maybe make sure there aren't other things that would absorb damage?
-        int empowerRadius = rc.getLocation().distanceSquaredTo(nearbyBigRaker);
-        if (rc.canEmpower(empowerRadius)) {
-            System.out.println("Empowering to attack beefyraker");
-            rc.empower(empowerRadius);
-        }
-    }
-  }
 
     /*
      * empower conditions:
@@ -444,13 +444,13 @@ public class Politician extends Robot {
             }
         }
         if(mapXmin != -1)
-        	x += 1000 / (me.x - mapXmin);
+            x += 1000 / (me.x - mapXmin);
         if(mapYmin != -1)
-        	y += 1000 / (me.y - mapYmin);
+            y += 1000 / (me.y - mapYmin);
         if(mapXmax != 999999)
-        	x += 1000 / (me.x - mapXmax);
+            x += 1000 / (me.x - mapXmax);
         if(mapYmax != 999999)
-        	y += 1000 / (me.y - mapYmax);
+            y += 1000 / (me.y - mapYmax);
         //rc.setIndicatorLine(me, me.translate(x, y), 255, 255, 0);
         //System.out.println("moving toward "+me.translate(x, y));
         //this.moveInDirection(rc.getLocation().directionTo(me.translate(x, y)));
