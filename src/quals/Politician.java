@@ -33,12 +33,13 @@ public class Politician extends Robot {
                     break;
                 }
             }
-
+            /*
             if (homeID == -1 && (rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0)) < 50) {
                 walling(nearby);
                 setRakerFlags();
                 return;
             }
+            */
         }
         findRakerFlags(nearby);
         if(homeID != -1 && rc.canGetFlag(homeID))
