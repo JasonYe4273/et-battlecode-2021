@@ -198,8 +198,6 @@ public class Robot {
                     }
                 }
             }
-            // print distances to target for debugging
-            // for (int i = 1; i <= 5; i ++) System.out.println(distancesToTarget[i][1] + " " + distancesToTarget[i][2] + " " + distancesToTarget[i][3] + " " + distancesToTarget[i][4] + " " + distancesToTarget[i][5]);
             // move to adjacent location with the nearest cost
             // Note: This cost should include the cost of moving to the square, so we add that in now
             distancesToTarget[2][4] += passabilities[2][4];
@@ -309,16 +307,14 @@ public class Robot {
         rakerRound = 99999;
         for(RobotInfo r:nearby) {
             if(r.team==rc.getTeam()) {
-                if(true) {
-                    if(rc.canGetFlag(r.ID)) {
-                        int f = rc.getFlag(r.ID);
-                        if((f&0xf00000) == 0x100000) {
-                            int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
-                            MapLocation l = Robot.flagToLoc(r.location, f);
-                            if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
-                                rakerRound = rr;
-                                raker = l;
-                            }
+                if(rc.canGetFlag(r.ID)) {
+                    int f = rc.getFlag(r.ID);
+                    if((f&0xf00000) == 0x100000) {
+                        int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
+                        MapLocation l = Robot.flagToLoc(r.location, f);
+                        if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
+                            rakerRound = rr;
+                            raker = l;
                         }
                     }
                 }

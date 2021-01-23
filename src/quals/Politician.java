@@ -35,13 +35,6 @@ public class Politician extends Robot {
                     break;
                 }
             }
-            /*
-            if (homeID == -1 && (rc.getConviction() * rc.getEmpowerFactor(rc.getTeam(), 0)) < 50) {
-                walling(nearby);
-                setRakerFlags();
-                return;
-            }
-            */
         }
 
         findRakerFlags(nearby);
@@ -102,7 +95,6 @@ public class Politician extends Robot {
     }
     public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
         nonfriendlyHQ = null;
-        //int nonfriendlyHQStrength = -1;
         if(rc.getID() == 10082)
             System.out.println("should attack HQ?");
         boolean nonfriendlyHQIsEnemy = false;
@@ -123,21 +115,6 @@ public class Politician extends Robot {
         // see if you can sense something closer than reported
         for (RobotInfo r : nearby) {
             if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
-                
-                /*
-                boolean found=false;
-                for(int i=0;i<nonfriendlyHQs.length;i++) {
-                    if(r.location.equals(nonfriendlyHQs[i])) {
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found) {
-                    nonfriendlyHQ = r.location;
-                    super.nonfriendlyHQStrength = r.conviction;
-                    
-                }
-                */
                 if((nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))) {
                     nonfriendlyHQ = r.location;
                     nonfriendlyHQStrength = r.influence;
@@ -371,10 +348,6 @@ public class Politician extends Robot {
                 default:
             }
         }
-        /*
-        if(adjToEnemyCenter && numFriendlyP > 5)
-            rc.empower(1);
-        */
 
         int best = 0;
         int bestD = 0;
@@ -417,10 +390,7 @@ public class Politician extends Robot {
         int x = 0;
         int y = 0;
         if(!home.equals(me)) {
-            if(home.distanceSquaredTo(me) > 25 && nearby.length < 20) {
-                //x += 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
-                //y += 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));
-            } else {
+            if(!(home.distanceSquaredTo(me) > 25 && nearby.length < 20)) {
                 x -= 200 * (home.x - me.x)/ Math.sqrt(home.distanceSquaredTo(me));
                 y -= 200 * (home.y - me.y)/ Math.sqrt(home.distanceSquaredTo(me));  
             }
@@ -434,10 +404,6 @@ public class Politician extends Robot {
                     //politician
                     x -= 1000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
                     y -= 1000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
-                } else {
-                    //slanderer
-                    //x += 000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
-                    //y += 000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
                 }
             }
         }
