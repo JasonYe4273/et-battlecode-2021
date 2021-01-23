@@ -74,6 +74,7 @@ public class Politician extends Robot {
         }
         if (rc.getConviction() >= 200) huntBeefyMuckrakers(nearby);
 
+        setRakerFlags();
         if(rc.getConviction() <= 10) {
             if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
             else walling(nearby);
@@ -87,7 +88,6 @@ public class Politician extends Robot {
             super.receiveNonfriendlyHQ(rc.getFlag(homeID));
             receiveEdges(rc.getFlag(homeID));
         }
-        setRakerFlags();
         if(rc.getRoundNum() % 4 == 0) {
             sendNonfriendlyHQ();
             if ((rc.getFlag(rc.getID()) & 0xF00000) != Robot.NONFRIENDLY_HQ) sendEdges();
@@ -102,7 +102,9 @@ public class Politician extends Robot {
     }
     public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
         nonfriendlyHQ = null;
-        int nonfriendlyHQStrength = -1;
+        //int nonfriendlyHQStrength = -1;
+        if(rc.getID() == 10082)
+            System.out.println("should attack HQ?");
         boolean nonfriendlyHQIsEnemy = false;
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(nonfriendlyHQs[i] != null) {
@@ -120,11 +122,32 @@ public class Politician extends Robot {
         }
         // see if you can sense something closer than reported
         for (RobotInfo r : nearby) {
-            if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()
-                && (nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))) {
-                nonfriendlyHQ = r.location;
-                nonfriendlyHQStrength = r.influence;
-                nonfriendlyHQIsEnemy = (r.team == rc.getTeam().opponent());
+            if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
+                
+                /*
+                boolean found=false;
+                for(int i=0;i<nonfriendlyHQs.length;i++) {
+                    if(r.location.equals(nonfriendlyHQs[i])) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    nonfriendlyHQ = r.location;
+                    super.nonfriendlyHQStrength = r.conviction;
+                    
+                }
+                */
+                if((nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))) {
+                    nonfriendlyHQ = r.location;
+                    nonfriendlyHQStrength = r.influence;
+                    nonfriendlyHQround = rc.getRoundNum();
+                    nonfriendlyHQIsEnemy = (r.team == rc.getTeam().opponent());
+                    super.isEnemyHQ = nonfriendlyHQIsEnemy;
+                    System.out.println("notifying base of new nonfriendly");
+                    if(homeID != -1)
+                        super.sendNonfriendlyHQ();
+                }
             }
         }
         if(nonfriendlyHQ == null)
