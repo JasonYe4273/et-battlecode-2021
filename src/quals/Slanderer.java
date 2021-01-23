@@ -32,6 +32,8 @@ public class Slanderer extends Politician {
         movementS(nearby);
         setRakerFlags();
     }
+
+    int patrolRadius = 4;
     public void movementS(RobotInfo[] nearby) throws GameActionException {
         if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
             moveInDirection(raker.directionTo(rc.getLocation()));

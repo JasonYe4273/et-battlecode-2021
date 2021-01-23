@@ -167,7 +167,7 @@ public class Center extends Robot {
         }
 
         //System.out.println("robots length "+flagsIndex);
-        System.out.println(" r "+rakerCount+" p "+polyCount+" s "+(flagsIndex-rakerCount-polyCount));
+        //System.out.println(" r "+rakerCount+" p "+polyCount+" s "+(flagsIndex-rakerCount-polyCount));
     }
     
     // this method now receives edges as well as non-friendly HQs
