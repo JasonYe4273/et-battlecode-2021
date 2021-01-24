@@ -114,7 +114,8 @@ public class Politician extends Robot {
         // see if you can sense something closer than reported
         for (RobotInfo r : nearby) {
             if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {
-                if((nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))) {
+                if((nonfriendlyHQ == null || r.location.distanceSquaredTo(rc.getLocation()) < nonfriendlyHQ.distanceSquaredTo(rc.getLocation()))
+                        || rc.getRoundNum() > nonfriendlyHQround + 5) {
                     nonfriendlyHQ = r.location;
                     nonfriendlyHQStrength = r.influence;
                     nonfriendlyHQround = rc.getRoundNum();

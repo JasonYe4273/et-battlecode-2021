@@ -373,7 +373,7 @@ public class Robot {
                 if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
                     nonfriendlyHQs[i] = null;
                 else {
-                    enemyHQs[i] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
+                    enemyHQs[i] |= (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
                     nonfriendlyHQrounds[i] = rc.getRoundNum();
                 }
                 return;
