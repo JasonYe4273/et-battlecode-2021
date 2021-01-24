@@ -43,7 +43,7 @@ public class Center extends Robot {
                 }
             } else {
                 if(r.type == RobotType.POLITICIAN)
-                    enemyPStrength+=r.conviction;
+                    enemyPStrength+=r.conviction - GameConstants.EMPOWER_TAX;
                 else if(r.type == RobotType.MUCKRAKER) {
                     enemyRStrength+=r.conviction;
                     lastRakerRound = rc.getRoundNum();
@@ -110,8 +110,8 @@ public class Center extends Robot {
             rakersBuilt++;
         }
         int income =  rc.getInfluence() - lastInf;
-        if(enemyRStrength > myPStrength - 10) {
-            build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), 10 + enemyRStrength - myPStrength ));
+        if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
+            build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
         } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || polyCount > 10)) {
             if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
                 System.out.println("inf "+inf+" income "+income);
