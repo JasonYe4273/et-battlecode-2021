@@ -20,7 +20,8 @@ public class Robot {
      *  1-14 location
      *  15 1 if mine or null (changed for quals)
      *  16 1 if enemy, 0 if neutral
-     *  17-20 strength of HQ / 64
+     *  17-19 strength of HQ / 64
+     *  20 for politician mask
      *  sent by rakers and by HQ
      * 0x300000: map edge location
      *  1-7 x-coordinate
@@ -345,6 +346,7 @@ public class Robot {
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
     public void sendNonfriendlyHQ() throws GameActionException {
+        System.out.println("Sending nonfriendly HQ flag for " + nonfriendlyHQ + " with strength " + nonfriendlyHQStrength);
         if(rc.getRoundNum() > nonfriendlyHQround + 5) {
             nonfriendlyHQ = null;
             if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
@@ -352,7 +354,7 @@ public class Robot {
         }
         if(nonfriendlyHQ == null) return;
         setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
-        | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
+        | ((Math.min(nonfriendlyHQStrength, 448) >> 6) << 16));
         if(nonfriendlyHQ != null)
             if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
     }

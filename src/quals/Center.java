@@ -85,15 +85,15 @@ public class Center extends Robot {
                 }
             }
             // spawn a politician of sufficient strength to take over this neutral HQ
-            if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
-                build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
+            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 100 + 11) {
+                build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
                 builtPoliticianToKillNeutral[neutralIndex] = true;
                 return;
             }
         }
 
-        if(inf > 500 && (enemyHQ || neutralHQ)) {
-            if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
+        if(inf > 500 && enemyHQ) {
+            if (Math.random() < 0.2) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
             return;
         }
