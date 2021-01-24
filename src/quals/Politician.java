@@ -19,14 +19,16 @@ public class Politician extends Robot {
      */
     public Politician(RobotController r) throws GameActionException {
         super(r);
+        if (rc.getType() == RobotType.POLITICIAN) politicianMask = 0x080000;
         rc.setFlag(politicianMask);
     }
 
     int turnsSinceEnemy = 0;
     public void turn() throws Exception {
+        if(rc.getConviction() <= 10) rc.empower(1);
         politicianMask = 0x080000; // reset to default value (in case this got changed during former life as a slanderer)
         RobotInfo[] nearby = rc.senseNearbyRobots();
-        checkEdges();
+        checkEdges(5);
         if (homeID == -1) {
             for (RobotInfo r : nearby) {
                 if (r.team == rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER) {
@@ -55,7 +57,7 @@ public class Politician extends Robot {
         else turnsSinceEnemy = 0;
 
         // if a beefy enemy is attacking a nearby weak base, then run home and defend it
-        if (home != null && rc.canSenseLocation(home)) {
+        /*if (home != null && rc.canSenseLocation(home)) {
             RobotInfo homeRobot = rc.senseRobotAtLocation(home);
             if (homeRobot != null) {
                 int homeInfluence = homeRobot.influence;
@@ -64,17 +66,14 @@ public class Politician extends Robot {
                         moveToward(home);
                 }
             }
-        }
-        if (rc.getConviction() >= 200) huntBeefyMuckrakers(nearby);
+        }*/
+        checkEmpower(nearby);
+        //huntBeefyMuckrakers(nearby);
 
         setRakerFlags();
-        if(rc.getConviction() <= 10) {
-            if (rc.senseNearbyRobots(16, rc.getTeam()).length > 20 && rc.canEmpower(1)) rc.empower(1);
-            else walling(nearby);
-        } else if(shouldAttackHQ(nearby)) {
+        if(shouldAttackHQ(nearby)) {
             attackHQ();
         } else {
-            checkEmpower(nearby);
             movement(nearby);
         }
         if(rc.canGetFlag(homeID)) {
@@ -211,7 +210,7 @@ public class Politician extends Robot {
     public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
         MapLocation nearbyBigRaker = null;
         for (RobotInfo r : nearby) {
-            if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 70) {
+            if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 9) {
                 nearbyBigRaker = r.location;
                 break;
             }
@@ -256,6 +255,7 @@ public class Politician extends Robot {
         boolean adjToEnemyCenter = false;
         int numFriendlyP = 0;
         int numFriendlyS = 0;
+        boolean nearBase = false;
         for(RobotInfo r:nearby) {
             int d = r.location.distanceSquaredTo(rc.getLocation());
             if(r.team==rc.getTeam()) {
@@ -268,6 +268,7 @@ public class Politician extends Robot {
 
                 // Don't care about empowering own non-EC units
                 if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
+                else nearBase = true;
             }
             int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
@@ -369,7 +370,7 @@ public class Politician extends Robot {
         }
 
         if (best > 0 && rc.canEmpower(bestD)) rc.empower(bestD);
-        else if ((numFriendlyS >= 1 || numFriendlyP > 8) && maxKills >= 1 && rc.canEmpower(maxKillD))
+        else if ((nearBase || numFriendlyS >= 1 || numFriendlyP > 8) && maxKills >= 1 && rc.canEmpower(maxKillD))
             rc.empower(maxKillD);
     }
     public void defend(RobotInfo[] nearby) throws GameActionException {
