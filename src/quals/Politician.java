@@ -19,6 +19,7 @@ public class Politician extends Robot {
      */
     public Politician(RobotController r) throws GameActionException {
         super(r);
+        if (rc.getType() == RobotType.POLITICIAN) politicianMask = 0x080000;
         rc.setFlag(politicianMask);
     }
 

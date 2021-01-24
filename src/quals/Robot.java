@@ -56,7 +56,7 @@ public class Robot {
     public static final int FRIENDLY_HQ = 0x4000;
     public static final int ENEMY_HQ = 0x8000;
     public static final int NEUTRAL_HQ = 0;
-    public int politicianMask = 0x080000;
+    public int politicianMask = 0;
     int homeID;
     public Robot(RobotController robot) {
         rc = robot;
