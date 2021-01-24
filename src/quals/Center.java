@@ -66,11 +66,11 @@ public class Center extends Robot {
         boolean enemyHQ = false;
         for(int i=0;i<10;i++) {
             if(nonfriendlyHQs[i]!=null) {
-                if (enemyHQs[i]) enemyHQ = true;
-                else neutralHQ = true;
-                break;
+                if (enemyHQs[i]) {enemyHQ = true; neutralHQ = false;}
+                else neutralHQ = !enemyHQ;
             }
         }
+        System.out.println(enemyHQ + " " + neutralHQ);
 
         // if we are attacking a neutral HQ, find the influence of the nearest neutral
         if (neutralHQ) {
