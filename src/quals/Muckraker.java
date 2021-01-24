@@ -13,7 +13,7 @@ public class Muckraker extends Robot {
     }
     MapLocation target = null;
     public void turn() throws GameActionException {
-        checkEdges();
+        checkEdges(5);
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //System.out.println(target);
         RobotInfo[] nearby = rc.senseNearbyRobots();

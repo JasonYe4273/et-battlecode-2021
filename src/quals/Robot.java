@@ -425,21 +425,21 @@ public class Robot {
             if (mapYmax <= myLoc.y) mapYmax += 128;
         }
     }
-    public void checkEdges() throws GameActionException {
+    public void checkEdges(int r) throws GameActionException {
         if(mapXmin == -1) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
+            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
                 mapXmin = rc.getLocation().x - i;
         }
         if(mapXmax == 999999) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
+            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
                 mapXmax = rc.getLocation().x + i;
         }
         if(mapYmin == -1) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
+            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
                 mapYmin = rc.getLocation().y - i;
         }
         if(mapYmax == 999999) {
-            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
+            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
                 mapYmax = rc.getLocation().y + i;
         }
     }
