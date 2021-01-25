@@ -21,6 +21,7 @@ src/lectureplayer
 *.ipr
 *.iws
 /.idea/
+/tmp/
 
 
 # User-specific stuff:

@@ -114,7 +114,8 @@ public class Muckraker extends Robot {
         }
 
         if(nearestRaker != null && rc.getConviction() < 50) {
-            moveInDirection(nearestRaker.directionTo(rc.getLocation()));
+            //moveInDirection(nearestRaker.directionTo(rc.getLocation()));
+            target = target.translate(rc.getLocation().x - nearestRaker.x, rc.getLocation().y - nearestRaker.y);
             //target = null;
             return;
         }
@@ -127,6 +128,7 @@ public class Muckraker extends Robot {
                 else moveInDirection(rc.getLocation().directionTo(target).rotateRight().rotateRight());
                 break;
             } else {
+                //otherwise, if we are too close to the target, find a new one at random
                 double angle = Math.random() * Math.PI * 2;
                 target = rc.getLocation().translate((int)(Math.cos(angle) * distToTarget),(int)( Math.sin(angle) * distToTarget));
                 distToTarget --;
