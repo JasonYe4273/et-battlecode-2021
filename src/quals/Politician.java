@@ -390,6 +390,8 @@ public class Politician extends Robot {
         if (best > 0 && rc.canEmpower(bestD)) rc.empower(bestD);
         else if ((nearBase || numFriendlyS >= 1 || numFriendlyP > 8) && maxKills >= 2 && rc.canEmpower(maxKillD))
             rc.empower(maxKillD);
+        if(numFriendlyP > 8 && rc.senseNearbyRobots(RobotType.POLITICIAN.actionRadiusSquared, rc.getTeam().opponent()).length > 0)
+            rc.empower(maxKillD);
     }
     public void defend(RobotInfo[] nearby) throws GameActionException {
         //System.out.println("nonfriendlyHQ "+nonfriendlyHQ);
