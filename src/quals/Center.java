@@ -289,6 +289,8 @@ public class Center extends Robot {
             minVoteProp = 0.01;
             if (voteProp < minVoteProp) voteProp = minVoteProp;
             maxVoteProp = 0.02;
+        } else if (round % 25 == 0) {
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
         }
 
         if (voteProp == 0) {
