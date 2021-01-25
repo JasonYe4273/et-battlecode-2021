@@ -52,12 +52,10 @@ public class Center extends Robot {
         int inf = rc.getInfluence() - enemyPStrength;
 
         //if(rc.getRoundNum() > 1000) rc.resign();
-        if(rc.getRoundNum() > 400 && inf > 0) {
-            if (rc.getRoundNum() < 1000) bid(inf / 100 + 1);
-            else if (rc.getRoundNum() < 1200) bid(inf / 50 + 1);
-            else if (rc.getRoundNum() < 1350) bid(inf / 30 + 1);
-            else bid(inf / 20 + 1);
-        }
+        inf -= vote(inf);
+
+        if (rc.getRoundNum() > 1490) return;
+
         if(rc.getCooldownTurns() >= 1) {
             return;
         }
@@ -255,21 +253,69 @@ public class Center extends Robot {
     int myVotes = 0;
     int opponentVotes = 0;
     boolean attemptedVote = false;
-    public void bid(int b) throws GameActionException {
+    double voteProp = 0;
+    double maxVoteProp = 0;
+    double minVoteProp = 0;
+    public int vote(int inf) throws GameActionException {
+        if (inf <= 0) return 0;
+
         boolean lostVote = attemptedVote && rc.getTeamVotes() == myVotes;
         if (lostVote) opponentVotes++;
         myVotes = rc.getTeamVotes();
 
         if (myVotes > 750 || opponentVotes - myVotes > 1501 - rc.getRoundNum()) {
             attemptedVote = false;
-            return;
+            return 0;
         }
 
+        int round = rc.getRoundNum();
+        if (round == 1450) {
+            minVoteProp = 0.1;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.25;
+        } else if (round == 1350) {
+            minVoteProp = 0.05;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.1;
+        } else if (round == 1200) {
+            minVoteProp = 0.03;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.05;
+        } else if (round == 1000) {
+            minVoteProp = 0.02;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.03;
+        } else if (round == 400) {
+            minVoteProp = 0.01;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.02;
+        }
+
+        if (voteProp == 0) {
+            attemptedVote = false;
+            return 0;
+        }
+
+        if (lostVote) {
+            if (voteProp < maxVoteProp) voteProp += maxVoteProp / 4;
+            else {
+                voteProp = 0;
+                attemptedVote = false;
+                return 0;
+            }
+        } else if (voteProp > minVoteProp) voteProp -= maxVoteProp / 16;
+
+        return bid((int) (inf * voteProp) + 1);
+    }
+
+    public int bid(int b) throws GameActionException {
         if (rc.canBid(b)) {
             rc.bid(b);
             attemptedVote = true;
-        } else attemptedVote = false;
-
+            return b;
+        } else {
+            attemptedVote = false;
+            return 0;
+        }
     }
-
 }
