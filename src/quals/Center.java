@@ -257,7 +257,10 @@ public class Center extends Robot {
     double maxVoteProp = 0;
     double minVoteProp = 0;
     public int vote(int inf) throws GameActionException {
-        if (inf <= 0) return 0;
+        if (inf <= 0) {
+            attemptedVote = false;
+            return 0;
+        }
 
         boolean lostVote = attemptedVote && rc.getTeamVotes() == myVotes;
         if (lostVote) opponentVotes++;
