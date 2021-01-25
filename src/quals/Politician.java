@@ -69,7 +69,7 @@ public class Politician extends Robot {
             }
         }*/
         checkEmpower(nearby);
-        //huntBeefyMuckrakers(nearby);
+        if (rc.getConviction() > 100) huntBeefyMuckrakers(nearby);
 
         setRakerFlags();
         if(shouldAttackHQ(nearby)) {
@@ -228,7 +228,7 @@ public class Politician extends Robot {
     public void huntBeefyMuckrakers(RobotInfo [] nearby) throws GameActionException {
         MapLocation nearbyBigRaker = null;
         for (RobotInfo r : nearby) {
-            if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 9) {
+            if (r.type == RobotType.MUCKRAKER && r.team != rc.getTeam() && r.conviction > 30) {
                 nearbyBigRaker = r.location;
                 break;
             }
