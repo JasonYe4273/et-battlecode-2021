@@ -287,6 +287,20 @@ public class Politician extends Robot {
                 else nearBase = true;
             }
             int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(true && r.type==RobotType.MUCKRAKER)?2:1;
+            if(k==100 && r.team == Team.NEUTRAL) {
+                RobotInfo hq = r;
+                int strength = (int)((rc.getConviction() - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam(), 0));
+                for(RobotInfo r2:nearby) {
+                    if(r2.type == RobotType.POLITICIAN) {
+                        if(r2.team == rc.getTeam())
+                            strength += (int)((r2.conviction - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam(), 0));
+                        else
+                            strength -= (int)((r2.conviction - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam().opponent(), 0));
+                    }
+                }
+                if(strength < hq.conviction)
+                    k=0;
+            }
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
