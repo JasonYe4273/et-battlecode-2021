@@ -116,9 +116,9 @@ public class Muckraker extends Robot {
         if(nearestRaker != null && rc.getConviction() < 50) {
             //moveInDirection(nearestRaker.directionTo(rc.getLocation()));
             if(target == null) target = rc.getLocation();
-            target = target.translate(rc.getLocation().x - nearestRaker.x, rc.getLocation().y - nearestRaker.y);
+            target = target.translate(25/(rc.getLocation().x - nearestRaker.x), 25/(rc.getLocation().y - nearestRaker.y));
             //target = null;
-            return;
+            //return;
         }
         int distToTarget = 64;
         while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 || !onTheMap(target)) {
