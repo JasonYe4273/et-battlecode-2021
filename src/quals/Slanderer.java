@@ -38,6 +38,10 @@ public class Slanderer extends Politician {
 
     int patrolRadius = 4;
     public void movementS(RobotInfo[] nearby) throws GameActionException {
+        if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
+            moveInDirection(raker.directionTo(rc.getLocation()));
+            return;
+        }
         int nearp = 0, farp = 0;
         int myDist = rc.getLocation().distanceSquaredTo(home);
         int farthest = 0;
@@ -59,13 +63,6 @@ public class Slanderer extends Politician {
                 if(nearestEnemy == null || rc.getLocation().distanceSquaredTo(nearestEnemy) < rc.getLocation().distanceSquaredTo(r.location))
                     nearestEnemy = r.location;
             }
-        }
-        if(homeAdj >= homeAdjLimit) {
-            moveInDirection(home.directionTo(rc.getLocation()));
-        }
-        if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
-            moveInDirection(raker.directionTo(rc.getLocation()));
-            return;
         }
         /*if(nearestEnemy != null) {
             moveInDirection(nearestEnemy.directionTo(rc.getLocation()));
@@ -98,7 +95,7 @@ public class Slanderer extends Politician {
         if(patrolRadius > 2 && farp<2)
             patrolRadius--;
         int d = rc.getLocation().distanceSquaredTo(patrolCenter);
-        if((nearp > 10 && farp>5 && d > patrolRadius*patrolRadius) || homeAdj >= homeAdjLimit)
+        if(nearp > 10 && farp>5 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
             patrolRadius++;
         patrol(patrolCenter,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
         //System.out.println("PatrolRadius="+patrolRadius);

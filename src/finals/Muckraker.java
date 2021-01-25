@@ -1,4 +1,4 @@
-package quals;
+package finals;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
