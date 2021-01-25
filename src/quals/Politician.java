@@ -7,6 +7,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
+import battlecode.common.Team;
 
 import java.util.Arrays;
 
@@ -72,7 +73,7 @@ public class Politician extends Robot {
 
         setRakerFlags();
         if(shouldAttackHQ(nearby)) {
-            attackHQ();
+            attackHQ(nearby);
         } else {
             movement(nearby);
         }
@@ -150,8 +151,24 @@ public class Politician extends Robot {
         }
         return true;
     }
-    public void attackHQ() throws GameActionException {
+    public void attackHQ(RobotInfo[] nearby) throws GameActionException {
         int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQ);
+        if(d<3) {
+            RobotInfo hq = rc.senseRobotAtLocation(nonfriendlyHQ);
+            if(hq!=null) {
+                int strength = (int)((rc.getConviction() - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam(), 0));
+                for(RobotInfo r:nearby) {
+                    if(r.type == RobotType.POLITICIAN) {
+                        if(r.team == rc.getTeam())
+                            strength += (int)((r.conviction - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam(), 0));
+                        else
+                            strength -= (int)((r.conviction - GameConstants.EMPOWER_TAX) * rc.getEmpowerFactor(rc.getTeam().opponent(), 0));
+                    }
+                }
+                if(strength < hq.conviction)
+                    return;
+            }
+        }
         if(d < 2 && rc.canEmpower(d))
             rc.empower(d);
         if(d < 3 && rc.canEmpower(d)) {
@@ -271,7 +288,7 @@ public class Politician extends Robot {
                 if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
                 else nearBase = true;
             }
-            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(nearBase && r.type==RobotType.MUCKRAKER)?2:1;
+            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(true && r.type==RobotType.MUCKRAKER)?2:1;
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
@@ -357,7 +374,7 @@ public class Politician extends Robot {
         int maxKillInfDrain = 0;
         int maxKillD = 0;
         for (int i = 1; i < 10; i++) {
-            int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - rc.getConviction();
+            int metric = (killsAtDist[i] - 2) * 100 + infDrainAtDist[i] - rc.getConviction();
             if (metric > best) {
                 best = metric;
                 bestD = i;
@@ -437,7 +454,7 @@ public class Politician extends Robot {
             }
         }
 
-        if(raker != null && rc.getLocation().distanceSquaredTo(raker) < nearestPoliticanToRaker) {
+        if(raker != null && rc.getLocation().distanceSquaredTo(raker) <= nearestPoliticanToRaker) {
             moveToward(raker);
         } else if (turnsSinceEnemy < 10 || rc.getRoundNum() < 100) defend(nearby);
         else if (rc.getConviction() >= 300 && nonfriendlyHQ != null) moveToward(nonfriendlyHQ);
