@@ -95,8 +95,6 @@ public class Politician extends Robot {
     }
     public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
         nonfriendlyHQ = null;
-        if(rc.getID() == 10082)
-            System.out.println("should attack HQ?");
         boolean nonfriendlyHQIsEnemy = false;
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(nonfriendlyHQs[i] != null) {
@@ -122,7 +120,7 @@ public class Politician extends Robot {
                     nonfriendlyHQround = rc.getRoundNum();
                     nonfriendlyHQIsEnemy = (r.team == rc.getTeam().opponent());
                     super.isEnemyHQ = nonfriendlyHQIsEnemy;
-                    System.out.println("notifying base of new nonfriendly");
+                    //System.out.println("notifying base of new nonfriendly");
                     if(homeID != -1)
                         super.sendNonfriendlyHQ();
                 }

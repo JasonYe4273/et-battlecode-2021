@@ -86,7 +86,7 @@ public class Center extends Robot {
                 else neutralHQ = !enemyHQ;
             }
         }
-        System.out.println(enemyHQ + " " + neutralHQ);
+        //System.out.println(enemyHQ + " " + neutralHQ);
 
         // if we are attacking a neutral HQ, find the influence of the nearest neutral
         if (neutralHQ) {
@@ -198,9 +198,9 @@ public class Center extends Robot {
     
     // this method now receives edges as well as non-friendly HQs
     public void readNonfriendlyHQFlag() throws GameActionException {
-        System.out.println("Starting reading: " + Clock.getBytecodesLeft());
+        //System.out.println("Starting reading: " + Clock.getBytecodesLeft());
         Iterator<Integer> it = rakers.iterator();
-        System.out.println("num rakers " +rakers.size());
+        //System.out.println("num rakers " +rakers.size());
         while(it.hasNext()) {
             int id = it.next();
             if(rc.canGetFlag(id)) {
@@ -211,7 +211,7 @@ public class Center extends Robot {
                 it.remove();
             }
         }
-        System.out.println("Read rakers: " + Clock.getBytecodesLeft());
+        //System.out.println("Read rakers: " + Clock.getBytecodesLeft());
         it = others.iterator();
         while(it.hasNext()) {
             int id = it.next();
@@ -223,7 +223,7 @@ public class Center extends Robot {
                 it.remove();
             }
         }
-        System.out.println("Read others: " + Clock.getBytecodesLeft());
+        //System.out.println("Read others: " + Clock.getBytecodesLeft());
         sendNonfriendlyHQ();
     }
     int hqIndex=0;
@@ -280,7 +280,10 @@ public class Center extends Robot {
     double maxVoteProp = 0;
     double minVoteProp = 0;
     public int vote(int inf) throws GameActionException {
-        if (inf <= 0) return 0;
+        if (inf <= 0) {
+            attemptedVote = false;
+            return 0;
+        }
 
         boolean lostVote = attemptedVote && rc.getTeamVotes() == myVotes;
         if (lostVote) opponentVotes++;
@@ -312,6 +315,8 @@ public class Center extends Robot {
             minVoteProp = 0.01;
             if (voteProp < minVoteProp) voteProp = minVoteProp;
             maxVoteProp = 0.02;
+        } else if (round % 25 == 0) {
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
         }
 
         if (voteProp == 0) {
