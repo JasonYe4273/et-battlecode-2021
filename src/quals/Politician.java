@@ -167,8 +167,12 @@ public class Politician extends Robot {
                     return;
             }
         }
-        if(d < 2 && rc.canEmpower(d))
-            rc.empower(d);
+        if(d < 2 && rc.canEmpower(d)) {
+            if(rc.senseNearbyRobots(1).length>1)
+                super.moveToward(nonfriendlyHQ);
+            else
+                rc.empower(d);
+        }
         if(d < 3 && rc.canEmpower(d)) {
             // First priority: empower if no other units nearby
             if (rc.senseNearbyRobots(2).length == 1)

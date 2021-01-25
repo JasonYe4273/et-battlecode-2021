@@ -100,8 +100,9 @@ public class Center extends Robot {
                     neutralIndex = i;
                 }
             }
+            System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
-            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 100 + 11) {
+            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 11) {
                 build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
                 builtPoliticianToKillNeutral[neutralIndex] = true;
                 return;
