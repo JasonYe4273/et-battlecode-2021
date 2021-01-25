@@ -14,7 +14,6 @@ public class Center extends Robot {
     }
     int lastInf = rc.getInfluence();
     int lastRakerRound = 0;
-    int rakersBuilt= 0;
     Set<Integer> rakers = new HashSet<Integer>();
     Set<Integer> others = new HashSet<Integer>(); // units that aren't rakers (pols and slanderers)
     // only build one politician to kill each neutral, this keeps track of this
@@ -93,7 +92,7 @@ public class Center extends Robot {
         }
 
         if(inf > 500 && (enemyHQ | neutralHQ)) {
-            if (Math.random() < 0.2) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
+            if (enemyHQ && Math.random() < 0.2) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
             return;
         }
@@ -107,17 +106,15 @@ public class Center extends Robot {
         }
         if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/)) {
             build(RobotType.MUCKRAKER, 1);
-            rakersBuilt++;
         }
         int income =  rc.getInfluence() - lastInf;
         if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
             build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
-        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 35 || polyCount > 10)) {
-            if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf) && false) {
+        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || polyCount > 10)) {
+            if(rc.getRoundNum() < 50 && inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
                 if (rakerCount > 100) build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
                 else build(RobotType.MUCKRAKER,1);
-            } else
-                build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+            } else build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
         } else {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
         }

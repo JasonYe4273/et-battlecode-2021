@@ -271,7 +271,7 @@ public class Politician extends Robot {
                 if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
                 else nearBase = true;
             }
-            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:1;
+            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(nearBase && r.type==RobotType.MUCKRAKER)?2:1;
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
@@ -371,7 +371,7 @@ public class Politician extends Robot {
         }
 
         if (best > 0 && rc.canEmpower(bestD)) rc.empower(bestD);
-        else if ((nearBase || numFriendlyS >= 1 || numFriendlyP > 8) && maxKills >= 1 && rc.canEmpower(maxKillD))
+        else if ((nearBase || numFriendlyS >= 1 || numFriendlyP > 8) && maxKills >= 2 && rc.canEmpower(maxKillD))
             rc.empower(maxKillD);
     }
     public void defend(RobotInfo[] nearby) throws GameActionException {
