@@ -155,6 +155,7 @@ public class Center extends Robot {
             if (rc.canBuildRobot(t, dir, influence)) {
                 rc.buildRobot(t, dir, influence);
                 RobotInfo r = rc.senseRobotAtLocation(rc.getLocation().add(dir));
+                if(r==null) return -1;
                 if(t == RobotType.MUCKRAKER) {
                     //rakers.add(r.ID);
                     rakerCount++;

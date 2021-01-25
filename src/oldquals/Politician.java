@@ -24,6 +24,7 @@ public class Politician extends Robot {
 
     int turnsSinceEnemy = 0;
     public void turn() throws Exception {
+        if(rc.getRobotCount() < 5 && rc.getRoundNum() > 300) rc.resign();
         politicianMask = 0x080000; // reset to default value (in case this got changed during former life as a slanderer)
         RobotInfo[] nearby = rc.senseNearbyRobots();
         checkEdges();

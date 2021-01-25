@@ -302,17 +302,18 @@ public class Robot {
         return Math.max(Math.abs(l1.x - l2.x), Math.abs(l1.y - l2.y));
     }
     
-
+    int currentRoundForRakerFlagSending;
     public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
         raker = null;
         rakerRound = 99999;
+        currentRoundForRakerFlagSending = rc.getRoundNum();
         int metric = 9999999;
         for(RobotInfo r:nearby) {
             if(r.team==rc.getTeam()) {
                 if(rc.canGetFlag(r.ID)) {
                     int f = rc.getFlag(r.ID);
                     if((f&0xf00000) == 0x100000) {
-                        int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
+                        int rr = Robot.flagToRound(currentRoundForRakerFlagSending>>0, f);
                         MapLocation l = Robot.flagToLoc(r.location, f);
                         int m = rr*rr+rc.getLocation().distanceSquaredTo(l);
                         if(m < metric && l.distanceSquaredTo(rc.getLocation()) > 20) {
@@ -344,7 +345,7 @@ public class Robot {
             return;
         }
         if (raker == null) return;
-        setFlag(0x100000 | Robot.roundToFlag((rc.getRoundNum()>>0) - rakerRound) | Robot.locToFlag(raker));
+        setFlag(0x100000 | Robot.roundToFlag((currentRoundForRakerFlagSending>>0) - rakerRound) | Robot.locToFlag(raker));
     }
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
