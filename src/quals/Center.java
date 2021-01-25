@@ -21,7 +21,26 @@ public class Center extends Robot {
     public void turn() throws GameActionException {
         mainturn();
         lastInf = rc.getInfluence();
+        /*
+        while(slandererBuildsIndex < rc.getRoundNum()-50) {
+            expectedTotalIncome -= expectedCurrentIncome;
+            expectedCurrentIncome -= slandererBuilds[slandererBuildsIndex];
+            slandererBuildsIndex++;
+        }
+        */
+        expectedTotalIncome = 0;
+        expectedCurrentIncome = 0;
+        for(int i=Math.max(0, 50-rc.getRoundNum());i<50;i++) {
+            int j = rc.getRoundNum() - 50 + i;
+            expectedCurrentIncome += slandererBuilds[j];
+            expectedTotalIncome += i * slandererBuilds[j];
+        }
+        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome);
     }
+    int slandererBuildsIndex = 0;
+    int[] slandererBuilds = new int[1500]; //This is how much $/turn the slanderer we built on round i made
+    int expectedTotalIncome = 0; //expected income from all current slanderers over all future rounds
+    int expectedCurrentIncome = 0; //expected income for next round
     public void mainturn() throws GameActionException {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
@@ -131,6 +150,10 @@ public class Center extends Robot {
                 } else if(t == RobotType.POLITICIAN) {
                     polyCount++;
                     //others.add(r.ID);
+                } else if(t == RobotType.SLANDERER) {
+                    slandererBuilds[rc.getRoundNum()] = Threshold.slandererIncome(influence);
+                    expectedTotalIncome += Threshold.slandererIncome(influence) * 50;
+                    expectedCurrentIncome += Threshold.slandererIncome(influence);
                 }
                 allRobots[flagsIndex++] = r;
                 allBuilds[rc.getRoundNum()] = r;
