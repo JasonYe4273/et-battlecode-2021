@@ -288,7 +288,7 @@ public class Politician extends Robot {
                 if (r.type != RobotType.ENLIGHTENMENT_CENTER) continue;
                 else nearBase = true;
             }
-            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(nearBase && r.type==RobotType.MUCKRAKER)?2:1;
+            int k = (r.type == RobotType.ENLIGHTENMENT_CENTER)?100:(true && r.type==RobotType.MUCKRAKER)?2:1;
             if(r.team != rc.getTeam() && r.type == RobotType.ENLIGHTENMENT_CENTER && d==1)
                 adjToEnemyCenter = true;
             switch(d) {
@@ -374,7 +374,7 @@ public class Politician extends Robot {
         int maxKillInfDrain = 0;
         int maxKillD = 0;
         for (int i = 1; i < 10; i++) {
-            int metric = (killsAtDist[i] - 1) * 100 + infDrainAtDist[i] - rc.getConviction();
+            int metric = (killsAtDist[i] - 2) * 100 + infDrainAtDist[i] - rc.getConviction();
             if (metric > best) {
                 best = metric;
                 bestD = i;
