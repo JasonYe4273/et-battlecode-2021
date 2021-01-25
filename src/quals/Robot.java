@@ -306,6 +306,7 @@ public class Robot {
     public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
         raker = null;
         rakerRound = 99999;
+        int metric = 9999999;
         for(RobotInfo r:nearby) {
             if(r.team==rc.getTeam()) {
                 if(rc.canGetFlag(r.ID)) {
@@ -313,8 +314,10 @@ public class Robot {
                     if((f&0xf00000) == 0x100000) {
                         int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
                         MapLocation l = Robot.flagToLoc(r.location, f);
-                        if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
+                        int m = rr*rr+rc.getLocation().distanceSquaredTo(l);
+                        if(m < metric && l.distanceSquaredTo(rc.getLocation()) > 20) {
                             rakerRound = rr;
+                            metric = m;
                             raker = l;
                         }
                     }
