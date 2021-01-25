@@ -36,7 +36,7 @@ public class Center extends Robot {
             expectedCurrentIncome += slandererBuilds[j];
             expectedTotalIncome += i * slandererBuilds[j];
         }
-        //System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome);
+        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount);
     }
     int slandererBuildsIndex = 0;
     int[] slandererBuilds = new int[1500]; //This is how much $/turn the slanderer we built on round i made
@@ -121,8 +121,11 @@ public class Center extends Robot {
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
             return;
         }
+        /*
         if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
             lastRakerRound = rc.getRoundNum();
+        
+        */
         //System.out.println("p = "+politicians+" s="+slanderers);
         
         if(inf < 11 || rc.getInfluence()<40) {
@@ -152,6 +155,7 @@ public class Center extends Robot {
             if (rc.canBuildRobot(t, dir, influence)) {
                 rc.buildRobot(t, dir, influence);
                 RobotInfo r = rc.senseRobotAtLocation(rc.getLocation().add(dir));
+                if(r==null) return -1;
                 if(t == RobotType.MUCKRAKER) {
                     //rakers.add(r.ID);
                     rakerCount++;
