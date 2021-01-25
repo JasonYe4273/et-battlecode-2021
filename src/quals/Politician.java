@@ -43,10 +43,21 @@ public class Politician extends Robot {
         findRakerFlags(nearby);
         if(homeID != -1 && rc.canGetFlag(homeID))
             super.receiveNonfriendlyHQ(rc.getFlag(homeID));
+        setRakerFlags();
         //remove old enemyHQs
-        if (DEBUG) {
-            for(int i=0;i<nonfriendlyHQs.length;i++) {
-                if(nonfriendlyHQs[i]!=null) {
+        for(int i=0;i<nonfriendlyHQs.length;i++) {
+            if(nonfriendlyHQs[i]!=null) {
+                if(rc.getLocation().isWithinDistanceSquared(nonfriendlyHQs[i], RobotType.POLITICIAN.sensorRadiusSquared)) {
+                    RobotInfo r = rc.senseRobotAtLocation(nonfriendlyHQs[i]);
+                    if(r==null || r.team == rc.getTeam()) {
+                        super.unsendNonfriendlyHQ(nonfriendlyHQs[i]);
+                        nonfriendlyHQs[i] = null;
+                    } else {
+                        nonfriendlyHQstrengths[i] = r.conviction - 64;
+                        enemyHQs[i] = r.team==rc.getTeam().opponent();
+                    }
+                }
+                if (DEBUG && nonfriendlyHQs[i] != null) {
                     rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQs[i], 255, 0, 0);
                     rc.setIndicatorDot(nonfriendlyHQs[i], 255, 0, 0);
                 }
@@ -71,7 +82,6 @@ public class Politician extends Robot {
         checkEmpower(nearby);
         if (rc.getConviction() > 100) huntBeefyMuckrakers(nearby);
 
-        setRakerFlags();
         if(shouldAttackHQ(nearby)) {
             attackHQ(nearby);
         } else {
@@ -96,6 +106,9 @@ public class Politician extends Robot {
     public boolean shouldAttackHQ(RobotInfo[] nearby) throws GameActionException {
         nonfriendlyHQ = null;
         boolean nonfriendlyHQIsEnemy = false;
+        boolean foundOneShotNeutral = false;
+        //first priority is the nearest neutral which you can one shot.
+        //second priority is the nearest nonfriendly at all
         for(int i=0;i<nonfriendlyHQs.length;i++) {
             if(nonfriendlyHQs[i] != null) {
                 if(rc.getRoundNum() > nonfriendlyHQrounds[i] + 10) {
@@ -103,13 +116,25 @@ public class Politician extends Robot {
                     continue;
                 }
                 int d = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
-                if(nonfriendlyHQ==null || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d) {
+                if(!foundOneShotNeutral && (nonfriendlyHQ==null || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d)) {
                     nonfriendlyHQ = nonfriendlyHQs[i];
                     nonfriendlyHQStrength = nonfriendlyHQstrengths[i];
                     nonfriendlyHQIsEnemy = enemyHQs[i];
                 }
+                if((!foundOneShotNeutral || nonfriendlyHQ.distanceSquaredTo(rc.getLocation()) > d) && !enemyHQs[i] && Math.min(nonfriendlyHQstrengths[i]+74,510) < rc.getConviction()) {
+                    nonfriendlyHQ = nonfriendlyHQs[i];
+                    nonfriendlyHQStrength = nonfriendlyHQstrengths[i];
+                    nonfriendlyHQIsEnemy = enemyHQs[i];
+                    foundOneShotNeutral = true;
+                }
             }
         }
+        if(rc.getID()==12157) {
+            System.out.println("attacking "+nonfriendlyHQ+" with hp "+nonfriendlyHQStrength);
+            System.out.println(foundOneShotNeutral);
+            System.out.println("nonfriendlyHQStrengths "+Arrays.toString(nonfriendlyHQstrengths));
+        }
+        if(foundOneShotNeutral) return true;
         // see if you can sense something closer than reported
         for (RobotInfo r : nearby) {
             if (r.type == RobotType.ENLIGHTENMENT_CENTER && r.team != rc.getTeam()) {

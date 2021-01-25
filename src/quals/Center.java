@@ -249,7 +249,7 @@ public class Center extends Robot {
         //System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
-            setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
+            setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a | ((Math.min(nonfriendlyHQstrengths[hqIndex], 448) >> 6) << 16)); 
         } else {
             // see if we can guess an enemy HQ location from map edges
             if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {

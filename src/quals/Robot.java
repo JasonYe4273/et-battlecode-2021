@@ -390,7 +390,7 @@ public class Robot {
         nonfriendlyHQs[empty] = l;
         enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
         nonfriendlyHQrounds[empty] = rc.getRoundNum();
-        nonfriendlyHQstrengths[empty] = (f&0x0f0000) >> 10;
+        nonfriendlyHQstrengths[empty] = (f&0x070000) >> 10;
     }
     public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
         setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
