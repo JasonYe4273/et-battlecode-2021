@@ -17,7 +17,8 @@ public class Center extends Robot {
     Set<Integer> rakers = new HashSet<Integer>();
     Set<Integer> others = new HashSet<Integer>(); // units that aren't rakers (pols and slanderers)
     // only build one politician to kill each neutral, this keeps track of this
-    boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
+    int[] polIDToKillNeutral = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    int[] lastTurnSensedPolToKillNeutral = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public void turn() throws GameActionException {
         mainturn();
         lastInf = rc.getInfluence();
@@ -35,7 +36,7 @@ public class Center extends Robot {
             expectedCurrentIncome += slandererBuilds[j];
             expectedTotalIncome += i * slandererBuilds[j];
         }
-        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome);
+        //System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome);
     }
     int slandererBuildsIndex = 0;
     int[] slandererBuilds = new int[1500]; //This is how much $/turn the slanderer we built on round i made
@@ -94,17 +95,23 @@ public class Center extends Robot {
             int distanceToClosestNeutral = Integer.MAX_VALUE;
             int neutralIndex = -1;
             for (int i = 0; i < 10; i ++) {
-                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
+                if (polIDToKillNeutral[i] != -1) {
+                    if (rc.canGetFlag(polIDToKillNeutral[i])) lastTurnSensedPolToKillNeutral[i] = rc.getRoundNum();
+                    else if (rc.getRoundNum() - lastTurnSensedPolToKillNeutral[i] > 20) {
+                        polIDToKillNeutral[i] = -1;
+                        continue;
+                    }
+                }
+                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral) {
                     distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
                     neutralStrength = nonfriendlyHQstrengths[i];
                     neutralIndex = i;
                 }
             }
-            System.out.println("trying to attack a base with hp "+neutralStrength);
+            //System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
             if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 11) {
-                build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
-                builtPoliticianToKillNeutral[neutralIndex] = true;
+                polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
                 return;
             }
         }
@@ -137,7 +144,7 @@ public class Center extends Robot {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
         }
     }
-    private void build(RobotType t, int influence) throws GameActionException {
+    private int build(RobotType t, int influence) throws GameActionException {
         //System.out.println("building "+t+" with inf "+influence);
         int offset = (int)(Math.random()*8);
         for (int i=0;i<8;i++) {
@@ -158,8 +165,10 @@ public class Center extends Robot {
                 }
                 allRobots[flagsIndex++] = r;
                 allBuilds[rc.getRoundNum()] = r;
+                return r.ID;
             }
         }
+        return -1;
     }
     int rakerCount = 0;
     int polyCount = 0;
