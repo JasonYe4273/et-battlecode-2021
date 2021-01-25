@@ -22,6 +22,7 @@ src/lectureplayer
 *.iws
 /.idea/
 /tmp/
+gradle.properties
 
 
 # User-specific stuff:
