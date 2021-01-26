@@ -120,6 +120,21 @@ public class Robot {
             lastMoveTurn = rc.getRoundNum();
         }
     }
+    public void moveTowardSimple(MapLocation l) throws GameActionException {
+        if(rc.getCooldownTurns()>1) return;
+        if (DEBUG) rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
+        if(rc.getLocation().equals(l)) return;
+        if(rc.getLocation().isAdjacentTo(l)) {
+            Direction d = rc.getLocation().directionTo(l);
+            if(rc.canMove(d))
+                rc.move(d);
+            return;
+        }
+        //System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
+        Direction d = rc.getLocation().directionTo(l);
+        moveInDirection(d);
+        
+    }
     public void moveToward(MapLocation l) throws GameActionException {
         //System.out.println("Navigating toward " + l);
         if(rc.getCooldownTurns()>1) return;
