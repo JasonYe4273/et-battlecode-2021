@@ -145,7 +145,7 @@ public class Muckraker extends Robot {
                 distToTarget --;
             }
         }
-        moveToward(target);
+        moveTowardSimple(target);
     }
     public boolean onTheMap(MapLocation l) {
         return l.x > mapXmin && l.x < mapXmax && l.y > mapYmin && l.y < mapYmax;
