@@ -1,4 +1,4 @@
-package josh;
+package finals;
 import battlecode.common.*;
 
 /*
