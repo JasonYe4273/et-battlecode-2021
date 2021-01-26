@@ -70,6 +70,9 @@ public class Muckraker extends Robot {
                 }
                 else slandererLoc = r.location;
             } else if (r.team == rc.getTeam() && r.type == RobotType.MUCKRAKER) {
+                if(target == null) target = rc.getLocation();
+                target = target.translate(rc.getLocation().x==r.location.x?0:50/(rc.getLocation().x - r.location.x),
+                        rc.getLocation().y==r.location.y?0:50/(rc.getLocation().y - r.location.y));
                 if(nearestRaker == null || rc.getLocation().distanceSquaredTo(nearestRaker) > rc.getLocation().distanceSquaredTo(r.location))
                     nearestRaker = r.location;
             }
@@ -115,9 +118,6 @@ public class Muckraker extends Robot {
 
         if(nearestRaker != null && rc.getConviction() < 50) {
             //moveInDirection(nearestRaker.directionTo(rc.getLocation()));
-            if(target == null) target = rc.getLocation();
-            target = target.translate(rc.getLocation().x==nearestRaker.x?0:50/(rc.getLocation().x - nearestRaker.x),
-                    rc.getLocation().y==nearestRaker.y?0:50/(rc.getLocation().y - nearestRaker.y));
             //target = null;
             //return;
         }
