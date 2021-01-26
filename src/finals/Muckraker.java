@@ -128,7 +128,8 @@ public class Muckraker extends Robot {
         }
         final int EDGE_STRENGTH = 20;
         //move away from edges of the map
-        target = target.translate(EDGE_STRENGTH/(rc.getLocation().x - mapXmin) + EDGE_STRENGTH/(rc.getLocation().x - mapXmax),
+        if(target==null)
+            target = target.translate(EDGE_STRENGTH/(rc.getLocation().x - mapXmin) + EDGE_STRENGTH/(rc.getLocation().x - mapXmax),
                 EDGE_STRENGTH/(rc.getLocation().y - mapYmin) + EDGE_STRENGTH/(rc.getLocation().y - mapYmax));
         int distToTarget = 64;
         while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 /*|| !onTheMap(target)*/) {

@@ -2,11 +2,11 @@
 
 currentBranch=$(git symbolic-ref --short HEAD)
 git checkout $1 >/dev/null
-./a.sh quals $1
+./a.sh finals $1
 cp -r src/$1 tmp
 rm -r src/$1
 git checkout $2 >/dev/null
-./a.sh quals $2
+./a.sh finals $2
 cp -r tmp/$1 src
 sed "s/teamA=.\+/teamA=$1/" gradle.properties | sed "s/teamB=.\+/teamB=$2/" > aaa.txt
 mv aaa.txt gradle.properties 
