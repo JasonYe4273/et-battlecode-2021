@@ -1,4 +1,4 @@
-package quals;
+package oldquals;
 
 import java.util.Arrays;
 
@@ -28,9 +28,6 @@ public class Slanderer extends Politician {
         }
 
         RobotInfo[] nearby = rc.senseNearbyRobots();
-        checkEdges(4);
-        if(rc.canGetFlag(homeID)) receiveEdges(rc.getFlag(homeID));
-        if(rc.getRoundNum() % 4 == 0) sendEdges();
         findRakerFlags(nearby);
         movementS(nearby);
         setRakerFlags();
@@ -64,40 +61,16 @@ public class Slanderer extends Politician {
                     nearestEnemy = r.location;
             }
         }
-        /*if(nearestEnemy != null) {
+        if(nearestEnemy != null) {
             moveInDirection(nearestEnemy.directionTo(rc.getLocation()));
             return;
-        }*/
-
-        MapLocation patrolCenter = home;
-        MapLocation me = rc.getLocation();
-        /*int xDir = 0;
-        int yDir = 0;
-        if (mapXmin != -1 && me.x - mapXmin < 6) {
-            xDir = -1;
-        } else if (mapXmax != 999999 && mapXmax - me.x < 6) {
-            xDir = 1;
         }
-        if (mapYmin != -1 && me.y - mapYmin < 6) {
-            yDir = -1;
-        } else if (mapYmax != 999999 && mapYmax - me.y < 6) {
-            yDir = 1;
-        }
-
-        if (xDir == -1) {
-            if (yDir == -1) patrolCenter = new MapLocation(mapXmin+1, mapYmin+1);
-            else if (yDir == 1) patrolCenter = new MapLocation(mapXmin+1, mapYmax-1);
-        } else if (xDir == 1) {
-            if (yDir == -1) patrolCenter = new MapLocation(mapXmax-1, mapYmin+1);
-            else if (yDir == 1) patrolCenter = new MapLocation(mapXmax-1, mapYmax-1);
-        }*/
-
         if(patrolRadius > 2 && farp<2)
             patrolRadius--;
-        int d = rc.getLocation().distanceSquaredTo(patrolCenter);
+        int d = rc.getLocation().distanceSquaredTo(home);
         if(nearp > 10 && farp>5 && d > patrolRadius*patrolRadius || homeAdj >= homeAdjLimit)
             patrolRadius++;
-        patrol(patrolCenter,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
+        patrol(home,patrolRadius*patrolRadius,(patrolRadius+2)*(patrolRadius+2));
         //System.out.println("PatrolRadius="+patrolRadius);
     }
 }

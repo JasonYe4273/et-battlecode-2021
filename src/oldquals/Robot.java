@@ -1,4 +1,4 @@
-package quals;
+package oldquals;
 
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -20,8 +20,7 @@ public class Robot {
      *  1-14 location
      *  15 1 if mine or null (changed for quals)
      *  16 1 if enemy, 0 if neutral
-     *  17-19 strength of HQ / 64
-     *  20 for politician mask
+     *  17-20 strength of HQ / 64
      *  sent by rakers and by HQ
      * 0x300000: map edge location
      *  1-7 x-coordinate
@@ -57,7 +56,7 @@ public class Robot {
     public static final int FRIENDLY_HQ = 0x4000;
     public static final int ENEMY_HQ = 0x8000;
     public static final int NEUTRAL_HQ = 0;
-    public int politicianMask = 0;
+    public int politicianMask = 0x080000;
     int homeID;
     public Robot(RobotController robot) {
         rc = robot;
@@ -199,6 +198,8 @@ public class Robot {
                     }
                 }
             }
+            // print distances to target for debugging
+            // for (int i = 1; i <= 5; i ++) System.out.println(distancesToTarget[i][1] + " " + distancesToTarget[i][2] + " " + distancesToTarget[i][3] + " " + distancesToTarget[i][4] + " " + distancesToTarget[i][5]);
             // move to adjacent location with the nearest cost
             // Note: This cost should include the cost of moving to the square, so we add that in now
             distancesToTarget[2][4] += passabilities[2][4];
@@ -306,19 +307,18 @@ public class Robot {
     public void findRakerFlags(RobotInfo[] nearby) throws GameActionException {
         raker = null;
         rakerRound = 99999;
-        int metric = 9999999;
         for(RobotInfo r:nearby) {
             if(r.team==rc.getTeam()) {
-                if(rc.canGetFlag(r.ID)) {
-                    int f = rc.getFlag(r.ID);
-                    if((f&0xf00000) == 0x100000) {
-                        int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
-                        MapLocation l = Robot.flagToLoc(r.location, f);
-                        int m = rr*rr+rc.getLocation().distanceSquaredTo(l);
-                        if(m < metric && l.distanceSquaredTo(rc.getLocation()) > 20) {
-                            rakerRound = rr;
-                            metric = m;
-                            raker = l;
+                if(true) {
+                    if(rc.canGetFlag(r.ID)) {
+                        int f = rc.getFlag(r.ID);
+                        if((f&0xf00000) == 0x100000) {
+                            int rr = Robot.flagToRound(rc.getRoundNum()>>0, f);
+                            MapLocation l = Robot.flagToLoc(r.location, f);
+                            if(rr < rakerRound && l.distanceSquaredTo(rc.getLocation()) > 20) {
+                                rakerRound = rr;
+                                raker = l;
+                            }
                         }
                     }
                 }
@@ -349,7 +349,6 @@ public class Robot {
     boolean isEnemyHQ;
     int nonfriendlyHQStrength;
     public void sendNonfriendlyHQ() throws GameActionException {
-        //System.out.println("Sending nonfriendly HQ flag for " + nonfriendlyHQ + " with strength " + nonfriendlyHQStrength);
         if(rc.getRoundNum() > nonfriendlyHQround + 5) {
             nonfriendlyHQ = null;
             if((rc.getFlag(rc.getID())&0xf00000)==NONFRIENDLY_HQ)
@@ -357,7 +356,7 @@ public class Robot {
         }
         if(nonfriendlyHQ == null) return;
         setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | (isEnemyHQ?Robot.ENEMY_HQ : Robot.NEUTRAL_HQ)
-        | ((Math.min(nonfriendlyHQStrength, 448) >> 6) << 16));
+        | ((Math.min(nonfriendlyHQStrength, 960) >> 6) << 16));
         if(nonfriendlyHQ != null)
             if (DEBUG) rc.setIndicatorLine(rc.getLocation(), nonfriendlyHQ, 255, 0, 0);
     }
@@ -376,7 +375,7 @@ public class Robot {
                 if((f&Robot.FRIENDLY_HQ) == Robot.FRIENDLY_HQ)
                     nonfriendlyHQs[i] = null;
                 else {
-                    enemyHQs[i] |= (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
+                    enemyHQs[i] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
                     nonfriendlyHQrounds[i] = rc.getRoundNum();
                 }
                 return;
@@ -390,7 +389,7 @@ public class Robot {
         nonfriendlyHQs[empty] = l;
         enemyHQs[empty] = (f&Robot.ENEMY_HQ)==Robot.ENEMY_HQ;
         nonfriendlyHQrounds[empty] = rc.getRoundNum();
-        nonfriendlyHQstrengths[empty] = (f&0x070000) >> 10;
+        nonfriendlyHQstrengths[empty] = (f&0x0f0000) >> 10;
     }
     public void unsendNonfriendlyHQ(MapLocation nonfriendlyHQ) throws GameActionException {
         setFlag(Robot.locToFlag(nonfriendlyHQ) | NONFRIENDLY_HQ | Robot.FRIENDLY_HQ);
@@ -430,21 +429,21 @@ public class Robot {
             if (mapYmax <= myLoc.y) mapYmax += 128;
         }
     }
-    public void checkEdges(int r) throws GameActionException {
+    public void checkEdges() throws GameActionException {
         if(mapXmin == -1) {
-            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(-i, 0));i--)
                 mapXmin = rc.getLocation().x - i;
         }
         if(mapXmax == 999999) {
-            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(i, 0));i--)
                 mapXmax = rc.getLocation().x + i;
         }
         if(mapYmin == -1) {
-            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, -i));i--)
                 mapYmin = rc.getLocation().y - i;
         }
         if(mapYmax == 999999) {
-            for(int i=r;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
+            for(int i=5;i>0 && !rc.onTheMap(rc.getLocation().translate(0, i));i--)
                 mapYmax = rc.getLocation().y + i;
         }
     }

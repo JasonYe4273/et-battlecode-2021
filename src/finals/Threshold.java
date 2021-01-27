@@ -1,4 +1,4 @@
-package quals;
+package finals;
 public final class Threshold {
     public static final int slandererThreshold(int inf) {
         switch(inf) {

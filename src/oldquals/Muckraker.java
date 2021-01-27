@@ -1,4 +1,4 @@
-package quals;
+package oldquals;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -13,7 +13,7 @@ public class Muckraker extends Robot {
     }
     MapLocation target = null;
     public void turn() throws GameActionException {
-        checkEdges(5);
+        checkEdges();
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //System.out.println(target);
         RobotInfo[] nearby = rc.senseNearbyRobots();

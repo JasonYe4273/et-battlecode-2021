@@ -1,4 +1,4 @@
-package josh;
+package oldquals;
 import battlecode.common.*;
 
 /*

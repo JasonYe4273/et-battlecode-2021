@@ -1,4 +1,4 @@
-package quals;
+package finals;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;

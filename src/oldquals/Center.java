@@ -1,4 +1,4 @@
-package quals;
+package oldquals;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,35 +14,12 @@ public class Center extends Robot {
     }
     int lastInf = rc.getInfluence();
     int lastRakerRound = 0;
+    int rakersBuilt= 0;
     Set<Integer> rakers = new HashSet<Integer>();
     Set<Integer> others = new HashSet<Integer>(); // units that aren't rakers (pols and slanderers)
     // only build one politician to kill each neutral, this keeps track of this
-    int[] polIDToKillNeutral = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    int[] lastTurnSensedPolToKillNeutral = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    public void turn() throws GameActionException {
-        mainturn();
-        lastInf = rc.getInfluence();
-        /*
-        while(slandererBuildsIndex < rc.getRoundNum()-50) {
-            expectedTotalIncome -= expectedCurrentIncome;
-            expectedCurrentIncome -= slandererBuilds[slandererBuildsIndex];
-            slandererBuildsIndex++;
-        }
-        */
-        expectedTotalIncome = 0;
-        expectedCurrentIncome = 0;
-        for(int i=Math.max(0, 50-rc.getRoundNum());i<50;i++) {
-            int j = rc.getRoundNum() - 50 + i;
-            expectedCurrentIncome += slandererBuilds[j];
-            expectedTotalIncome += i * slandererBuilds[j];
-        }
-        //System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome);
-    }
-    int slandererBuildsIndex = 0;
-    int[] slandererBuilds = new int[1500]; //This is how much $/turn the slanderer we built on round i made
-    int expectedTotalIncome = 0; //expected income from all current slanderers over all future rounds
-    int expectedCurrentIncome = 0; //expected income for next round
-    public void mainturn() throws GameActionException {
+    boolean [] builtPoliticianToKillNeutral = {false, false, false, false, false, false, false, false, false, false};
+    public void turn() throws Exception {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
         readAllFlags();
@@ -62,7 +39,7 @@ public class Center extends Robot {
                 }
             } else {
                 if(r.type == RobotType.POLITICIAN)
-                    enemyPStrength+=r.conviction - GameConstants.EMPOWER_TAX;
+                    enemyPStrength+=r.conviction;
                 else if(r.type == RobotType.MUCKRAKER) {
                     enemyRStrength+=r.conviction;
                     lastRakerRound = rc.getRoundNum();
@@ -72,22 +49,22 @@ public class Center extends Robot {
         int inf = rc.getInfluence() - enemyPStrength;
 
         //if(rc.getRoundNum() > 1000) rc.resign();
-        inf -= vote(inf);
-
-        if (rc.getRoundNum() > 1490) return;
-
-        if(rc.getCooldownTurns() >= 1) {
-            return;
+        if(rc.getRoundNum() > 400 && inf > 0) {
+            if (rc.getRoundNum() < 1000) bid(inf / 100 + 1);
+            else if (rc.getRoundNum() < 1200) bid(inf / 50 + 1);
+            else if (rc.getRoundNum() < 1350) bid(inf / 30 + 1);
+            else bid(inf / 20 + 1);
         }
+        if(rc.getCooldownTurns() >= 1) return;
         boolean neutralHQ = false;
         boolean enemyHQ = false;
         for(int i=0;i<10;i++) {
             if(nonfriendlyHQs[i]!=null) {
-                if (enemyHQs[i]) {enemyHQ = true; neutralHQ = false;}
-                else neutralHQ = !enemyHQ;
+                if (enemyHQs[i]) enemyHQ = true;
+                else neutralHQ = true;
+                break;
             }
         }
-        //System.out.println(enemyHQ + " " + neutralHQ);
 
         // if we are attacking a neutral HQ, find the influence of the nearest neutral
         if (neutralHQ) {
@@ -95,34 +72,27 @@ public class Center extends Robot {
             int distanceToClosestNeutral = Integer.MAX_VALUE;
             int neutralIndex = -1;
             for (int i = 0; i < 10; i ++) {
-                if (polIDToKillNeutral[i] != -1) {
-                    if (rc.canGetFlag(polIDToKillNeutral[i])) lastTurnSensedPolToKillNeutral[i] = rc.getRoundNum();
-                    else if (rc.getRoundNum() - lastTurnSensedPolToKillNeutral[i] > 20) {
-                        polIDToKillNeutral[i] = -1;
-                        continue;
-                    }
-                }
-                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral) {
+                if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral && !builtPoliticianToKillNeutral[i]) {
                     distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
                     neutralStrength = nonfriendlyHQstrengths[i];
                     neutralIndex = i;
                 }
             }
-            //System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
-            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 11) {
-                polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
+            if (neutralIndex != -1 && inf > neutralStrength + 100 + 64 + 10) {
+                build(RobotType.POLITICIAN, neutralStrength + 64 + 10);
+                builtPoliticianToKillNeutral[neutralIndex] = true;
                 return;
             }
         }
 
-        if(inf > 500 && (enemyHQ | neutralHQ)) {
-            if (enemyHQ && Math.random() < 0.2) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
+        if(inf > 500 && (enemyHQ || neutralHQ)) {
+            if (Math.random() < 0.2 && enemyHQ) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
             return;
         }
-        /*if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
-            lastRakerRound = rc.getRoundNum();*/
+        if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
+            lastRakerRound = rc.getRoundNum();
         //System.out.println("p = "+politicians+" s="+slanderers);
         
         if(inf < 11 || rc.getInfluence()<40) {
@@ -131,20 +101,19 @@ public class Center extends Robot {
         }
         if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/)) {
             build(RobotType.MUCKRAKER, 1);
+            rakersBuilt++;
         }
         int income =  rc.getInfluence() - lastInf;
-        if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
-            build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
-        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 40 || polyCount > 10)) {
-            if(rc.getRoundNum() < 50 && inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
-                if (rakerCount > 100) build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
-                else build(RobotType.MUCKRAKER,1);
-            } else build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+        if(enemyPStrength + enemyRStrength > myPStrength + 20) {
+            build(RobotType.POLITICIAN, Math.min(rc.getInfluence(), enemyPStrength + enemyRStrength - myPStrength ));
+        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 60 || polyCount > 10)) {
+            build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
         } else {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
         }
+        lastInf = rc.getInfluence();
     }
-    private int build(RobotType t, int influence) throws GameActionException {
+    private void build(RobotType t, int influence) throws GameActionException {
         //System.out.println("building "+t+" with inf "+influence);
         int offset = (int)(Math.random()*8);
         for (int i=0;i<8;i++) {
@@ -158,17 +127,11 @@ public class Center extends Robot {
                 } else if(t == RobotType.POLITICIAN) {
                     polyCount++;
                     //others.add(r.ID);
-                } else if(t == RobotType.SLANDERER) {
-                    slandererBuilds[rc.getRoundNum()] = Threshold.slandererIncome(influence);
-                    expectedTotalIncome += Threshold.slandererIncome(influence) * 50;
-                    expectedCurrentIncome += Threshold.slandererIncome(influence);
                 }
                 allRobots[flagsIndex++] = r;
                 allBuilds[rc.getRoundNum()] = r;
-                return r.ID;
             }
         }
-        return -1;
     }
     int rakerCount = 0;
     int polyCount = 0;
@@ -208,9 +171,9 @@ public class Center extends Robot {
     
     // this method now receives edges as well as non-friendly HQs
     public void readNonfriendlyHQFlag() throws GameActionException {
-        //System.out.println("Starting reading: " + Clock.getBytecodesLeft());
+        System.out.println("Starting reading: " + Clock.getBytecodesLeft());
         Iterator<Integer> it = rakers.iterator();
-        //System.out.println("num rakers " +rakers.size());
+        System.out.println("num rakers " +rakers.size());
         while(it.hasNext()) {
             int id = it.next();
             if(rc.canGetFlag(id)) {
@@ -221,7 +184,7 @@ public class Center extends Robot {
                 it.remove();
             }
         }
-        //System.out.println("Read rakers: " + Clock.getBytecodesLeft());
+        System.out.println("Read rakers: " + Clock.getBytecodesLeft());
         it = others.iterator();
         while(it.hasNext()) {
             int id = it.next();
@@ -233,7 +196,7 @@ public class Center extends Robot {
                 it.remove();
             }
         }
-        //System.out.println("Read others: " + Clock.getBytecodesLeft());
+        System.out.println("Read others: " + Clock.getBytecodesLeft());
         sendNonfriendlyHQ();
     }
     int hqIndex=0;
@@ -258,7 +221,7 @@ public class Center extends Robot {
         //System.out.println(l);
         if(l!=null) {
             int a = enemyHQs[hqIndex]? Robot.ENEMY_HQ : Robot.NEUTRAL_HQ;
-            setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a | ((Math.min(nonfriendlyHQstrengths[hqIndex], 448) >> 6) << 16)); 
+            setFlag(NONFRIENDLY_HQ | Robot.locToFlag(l) | a); 
         } else {
             // see if we can guess an enemy HQ location from map edges
             if (mapXmin == -1 || mapXmax == 999999 || mapYmin == -1 || mapYmax == 999999) {
@@ -286,74 +249,21 @@ public class Center extends Robot {
     int myVotes = 0;
     int opponentVotes = 0;
     boolean attemptedVote = false;
-    double voteProp = 0;
-    double maxVoteProp = 0;
-    double minVoteProp = 0;
-    public int vote(int inf) throws GameActionException {
-        if (inf <= 0) {
-            attemptedVote = false;
-            return 0;
-        }
-
+    public void bid(int b) throws GameActionException {
         boolean lostVote = attemptedVote && rc.getTeamVotes() == myVotes;
         if (lostVote) opponentVotes++;
         myVotes = rc.getTeamVotes();
 
         if (myVotes > 750 || opponentVotes - myVotes > 1501 - rc.getRoundNum()) {
             attemptedVote = false;
-            return 0;
+            return;
         }
 
-        int round = rc.getRoundNum();
-        if (round == 1450) {
-            minVoteProp = 0.1;
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-            maxVoteProp = 0.25;
-        } else if (round == 1350) {
-            minVoteProp = 0.05;
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-            maxVoteProp = 0.1;
-        } else if (round == 1200) {
-            minVoteProp = 0.03;
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-            maxVoteProp = 0.05;
-        } else if (round == 1000) {
-            minVoteProp = 0.02;
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-            maxVoteProp = 0.03;
-        } else if (round == 400) {
-            minVoteProp = 0.01;
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-            maxVoteProp = 0.02;
-        } else if (round % 25 == 0) {
-            if (voteProp < minVoteProp) voteProp = minVoteProp;
-        }
-
-        if (voteProp == 0) {
-            attemptedVote = false;
-            return 0;
-        }
-
-        if (lostVote) {
-            if (voteProp < maxVoteProp) voteProp += maxVoteProp / 4;
-            else {
-                voteProp = 0;
-                attemptedVote = false;
-                return 0;
-            }
-        } else if (voteProp > minVoteProp) voteProp -= maxVoteProp / 16;
-
-        return bid((int) (inf * voteProp) + 1);
-    }
-
-    public int bid(int b) throws GameActionException {
         if (rc.canBid(b)) {
             rc.bid(b);
             attemptedVote = true;
-            return b;
-        } else {
-            attemptedVote = false;
-            return 0;
-        }
+        } else attemptedVote = false;
+
     }
+
 }
