@@ -186,7 +186,7 @@ public class Center extends Robot {
             final double INCOME_TARGET = 187 * (30 + 2*Math.sqrt(polyCount)); //at 375 * x, this corresponds to building slanderers for x% of builds
             System.out.println("INCOME_TARGET "+INCOME_TARGET);
             //this indicates that we are falling behind on income
-            if(expectedTotalIncome + inf < expectedCurrentIncome * 30 && (expectedTotalIncome + inf< INCOME_TARGET || expectedTotalIncome + inf< expectedCurrentIncome * 21)) {
+            if(expectedTotalIncome < expectedCurrentIncome * 30 && (expectedTotalIncome < INCOME_TARGET || expectedTotalIncome < expectedCurrentIncome * 21)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
             }
