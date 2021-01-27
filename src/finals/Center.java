@@ -38,6 +38,7 @@ public class Center extends Robot {
         }
         System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount);
     }
+    int smallPolyCount = 0;
     int slandererBuildsIndex = 0;
     int[] slandererBuilds = new int[1500]; //This is how much $/turn the slanderer we built on round i made
     int expectedTotalIncome = 0; //expected income from all current slanderers over all future rounds
@@ -154,7 +155,7 @@ public class Center extends Robot {
             //1500 total income : 8 polys
             //2500 total income : 12 polys
             if(expectedTotalIncome < 1500) {
-                if(expectedTotalIncome > 500 && polyCount < 4)
+                if(expectedTotalIncome > 500 && smallPolyCount < 4)
                     build(RobotType.POLITICIAN, smallPoly);
                 //if we could wait for a bigger slanderer, then build a 1hp raker
                 if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
@@ -164,22 +165,25 @@ public class Center extends Robot {
                 }
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
-            } else if((expectedTotalIncome > 2500 && polyCount < 12) || polyCount < 8 ) {
+            } else if((expectedTotalIncome > 2500 && smallPolyCount < 12) || smallPolyCount < 8 ) {
                 build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            int INCOME_TARGET = 187 * 60; //at 375 * x, this corresponds to building slanderers for x% of builds
+            int INCOME_TARGET = 187 * 70; //at 375 * x, this corresponds to building slanderers for x% of builds
             //this indicates that we are falling behind on income
-            if(expectedTotalIncome > expectedCurrentIncome * 20 && (expectedTotalIncome < INCOME_TARGET || expectedTotalIncome > expectedCurrentIncome * 27)) {
+            if(expectedTotalIncome + inf > expectedCurrentIncome * 20 && (expectedTotalIncome + inf< INCOME_TARGET || expectedTotalIncome + inf> expectedCurrentIncome * 27)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
             }
             //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
-            //currently: 25% buffrakers, 50% big polys, 25% small polys
+            //currently: 25% buffrakers, 50% big polys, 12.5% small polys, 12.5% small rakers
             if(Math.random() < .5) {
                 build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/10));
             } else if(Math.random() < .5) {
-                build(RobotType.POLITICIAN, smallPoly);
+                if(Math.random() < .5)
+                    build(RobotType.MUCKRAKER, smallPoly);
+                else
+                    build(RobotType.POLITICIAN, smallPoly);
             } else {
                 build(RobotType.MUCKRAKER, Math.min(inf, (inf + expectedTotalIncome)/10));
             }
@@ -212,6 +216,8 @@ public class Center extends Robot {
                     rakerCount++;
                 } else if(t == RobotType.POLITICIAN) {
                     polyCount++;
+                    if(r.conviction < 200)
+                        smallPolyCount++;
                     //others.add(r.ID);
                 } else if(t == RobotType.SLANDERER) {
                     slandererBuilds[rc.getRoundNum()] = Threshold.slandererIncome(influence);
@@ -244,8 +250,11 @@ public class Center extends Robot {
             } else {
                 if(allRobots[i].type == RobotType.MUCKRAKER)
                     rakerCount--;
-                else if(allRobots[i].type == RobotType.POLITICIAN || allRobots[i].type == RobotType.SLANDERER)
+                else if(allRobots[i].type == RobotType.POLITICIAN || allRobots[i].type == RobotType.SLANDERER) {
                     polyCount--;
+                    if(allRobots[i].conviction < 200)
+                        smallPolyCount--;
+                }
             }
         }
         flagsIndex = empty;
