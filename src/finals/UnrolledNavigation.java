@@ -1087,9 +1087,9 @@ distances33+= passabilities33;
 Direction bestDir = null;
 double minDistance = distances22;
 Direction directPath = rc.getLocation().directionTo(destination);
-System.out.println("Direct path: " + directPath);
+//System.out.println("Direct path: " + directPath);
 if (rc.canMove(directPath)) {
-System.out.println("Initializing variables to direct path");
+//System.out.println("Initializing variables to direct path");
 bestDir = directPath;
 if(directPath == Direction.NORTHWEST) minDistance = distances13;
 if(directPath == Direction.WEST) minDistance = distances12;
