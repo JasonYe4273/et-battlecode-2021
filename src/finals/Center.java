@@ -95,13 +95,16 @@ public class Center extends Robot {
             int distanceToClosestNeutral = Integer.MAX_VALUE;
             int neutralIndex = -1;
             for (int i = 0; i < 10; i ++) {
+                //we have a poly for this neutral already, and it was alive in the last 10 turns
                 if (polIDToKillNeutral[i] != -1) {
+                    //if it's still alive note that
                     if (rc.canGetFlag(polIDToKillNeutral[i])) lastTurnSensedPolToKillNeutral[i] = rc.getRoundNum();
-                    else if (rc.getRoundNum() - lastTurnSensedPolToKillNeutral[i] > 20) {
+                    else if (rc.getRoundNum() - lastTurnSensedPolToKillNeutral[i] > 10) {
                         polIDToKillNeutral[i] = -1;
-                        continue;
                     }
                 }
+                if(polIDToKillNeutral[i] != -1)
+                    continue;
                 if (nonfriendlyHQs[i] != null && rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]) < distanceToClosestNeutral) {
                     distanceToClosestNeutral = rc.getLocation().distanceSquaredTo(nonfriendlyHQs[i]);
                     neutralStrength = nonfriendlyHQstrengths[i];
