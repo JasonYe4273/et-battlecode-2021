@@ -117,7 +117,7 @@ public class Center extends Robot {
             }
             //System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
-            int cost = Math.min(neutralStrength + 64, 500) + 11 + Math.max(0, distanceToClosestNeutral-100);
+            int cost = Math.min(neutralStrength + 64, 500) + 11 + (int)Math.max(0, Math.pow(distanceToClosestNeutral,.75)-50)/2;
             if (neutralIndex != -1) {
                 if(inf > cost) {
                     polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, cost);
@@ -158,7 +158,7 @@ public class Center extends Robot {
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
         int smallPoly = Math.min(inf, 16 + inf/400 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
-        final double INCOME_TARGET = 187 * (1 + 3*Math.sqrt(polyCount)); //at 375 * x, this corresponds to building slanderers for x% of builds
+        final double INCOME_TARGET = 187 * (polyCount-3)*3/2; //at 187 * x, this corresponds to building slanderers for x% of builds
 
         //if rakers are around, don't build slanderers
         if(enemyRStrength==0) {
@@ -193,10 +193,10 @@ public class Center extends Robot {
             }
             //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
             //currently: 25% buffrakers, 50% big polys, 12.5% small polys, 12.5% small rakers
-            if(Math.random() < .5) {
+            if(Math.random() < .25) {
                 build(RobotType.POLITICIAN, Math.min(inf-(int)INCOME_TARGET/10, (inf + expectedTotalIncome)/20));
-            } else if(Math.random() < .5) {
-                if(Math.random() < .5)
+            } else if(Math.random() < .75) {
+                if(Math.random() < .25)
                     build(RobotType.MUCKRAKER, smallPoly);
                 else
                     build(RobotType.POLITICIAN, smallPoly);
