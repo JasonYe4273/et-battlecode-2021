@@ -126,11 +126,13 @@ public class Muckraker extends Robot {
             //target = null;
             //return;
         }
-        final int EDGE_STRENGTH = 20;
+        //final int EDGE_STRENGTH = 20;
         //move away from edges of the map
-        if(target==null)
-            target = target.translate(EDGE_STRENGTH/(rc.getLocation().x - mapXmin) + EDGE_STRENGTH/(rc.getLocation().x - mapXmax),
-                EDGE_STRENGTH/(rc.getLocation().y - mapYmin) + EDGE_STRENGTH/(rc.getLocation().y - mapYmax));
+        if(target!=null) {
+            target = new MapLocation(Math.min(Math.max(target.x, mapXmin), mapXmax),Math.min(Math.max(target.y, mapYmin), mapYmax));
+        }
+        //    target = target.translate(EDGE_STRENGTH/(rc.getLocation().x - mapXmin) + EDGE_STRENGTH/(rc.getLocation().x - mapXmax),
+        //        EDGE_STRENGTH/(rc.getLocation().y - mapYmin) + EDGE_STRENGTH/(rc.getLocation().y - mapYmax));
         int distToTarget = 64;
         while(target == null || rc.getLocation().distanceSquaredTo(target) < 25 /*|| !onTheMap(target)*/) {
             // if target is an enemy HQ, orbit it
