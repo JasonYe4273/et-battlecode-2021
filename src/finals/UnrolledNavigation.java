@@ -4,7 +4,7 @@ public class UnrolledNavigation extends Navigation {
 public UnrolledNavigation(RobotController r) {super(r);}
 public void navTo (MapLocation destination) throws GameActionException {
 int initialBytecodeCount = Clock.getBytecodeNum();
-System.out.println("Intelligent navigation to " + destination);
+//System.out.println("Intelligent navigation to " + destination);
 MapLocation myLoc = rc.getLocation();
 int elevations00;
 MapLocation loc00 = new MapLocation(myLoc.x + -2, myLoc.y + -2);
@@ -108,7 +108,7 @@ boolean validLocs44 = rc.canSenseLocation(loc44) && !rc.isLocationOccupied(loc44
 double passabilities44= Double.MAX_VALUE; if (validLocs44) passabilities44 = 1.0/rc.sensePassability(loc44);
 validLocs22 = true;
 passabilities22 = 1.0/rc.sensePassability(loc22);
-System.out.println("Bytecodes used in checking location validity: " + (Clock.getBytecodeNum() - initialBytecodeCount));
+//System.out.println("Bytecodes used in checking location validity: " + (Clock.getBytecodeNum() - initialBytecodeCount));
 boolean validEdges000 = (validLocs01 && validLocs10);
 boolean validEdges100 = (validLocs00 && validLocs10);
 boolean validEdges200 = (validLocs00 && validLocs11);
@@ -181,7 +181,7 @@ boolean validEdges340 = (validLocs40 && validLocs41);
 boolean validEdges341 = (validLocs41 && validLocs42);
 boolean validEdges342 = (validLocs42 && validLocs43);
 boolean validEdges343 = (validLocs43 && validLocs44);
-System.out.println("Bytecodes used in setup: " + (Clock.getBytecodeNum() - initialBytecodeCount));
+//System.out.println("Bytecodes used in setup: " + (Clock.getBytecodeNum() - initialBytecodeCount));
 int shiftedX = myLoc.x - destination.x - 2;
 int shiftedY = myLoc.y - destination.y - 2;
 double distances00 = Math.max(Math.abs(shiftedX + 0), Math.abs(shiftedY + 0)) * 100 + (Math.sqrt(Math.pow(shiftedX + 0, 2) + Math.pow(shiftedY + 0, 2)) * 0.01);
@@ -209,7 +209,7 @@ double distances41 = Math.max(Math.abs(shiftedX + 4), Math.abs(shiftedY + 1)) * 
 double distances42 = Math.max(Math.abs(shiftedX + 4), Math.abs(shiftedY + 2)) * 100 + (Math.sqrt(Math.pow(shiftedX + 4, 2) + Math.pow(shiftedY + 2, 2)) * 0.01);
 double distances43 = Math.max(Math.abs(shiftedX + 4), Math.abs(shiftedY + 3)) * 100 + (Math.sqrt(Math.pow(shiftedX + 4, 2) + Math.pow(shiftedY + 3, 2)) * 0.01);
 double distances44 = Math.max(Math.abs(shiftedX + 4), Math.abs(shiftedY + 4)) * 100 + (Math.sqrt(Math.pow(shiftedX + 4, 2) + Math.pow(shiftedY + 4, 2)) * 0.01);
-System.out.println("Bytecodes used in setup and distance initialization: " + (Clock.getBytecodeNum() - initialBytecodeCount));
+//System.out.println("Bytecodes used in setup and distance initialization: " + (Clock.getBytecodeNum() - initialBytecodeCount));
 if (validEdges000){
 distances01=Math.min(distances01, distances10+passabilities10);
 distances10=Math.min(distances01+passabilities01, distances10);
@@ -1074,7 +1074,7 @@ if (validEdges343){
 distances43=Math.min(distances43, distances44+passabilities44);
 distances44=Math.min(distances43+passabilities43, distances44);
 }
-System.out.println("Bytecodes used in setup and iteration: " + (Clock.getBytecodeNum() - initialBytecodeCount));
+//System.out.println("Bytecodes used in setup and iteration: " + (Clock.getBytecodeNum() - initialBytecodeCount));
 distances11+= passabilities11;
 distances12+= passabilities12;
 distances13+= passabilities13;
@@ -1099,16 +1099,16 @@ if(directPath == Direction.SOUTHEAST) minDistance = distances31;
 if(directPath == Direction.EAST) minDistance = distances32;
 if(directPath == Direction.NORTHEAST) minDistance = distances33;
 if(directPath == Direction.NORTH) minDistance = distances23;
-System.out.println("minDistance initialized to " + minDistance);
+//System.out.println("minDistance initialized to " + minDistance);
 }
-System.out.println("NORTHWEST: " + distances13);
-System.out.println("WEST: " + distances12);
-System.out.println("SOUTHWEST: " + distances11);
-System.out.println("SOUTH: " + distances21);
-System.out.println("SOUTHEAST: " + distances31);
-System.out.println("EAST: " + distances32);
-System.out.println("NORTHEAST: " + distances33);
-System.out.println("NORTH: " + distances23);
+//System.out.println("NORTHWEST: " + distances13);
+//System.out.println("WEST: " + distances12);
+//System.out.println("SOUTHWEST: " + distances11);
+//System.out.println("SOUTH: " + distances21);
+//System.out.println("SOUTHEAST: " + distances31);
+//System.out.println("EAST: " + distances32);
+//System.out.println("NORTHEAST: " + distances33);
+//System.out.println("NORTH: " + distances23);
 if (validEdges012 && distances13 < minDistance) {
 bestDir=Direction.NORTHWEST;
 minDistance=distances13;
@@ -1141,11 +1141,11 @@ if (validEdges322 && distances23 < minDistance) {
 bestDir=Direction.NORTH;
 minDistance=distances23;
 }
-System.out.println("Best movement direction: " + bestDir);
-System.out.println("Minimum distance: " + minDistance);
-System.out.println("Current distance: " + distances22);
+//System.out.println("Best movement direction: " + bestDir);
+//System.out.println("Minimum distance: " + minDistance);
+//System.out.println("Current distance: " + distances22);
 if (minDistance == distances22) return;
-System.out.println("Total bytecodes used: " + (Clock.getBytecodeNum() - initialBytecodeCount));
+//System.out.println("Total bytecodes used: " + (Clock.getBytecodeNum() - initialBytecodeCount));
 if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
 }
 }
