@@ -61,14 +61,14 @@ public class Slanderer extends Politician {
             }
         }
         if(homeAdj >= homeAdjLimit) {
-            moveInDirection(home.directionTo(rc.getLocation()));
+            nav.moveInDirection(home.directionTo(rc.getLocation()));
         }
         if(raker != null && raker.distanceSquaredTo(rc.getLocation()) < 400) {
-            moveInDirection(raker.directionTo(rc.getLocation()));
+            nav.moveInDirection(raker.directionTo(rc.getLocation()));
             return;
         }
         /*if(nearestEnemy != null) {
-            moveInDirection(nearestEnemy.directionTo(rc.getLocation()));
+            nav.moveInDirection(nearestEnemy.directionTo(rc.getLocation()));
             return;
         }*/
 

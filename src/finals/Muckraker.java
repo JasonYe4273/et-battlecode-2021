@@ -97,7 +97,7 @@ public class Muckraker extends Robot {
             return;
         }
         if (slandererLoc != null) {
-            moveToward(slandererLoc);
+            nav.moveToward(slandererLoc);
             return;
         }
 
@@ -114,7 +114,7 @@ public class Muckraker extends Robot {
                 }
             }
             if (closeP != null && polMinD > 2) {
-                moveToward(closeP);
+                nav.moveToward(closeP);
                 return;
             }
         }
@@ -122,7 +122,7 @@ public class Muckraker extends Robot {
         
 
         if(nearestRaker != null && rc.getConviction() < 50) {
-            //moveInDirection(nearestRaker.directionTo(rc.getLocation()));
+            //nav.moveInDirection(nearestRaker.directionTo(rc.getLocation()));
             //target = null;
             //return;
         }
@@ -138,8 +138,8 @@ public class Muckraker extends Robot {
             // if target is an enemy HQ, orbit it
             if (target != null && rc.canSenseLocation(target) && rc.senseRobotAtLocation(target) != null
                     && rc.senseRobotAtLocation(target).type == RobotType.ENLIGHTENMENT_CENTER && rc.senseRobotAtLocation(target).team == rc.getTeam().opponent()) {
-                if (rc.getLocation().distanceSquaredTo(target) >= 9) moveInDirection(rc.getLocation().directionTo(target));
-                else moveInDirection(rc.getLocation().directionTo(target).rotateRight().rotateRight());
+                if (rc.getLocation().distanceSquaredTo(target) >= 9) nav.moveInDirection(rc.getLocation().directionTo(target));
+                else nav.moveInDirection(rc.getLocation().directionTo(target).rotateRight().rotateRight());
                 break;
             } else {
                 //otherwise, if we are too close to the target, find a new one at random
@@ -148,7 +148,7 @@ public class Muckraker extends Robot {
                 distToTarget --;
             }
         }
-        moveToward(target);
+        nav.moveToward(target);
     }
     public boolean onTheMap(MapLocation l) {
         return l.x > mapXmin && l.x < mapXmax && l.y > mapYmin && l.y < mapYmax;
