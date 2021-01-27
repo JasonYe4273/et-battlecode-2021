@@ -136,7 +136,7 @@ public class Center extends Robot {
             return;
         }
         //build a small number of rakers
-        if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/)) {
+        if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/) && (inf+expectedTotalIncome) < 2000) {
             build(RobotType.MUCKRAKER, 1);
         }
         int income =  rc.getInfluence() - lastInf;
@@ -146,12 +146,12 @@ public class Center extends Robot {
             return;
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
-        int smallPoly = Math.min(inf, 16 + inf/40 + (int)Math.min(Math.random() * 50, inf/10));
+        int smallPoly = Math.min(inf, 16 + inf/40 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
         //if rakers are around, don't build slanderers
         if(enemyRStrength==0) {
             //first threshold is 2500 total income before any significant number of polys
             //then we need at least 8 polys to proceed
-            if(expectedTotalIncome < 2500) {
+            if(expectedTotalIncome < 1500) {
                 //if we could wait for a bigger slanderer, then build a 1hp raker
                 if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
                     //except actually build a smallPoly if we have waaay to many rakers
