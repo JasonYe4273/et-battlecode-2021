@@ -66,7 +66,7 @@ public class Robot {
             homeID = rc.getID();
             return;
         } else {
-            nav = new Navigation(rc);
+            nav = new UnrolledNavigation(rc);
         }
         for(RobotInfo r:rc.senseNearbyRobots(3, rc.getTeam())) {
             if(r.type==RobotType.ENLIGHTENMENT_CENTER) {
