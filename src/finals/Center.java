@@ -147,7 +147,7 @@ public class Center extends Robot {
             return;
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
-        int smallPoly = Math.min(inf, 16 + inf/40 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
+        int smallPoly = Math.min(inf, 16 + inf/400 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
         //if rakers are around, don't build slanderers
         if(enemyRStrength==0) {
             //number of polys needed before proceeding beyond income thresholds:
