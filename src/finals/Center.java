@@ -36,7 +36,7 @@ public class Center extends Robot {
             expectedCurrentIncome += slandererBuilds[j];
             expectedTotalIncome += i * slandererBuilds[j];
         }
-        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount);
+        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
     }
     int smallPolyCount = 0;
     int slandererBuildsIndex = 0;
@@ -114,8 +114,8 @@ public class Center extends Robot {
             }
             //System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
-            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 11) {
-                polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 11);
+            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 110) {
+                polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 110);
                 return;
             }
         }
