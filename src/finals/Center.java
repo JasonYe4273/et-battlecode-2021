@@ -142,7 +142,7 @@ public class Center extends Robot {
         if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
             build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
         } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 40 || polyCount > 10)) {
-            if(rc.getRoundNum() < 50 && inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
+            if(rc.getRoundNum() < 50 && inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) { //more early rakers
                 if (rakerCount > 100) build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
                 else build(RobotType.MUCKRAKER,1);
             } else build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
