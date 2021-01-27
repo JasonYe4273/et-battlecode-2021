@@ -119,29 +119,72 @@ public class Center extends Robot {
             }
         }
 
+        /*
         if(inf > 500 && (enemyHQ | neutralHQ)) {
             if (enemyHQ && Math.random() < 0.2) build(RobotType.MUCKRAKER, Math.max(400, inf / 100));
             else build(RobotType.POLITICIAN, Math.max(400, inf / 100));
             return;
         }
-        /*
-        if(rc.getEmpowerFactor(rc.getTeam().opponent(), 20) > 1)
-            lastRakerRound = rc.getRoundNum();
-        
         */
-        //System.out.println("p = "+politicians+" s="+slanderers);
-        
         if(inf < 11 || rc.getInfluence()<40) {
             build(RobotType.MUCKRAKER, 1);
             return;
         }
+        //open with a slanderer always
+        if(rc.getRoundNum() < 3) {
+            build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+            return;
+        }
+        //build a small number of rakers
         if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/)) {
             build(RobotType.MUCKRAKER, 1);
         }
         int income =  rc.getInfluence() - lastInf;
+        //if i am under attack by rakers, build a poly to defend
         if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
             build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
-        } else if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 40 || polyCount > 10)) {
+            return;
+        }
+        //a small poly is for blowing up cheap rakers. build them in a variety of values
+        int smallPoly = Math.min(inf, 16 + inf/40 + (int)Math.min(Math.random() * 50, inf/10));
+        //if rakers are around, don't build slanderers
+        if(enemyRStrength==0) {
+            //first threshold is 2500 total income before any significant number of polys
+            //then we need at least 8 polys to proceed
+            if(expectedTotalIncome < 2500) {
+                //if we could wait for a bigger slanderer, then build a 1hp raker
+                if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
+                    //except actually build a smallPoly if we have waaay to many rakers
+                    if (rakerCount > 100) build(RobotType.POLITICIAN, smallPoly);
+                    else build(RobotType.MUCKRAKER,1);
+                }
+                build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+                return;
+            } else if(polyCount < 8) {
+                build(RobotType.POLITICIAN, smallPoly);
+                return;
+            }
+            int INCOME_TARGET = 375 * 60; //at 375 * x, this corresponds to building slanderers for x% of builds
+            //this indicates that we are falling behind on income
+            if(expectedTotalIncome > expectedCurrentIncome * 20 && (expectedTotalIncome < INCOME_TARGET || expectedTotalIncome > expectedCurrentIncome * 27)) {
+                build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
+                return;
+            }
+            //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
+            //currently: 25% buffrakers, 50% big polys, 25% small polys
+            if(Math.random() < .5) {
+                build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/10));
+            } else if(Math.random() < .5) {
+                build(RobotType.POLITICIAN, smallPoly);
+            } else {
+                build(RobotType.MUCKRAKER, Math.min(inf, (inf + expectedTotalIncome)/10));
+            }
+        } else {
+            //if rakers are around, build a small Poly
+            build(RobotType.POLITICIAN, smallPoly);
+        }
+        /*
+        if(enemyRStrength == 0 && (rc.getRoundNum()<3 || politicians*(rc.getRoundNum() - lastRakerRound) > slanderers || politicians > 20) && (inf<1000 || income<500) && (income < 40 || polyCount > 10)) {
             if(rc.getRoundNum() < 50 && inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) { //more early rakers
                 if (rakerCount > 100) build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
                 else build(RobotType.MUCKRAKER,1);
@@ -149,6 +192,7 @@ public class Center extends Robot {
         } else {
             build(RobotType.POLITICIAN, Math.min(inf, 22 + inf/40));
         }
+        */
     }
     private int build(RobotType t, int influence) throws GameActionException {
         //System.out.println("building "+t+" with inf "+influence);
