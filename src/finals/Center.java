@@ -158,6 +158,8 @@ public class Center extends Robot {
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
         int smallPoly = Math.min(inf, 16 + inf/400 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
+        final double INCOME_TARGET = 187 * (1 + 3*Math.sqrt(polyCount)); //at 375 * x, this corresponds to building slanderers for x% of builds
+
         //if rakers are around, don't build slanderers
         if(enemyRStrength==0) {
             //number of polys needed before proceeding beyond income thresholds:
@@ -170,20 +172,19 @@ public class Center extends Robot {
                 //if we could wait for a bigger slanderer, then build a 1hp raker
                 if(inf < 100 && income * 6 > Threshold.slandererThreshold(inf)) {
                     //except actually build a smallPoly if we have waaay to many rakers
-                    if (rakerCount > 12) build(RobotType.POLITICIAN, smallPoly);
+                    if (rakerCount > 1200) build(RobotType.POLITICIAN, smallPoly);
                     else build(RobotType.MUCKRAKER,1);
                     return;
                 }
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
             } else if((expectedTotalIncome > 2500 && polyCount < 12) || polyCount < 8 ) {
-                if(inf > 2000)
-                    build(RobotType.POLITICIAN, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
+                if(inf > 1500)
+                    build(RobotType.POLITICIAN, Math.min(inf-(int)INCOME_TARGET/10, (inf + expectedTotalIncome)/20));
                 else
                     build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            final double INCOME_TARGET = 187 * (30 + 2*Math.sqrt(polyCount)); //at 375 * x, this corresponds to building slanderers for x% of builds
             System.out.println("INCOME_TARGET "+INCOME_TARGET);
             //this indicates that we are falling behind on income
             if(expectedTotalIncome < expectedCurrentIncome * 30 && (expectedTotalIncome < INCOME_TARGET || expectedTotalIncome < expectedCurrentIncome * 21)) {
@@ -193,14 +194,14 @@ public class Center extends Robot {
             //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
             //currently: 25% buffrakers, 50% big polys, 12.5% small polys, 12.5% small rakers
             if(Math.random() < .5) {
-                build(RobotType.POLITICIAN, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
+                build(RobotType.POLITICIAN, Math.min(inf-(int)INCOME_TARGET/10, (inf + expectedTotalIncome)/20));
             } else if(Math.random() < .5) {
                 if(Math.random() < .5)
                     build(RobotType.MUCKRAKER, smallPoly);
                 else
                     build(RobotType.POLITICIAN, smallPoly);
             } else {
-                build(RobotType.MUCKRAKER, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
+                build(RobotType.MUCKRAKER, Math.min(inf-(int)INCOME_TARGET/10, (inf + expectedTotalIncome)/20));
             }
         } else {
             //if rakers are around, build a small Poly
