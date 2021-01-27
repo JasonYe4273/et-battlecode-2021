@@ -135,7 +135,7 @@ public class Center extends Robot {
             build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
             return;
         }
-        //build a small number of rakers
+        //build a small number of cheap rakers, but only build if we are poor
         if(slanderers > 0 && Math.random() < 1.0/(1.0+rakerCount /*rakers.size()*/) && (inf+expectedTotalIncome) < 2000) {
             build(RobotType.MUCKRAKER, 1);
         }
@@ -149,9 +149,13 @@ public class Center extends Robot {
         int smallPoly = Math.min(inf, 16 + inf/40 + (int)Math.min(Math.random() * 50, (inf+expectedTotalIncome)/100));
         //if rakers are around, don't build slanderers
         if(enemyRStrength==0) {
-            //first threshold is 2500 total income before any significant number of polys
-            //then we need at least 8 polys to proceed
+            //number of polys needed before proceeding beyond income thresholds:
+            //500 total income : 4 polys
+            //1500 total income : 8 polys
+            //2500 total income : 12 polys
             if(expectedTotalIncome < 1500) {
+                if(expectedTotalIncome > 500 && polyCount < 4)
+                    build(RobotType.POLITICIAN, smallPoly);
                 //if we could wait for a bigger slanderer, then build a 1hp raker
                 if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
                     //except actually build a smallPoly if we have waaay to many rakers
@@ -160,7 +164,7 @@ public class Center extends Robot {
                 }
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
-            } else if(polyCount < 8) {
+            } else if((expectedTotalIncome > 2500 && polyCount < 12) || polyCount < 8 ) {
                 build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
