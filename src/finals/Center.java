@@ -164,7 +164,7 @@ public class Center extends Robot {
                 build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            int INCOME_TARGET = 375 * 60; //at 375 * x, this corresponds to building slanderers for x% of builds
+            int INCOME_TARGET = 187 * 60; //at 375 * x, this corresponds to building slanderers for x% of builds
             //this indicates that we are falling behind on income
             if(expectedTotalIncome > expectedCurrentIncome * 20 && (expectedTotalIncome < INCOME_TARGET || expectedTotalIncome > expectedCurrentIncome * 27)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
