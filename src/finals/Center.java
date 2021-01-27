@@ -178,7 +178,7 @@ public class Center extends Robot {
                 return;
             } else if((expectedTotalIncome > 2500 && polyCount < 12) || polyCount < 8 ) {
                 if(inf > 2000)
-                    build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/20));
+                    build(RobotType.POLITICIAN, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
                 else
                     build(RobotType.POLITICIAN, smallPoly);
                 return;
@@ -193,14 +193,14 @@ public class Center extends Robot {
             //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
             //currently: 25% buffrakers, 50% big polys, 12.5% small polys, 12.5% small rakers
             if(Math.random() < .5) {
-                build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/20));
+                build(RobotType.POLITICIAN, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
             } else if(Math.random() < .5) {
                 if(Math.random() < .5)
                     build(RobotType.MUCKRAKER, smallPoly);
                 else
                     build(RobotType.POLITICIAN, smallPoly);
             } else {
-                build(RobotType.MUCKRAKER, Math.min(inf, (inf + expectedTotalIncome)/20));
+                build(RobotType.MUCKRAKER, Math.min(inf-1000, (inf + expectedTotalIncome)/20));
             }
         } else {
             //if rakers are around, build a small Poly
@@ -267,7 +267,7 @@ public class Center extends Robot {
                     rakerCount--;
                 else if(allRobots[i].type == RobotType.POLITICIAN || allRobots[i].type == RobotType.SLANDERER) {
                     polyCount--;
-                    if(allRobots[i].conviction < 200)
+                    if(allRobots[i].conviction < 200 && allRobots[i].type==RobotType.POLITICIAN)
                         smallPolyCount--;
                 }
             }
