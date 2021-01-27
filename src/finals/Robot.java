@@ -136,7 +136,7 @@ public class Robot {
         
     }
     public void moveToward(MapLocation l) throws GameActionException {
-        //System.out.println("Navigating toward " + l);
+        System.out.println("Navigating toward " + l);
         if(rc.getCooldownTurns()>1) return;
         if (DEBUG) rc.setIndicatorLine(rc.getLocation(), l, 255, 255, 0);
         if(rc.getLocation().equals(l)) return;
@@ -147,11 +147,11 @@ public class Robot {
             return;
         }
         if (Clock.getBytecodesLeft() < 12000) {
-            //System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
+            System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
             Direction d = rc.getLocation().directionTo(l);
             moveInDirection(d);
         } else {
-            //System.out.println("Starting navigation: " + Clock.getBytecodesLeft());
+            System.out.println("Starting navigation: " + Clock.getBytecodesLeft());
             // try to do more intelligent navigation within a 7x7 square centered at the current unit
             // NOTE: Right now, we only use the center 5x5 square; I don't think array initialization is a huge cost, though, and we do hope to accelerate this
             // TODO: Make this better and more bytecode efficient (probably just replace with Dijkstra)
@@ -169,7 +169,8 @@ public class Robot {
                         unoccupiedLocs[i+3][j+3] = false;
                     } else {
                         passabilities[i+3][j+3] = 1.0 / rc.sensePassability(newLoc);
-                        distancesToTarget[i+3][j+3] = Math.max(Math.abs(newLoc.x - l.x), Math.abs(newLoc.y - l.y)) * 100;
+                        distancesToTarget[i+3][j+3] = Math.max(Math.abs(newLoc.x - l.x), Math.abs(newLoc.y - l.y)) * 100
+                            + l.distanceSquaredTo(newLoc) * 0.01; // taxicab distance with ties broken by map distance
                         unoccupiedLocs[i+3][j+3] = true;
                     }
                 }
@@ -181,7 +182,7 @@ public class Robot {
                     && -3 <= robotLoc.y - currentLoc.y && robotLoc.y - currentLoc.y <= 3)
                     unoccupiedLocs[robotLoc.x - currentLoc.x + 3][robotLoc.y - currentLoc.y + 3] = false;
             }
-            //System.out.println("Finished initialization: " + Clock.getBytecodesLeft());
+            System.out.println("Finished initialization: " + Clock.getBytecodesLeft());
             int maxIterations = 2;
 
             // store some values to avoid repeated array lookups
@@ -226,6 +227,19 @@ public class Robot {
             distancesToTarget[3][4] += passabilities[3][4];
             double closestNeighbor = Double.MAX_VALUE;
             Direction bestDir = null;
+            // default to the direct path if there is a tie
+            Direction directPath = currentLoc.directionTo(l);
+            if (rc.canMove(directPath)) {
+                bestDir = directPath;
+                if(directPath == Direction.NORTHWEST) closestNeighbor = distancesToTarget[2][4];
+                if(directPath == Direction.WEST) closestNeighbor = distancesToTarget[2][3];
+                if(directPath == Direction.SOUTHWEST) closestNeighbor = distancesToTarget[2][2];
+                if(directPath == Direction.SOUTH) closestNeighbor = distancesToTarget[3][2];
+                if(directPath == Direction.SOUTHEAST) closestNeighbor = distancesToTarget[4][2];
+                if(directPath == Direction.EAST) closestNeighbor = distancesToTarget[4][3];
+                if(directPath == Direction.NORTHEAST) closestNeighbor = distancesToTarget[4][4];
+                if(directPath == Direction.NORTH) closestNeighbor = distancesToTarget[3][4];
+            }
             if (unoccupiedLocs[2][4] && distancesToTarget[2][4] < closestNeighbor) { closestNeighbor = distancesToTarget[2][4]; bestDir = Direction.NORTHWEST; }
             if (unoccupiedLocs[2][3] && distancesToTarget[2][3] < closestNeighbor) { closestNeighbor = distancesToTarget[2][3]; bestDir = Direction.WEST; }
             if (unoccupiedLocs[2][2] && distancesToTarget[2][2] < closestNeighbor) { closestNeighbor = distancesToTarget[2][2]; bestDir = Direction.SOUTHWEST; }
@@ -235,7 +249,7 @@ public class Robot {
             if (unoccupiedLocs[4][4] && distancesToTarget[4][4] < closestNeighbor) { closestNeighbor = distancesToTarget[4][4]; bestDir = Direction.NORTHEAST; }
             if (unoccupiedLocs[3][4] && distancesToTarget[3][4] < closestNeighbor) { closestNeighbor = distancesToTarget[3][4]; bestDir = Direction.NORTH; }
             if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
-            //System.out.println("Finished navigation: " + Clock.getBytecodesLeft());
+            System.out.println("Finished navigation: " + Clock.getBytecodesLeft());
         }
     }
 
