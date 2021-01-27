@@ -131,7 +131,7 @@ public class Politician extends Robot {
                 }
             }
         }
-        if(rc.getID()==12157) {
+        if(rc.getID()==12487) {
             System.out.println("attacking "+nonfriendlyHQ+" with hp "+nonfriendlyHQStrength);
             System.out.println(foundOneShotNeutral);
             System.out.println("nonfriendlyHQStrengths "+Arrays.toString(nonfriendlyHQstrengths));

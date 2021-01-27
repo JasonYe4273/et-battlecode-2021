@@ -84,8 +84,11 @@ public class Center extends Robot {
         boolean enemyHQ = false;
         for(int i=0;i<10;i++) {
             if(nonfriendlyHQs[i]!=null) {
-                if (enemyHQs[i]) {enemyHQ = true; neutralHQ = false;}
-                else neutralHQ = !enemyHQ;
+                if (enemyHQs[i]) {enemyHQ = true;}
+                else {
+                    //System.out.println("neutral at "+nonfriendlyHQs[i]+" hp "+nonfriendlyHQstrengths[i] + " id "+polIDToKillNeutral[i]);
+                    neutralHQ = true;
+                }
             }
         }
         //System.out.println(enemyHQ + " " + neutralHQ);
@@ -114,9 +117,16 @@ public class Center extends Robot {
             }
             //System.out.println("trying to attack a base with hp "+neutralStrength);
             // spawn a politician of sufficient strength to take over this neutral HQ
-            if (neutralIndex != -1 && inf > Math.min(neutralStrength + 64, 500) + 110) {
-                polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, Math.min(neutralStrength + 64, 500) + 110);
-                return;
+            int cost = Math.min(neutralStrength + 64, 500) + 11 + Math.max(0, distanceToClosestNeutral-100);
+            if (neutralIndex != -1) {
+                if(inf > cost) {
+                    polIDToKillNeutral[neutralIndex] = build(RobotType.POLITICIAN, cost);
+                    //System.out.println("building poly with inf "+ (Math.min(neutralStrength + 64, 500) + 110)+" to attack neutral");
+                    return;
+                } else if(expectedTotalIncome > cost * 3) {
+                    //save up for this neutral attack
+                    build(RobotType.MUCKRAKER, 1);
+                }
             }
         }
 
@@ -158,34 +168,39 @@ public class Center extends Robot {
                 if(expectedTotalIncome > 500 && smallPolyCount < 4)
                     build(RobotType.POLITICIAN, smallPoly);
                 //if we could wait for a bigger slanderer, then build a 1hp raker
-                if(inf < 949 && income * 6 > Threshold.slandererThreshold(inf)) {
+                if(inf < 100 && income * 6 > Threshold.slandererThreshold(inf)) {
                     //except actually build a smallPoly if we have waaay to many rakers
-                    if (rakerCount > 100) build(RobotType.POLITICIAN, smallPoly);
+                    if (rakerCount > 12) build(RobotType.POLITICIAN, smallPoly);
                     else build(RobotType.MUCKRAKER,1);
+                    return;
                 }
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
-            } else if((expectedTotalIncome > 2500 && smallPolyCount < 12) || smallPolyCount < 8 ) {
-                build(RobotType.POLITICIAN, smallPoly);
+            } else if((expectedTotalIncome > 2500 && polyCount < 12) || polyCount < 8 ) {
+                if(inf > 2000)
+                    build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/20));
+                else
+                    build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            int INCOME_TARGET = 187 * 70; //at 375 * x, this corresponds to building slanderers for x% of builds
+            final double INCOME_TARGET = 187 * (30 + 2*Math.sqrt(polyCount)); //at 375 * x, this corresponds to building slanderers for x% of builds
+            System.out.println("INCOME_TARGET "+INCOME_TARGET);
             //this indicates that we are falling behind on income
-            if(expectedTotalIncome + inf > expectedCurrentIncome * 20 && (expectedTotalIncome + inf< INCOME_TARGET || expectedTotalIncome + inf> expectedCurrentIncome * 27)) {
+            if(expectedTotalIncome + inf < expectedCurrentIncome * 30 && (expectedTotalIncome + inf< INCOME_TARGET || expectedTotalIncome + inf< expectedCurrentIncome * 21)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
                 return;
             }
             //if we have sufficient income, build a mix of small polys, big polys, and buffrakers
             //currently: 25% buffrakers, 50% big polys, 12.5% small polys, 12.5% small rakers
             if(Math.random() < .5) {
-                build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/10));
+                build(RobotType.POLITICIAN, Math.min(inf, (inf + expectedTotalIncome)/20));
             } else if(Math.random() < .5) {
                 if(Math.random() < .5)
                     build(RobotType.MUCKRAKER, smallPoly);
                 else
                     build(RobotType.POLITICIAN, smallPoly);
             } else {
-                build(RobotType.MUCKRAKER, Math.min(inf, (inf + expectedTotalIncome)/10));
+                build(RobotType.MUCKRAKER, Math.min(inf, (inf + expectedTotalIncome)/20));
             }
         } else {
             //if rakers are around, build a small Poly
