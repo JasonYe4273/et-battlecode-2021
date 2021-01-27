@@ -75,7 +75,7 @@ public class Politician extends Robot {
                 int homeInfluence = homeRobot.influence;
                 for (RobotInfo r : nearby) {
                     if (r.type == RobotType.POLITICIAN && r.team != rc.getTeam() && r.conviction > homeInfluence)
-                        moveToward(home);
+                        nav.moveToward(home);
                 }
             }
         }*/
@@ -166,7 +166,7 @@ public class Politician extends Robot {
             if( e != null && e.team != rc.getTeam() ) {
                 if (e.influence > pow) {
                     // We don't yet have strength to attack HQ but we should at least move toward it
-                    moveToward(e.location);
+                    nav.moveToward(e.location);
                     return false;
                 }
                 else return true;
@@ -194,7 +194,7 @@ public class Politician extends Robot {
         }
         if(d < 2 && rc.canEmpower(d)) {
             if(rc.senseNearbyRobots(1).length>1)
-                super.moveToward(nonfriendlyHQ);
+                nav.moveToward(nonfriendlyHQ);
             else
                 rc.empower(d);
         }
@@ -209,7 +209,7 @@ public class Politician extends Robot {
             // otherwise just empower anyway
             else rc.empower(d);
         }
-        this.moveToward(nonfriendlyHQ);
+        nav.moveToward(nonfriendlyHQ);
     }
     public void walling(RobotInfo[] nearby) throws GameActionException {
         int wallRadius = 5;
@@ -227,13 +227,13 @@ public class Politician extends Robot {
             }
         }
         if(nearestRakerD> 3 && nearestRaker != null) {
-            if (homeID == -1) moveToward(nearestRaker.add(RobotPlayer.randomDirection()));
-            else moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
+            if (homeID == -1) nav.moveToward(nearestRaker.add(RobotPlayer.randomDirection()));
+            else nav.moveToward(nearestRaker.add(nearestRaker.directionTo(home)));
         } else if(nearestRaker == null){
             int distFromHome = Robot.taxiDistance(home, rc.getLocation());
             if (distFromHome == 0) {
                 // this can only happen if homeless
-                moveInDirection(RobotPlayer.randomDirection());
+                nav.moveInDirection(RobotPlayer.randomDirection());
                 return;
             }
             if(distFromHome < wallRadius || homeID == -1) {
@@ -263,7 +263,7 @@ public class Politician extends Robot {
         if (nearbyBigRaker == null) return;
         // move next to it
         if (rc.getLocation().distanceSquaredTo(nearbyBigRaker) > 2) {
-            this.moveToward(nearbyBigRaker);
+            nav.moveToward(nearbyBigRaker);
         } else {
             // maybe make sure there aren't other things that would absorb damage?
             int empowerRadius = rc.getLocation().distanceSquaredTo(nearbyBigRaker);
@@ -445,7 +445,7 @@ public class Politician extends Robot {
             }
         }
         if(nonfriendlyHQ!=null && rc.getID()%2 == 0 && rc.getLocation().distanceSquaredTo(nonfriendlyHQ) > 9) {
-            moveToward(nonfriendlyHQ);
+            nav.moveToward(nonfriendlyHQ);
             return;
         }
         MapLocation me = rc.getLocation();
@@ -478,7 +478,7 @@ public class Politician extends Robot {
         if(mapYmax != 999999)
             y += 1000 / (me.y - mapYmax);
 
-        this.moveToward(me.translate(x, y));
+        nav.moveToward(me.translate(x, y));
     }
 
     public void movement(RobotInfo[] nearby) throws GameActionException {
@@ -498,10 +498,10 @@ public class Politician extends Robot {
         }
 
         if(raker != null && rc.getLocation().distanceSquaredTo(raker) <= nearestPoliticanToRaker) {
-            moveToward(raker);
+            nav.moveToward(raker);
         } else if (turnsSinceEnemy < 10 || rc.getRoundNum() < 100) defend(nearby);
-        else if (rc.getConviction() >= 300 && nonfriendlyHQ != null) moveToward(nonfriendlyHQ);
-        else if (raker != null) moveToward(raker);
-        else moveInDirection(RobotPlayer.randomDirection());
+        else if (rc.getConviction() >= 300 && nonfriendlyHQ != null) nav.moveToward(nonfriendlyHQ);
+        else if (raker != null) nav.moveToward(raker);
+        else nav.moveInDirection(RobotPlayer.randomDirection());
     }
 }
