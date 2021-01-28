@@ -1668,7 +1668,7 @@ if (cardinalDir == Direction.EAST) relaxEast();
 else if (cardinalDir == Direction.WEST) relaxWest();
 else if (cardinalDir == Direction.SOUTH) relaxSouth();
 else if (cardinalDir == Direction.NORTH) relaxNorth();
-if (Clock.getBytecodesLeft() > 5000) {
+if (Clock.getBytecodesLeft() > 5500) {
 if (cardinalDir == Direction.EAST) relaxEast();
 else if (cardinalDir == Direction.WEST) relaxWest();
 else if (cardinalDir == Direction.SOUTH) relaxSouth();

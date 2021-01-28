@@ -233,7 +233,7 @@ if (debug): print('else System.out.println("Error: should never get here!");')
 
 # iterate a second time, but only if we have excess bytecode
 # The iteration takes ~3600 bytecode, the following code takes ~400, and we want to leave about 1000 left for other actions
-print("if (Clock.getBytecodesLeft() > 5000) {")
+print("if (Clock.getBytecodesLeft() > 5500) {")
 print("if (cardinalDir == Direction.EAST) relaxEast();")
 print("else if (cardinalDir == Direction.WEST) relaxWest();")
 print("else if (cardinalDir == Direction.SOUTH) relaxSouth();")
