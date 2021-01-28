@@ -37,6 +37,14 @@ public class Center extends Robot {
             expectedTotalIncome += i * slandererBuilds[j];
         }
         System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
+        readAllFlags();
+        sendNonfriendlyHQ();
+        while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
+            RobotInfo r = allBuilds[lastSlandererRoundChecked];
+            if(r != null && r.type == RobotType.SLANDERER)// && rc.canGetFlag(r.ID))
+                polyCount++;
+            lastSlandererRoundChecked++;
+        }
     }
     int smallPolyCount = 0;
     int slandererBuildsIndex = 0;
@@ -46,7 +54,6 @@ public class Center extends Robot {
     public void mainturn() throws GameActionException {
         //System.out.println("Knowledge of map: " + mapXmin + " " + mapXmax + " " + mapYmin + " " + mapYmax);
         //readNonfriendlyHQFlag();
-        readAllFlags();
         RobotInfo[] nearby = rc.senseNearbyRobots();
         int politicians = 0;
         int slanderers = 0;
@@ -253,16 +260,26 @@ public class Center extends Robot {
     RobotInfo[] allRobots = new RobotInfo[750]; //all currently living robots. Length is flagsIndex
     RobotInfo[] allBuilds = new RobotInfo[1500]; //all robots ever built, indexed by round.
     int lastSlandererRoundChecked = 0;
+    int flagLoopIndex, flagLoopEmpty;
+    boolean finishedFlagLoop = true;
     public void readAllFlags() throws GameActionException {
         int t0 = Clock.getBytecodeNum();
-        int empty = 0;
-        for(int i=0; i<flagsIndex;i++) {
+        if(finishedFlagLoop) {
+            flagLoopEmpty = 0;
+            flagLoopIndex = 0;
+            finishedFlagLoop = false;
+        }
+        for(int i=flagLoopIndex; i<flagsIndex;i++) {
+            if(Clock.getBytecodesLeft() < 2000) {
+                flagLoopIndex = i;
+                return;
+            }
             int id = allRobots[i].ID;
             if(rc.canGetFlag(id)) {
                 int f = rc.getFlag(id);
                 receiveNonfriendlyHQ(f);
                 receiveEdges(f);
-                allRobots[empty++] = allRobots[i];
+                allRobots[flagLoopEmpty++] = allRobots[i];
             } else {
                 if(allRobots[i].type == RobotType.MUCKRAKER)
                     rakerCount--;
@@ -273,19 +290,10 @@ public class Center extends Robot {
                 }
             }
         }
-        flagsIndex = empty;
-        sendNonfriendlyHQ();
-        while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
-            RobotInfo r = allBuilds[lastSlandererRoundChecked];
-            if(r != null && r.type == RobotType.SLANDERER)// && rc.canGetFlag(r.ID))
-                polyCount++;
-            lastSlandererRoundChecked++;
-        }
-
-        //System.out.println("robots length "+flagsIndex);
-        //System.out.println(" r "+rakerCount+" p "+polyCount+" s "+(flagsIndex-rakerCount-polyCount));
+        flagsIndex = flagLoopEmpty;
+        finishedFlagLoop = true;
     }
-    
+
     // this method now receives edges as well as non-friendly HQs
     public void readNonfriendlyHQFlag() throws GameActionException {
         //System.out.println("Starting reading: " + Clock.getBytecodesLeft());
@@ -405,6 +413,10 @@ public class Center extends Robot {
             minVoteProp = 0.01;
             if (voteProp < minVoteProp) voteProp = minVoteProp;
             maxVoteProp = 0.02;
+        } else if (round == 50) {
+            minVoteProp = 0.001;
+            if (voteProp < minVoteProp) voteProp = minVoteProp;
+            maxVoteProp = 0.004;
         } else if (round % 25 == 0) {
             if (voteProp < minVoteProp) voteProp = minVoteProp;
         }
@@ -423,7 +435,7 @@ public class Center extends Robot {
             }
         } else if (voteProp > minVoteProp) voteProp -= maxVoteProp / 16;
 
-        return bid((int) (inf * voteProp) + 1);
+        return bid((int) (inf * voteProp) /*+ 1*/);
     }
 
     public int bid(int b) throws GameActionException {
