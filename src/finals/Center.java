@@ -20,6 +20,7 @@ public class Center extends Robot {
     int[] polIDToKillNeutral = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
     int[] lastTurnSensedPolToKillNeutral = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public void turn() throws GameActionException {
+        readAllFlags(8000);
         mainturn();
         lastInf = rc.getInfluence();
         /*
@@ -37,7 +38,7 @@ public class Center extends Robot {
             expectedTotalIncome += i * slandererBuilds[j];
         }
         System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
-        readAllFlags();
+        readAllFlags(2000);
         sendNonfriendlyHQ();
         while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
             RobotInfo r = allBuilds[lastSlandererRoundChecked];
@@ -262,7 +263,7 @@ public class Center extends Robot {
     int lastSlandererRoundChecked = 0;
     int flagLoopIndex, flagLoopEmpty;
     boolean finishedFlagLoop = true;
-    public void readAllFlags() throws GameActionException {
+    public void readAllFlags(int bytecodeLimit) throws GameActionException {
         int t0 = Clock.getBytecodeNum();
         System.out.println(flagLoopIndex+" "+flagLoopEmpty+" "+finishedFlagLoop);
         if(finishedFlagLoop) {
@@ -271,7 +272,7 @@ public class Center extends Robot {
             finishedFlagLoop = false;
         }
         for(int i=flagLoopIndex; i<flagsIndex;i++) {
-            if(Clock.getBytecodesLeft() < 2000) {
+            if(Clock.getBytecodesLeft() < bytecodeLimit) {
                 flagLoopIndex = i;
                 return;
             }
