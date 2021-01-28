@@ -37,8 +37,9 @@ public class Center extends Robot {
             expectedCurrentIncome += slandererBuilds[j];
             expectedTotalIncome += i * slandererBuilds[j];
         }
-        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
         readAllFlags(2000);
+        //System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
+
         sendNonfriendlyHQ();
         while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
             RobotInfo r = allBuilds[lastSlandererRoundChecked];
@@ -161,7 +162,9 @@ public class Center extends Robot {
         int income =  rc.getInfluence() - lastInf;
         //if i am under attack by rakers, build a poly to defend
         if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
-            build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
+            int valueOfBuild = Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength);
+            if (valueOfBuild > 10) build(RobotType.POLITICIAN, Math.min(inf, valueOfBuild));
+            else build(RobotType.MUCKRAKER, 1);
             return;
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
@@ -193,7 +196,7 @@ public class Center extends Robot {
                     build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            System.out.println("INCOME_TARGET "+INCOME_TARGET);
+            //System.out.println("INCOME_TARGET "+INCOME_TARGET);
             //this indicates that we are falling behind on income
             if(expectedTotalIncome < expectedCurrentIncome * 30 && (expectedTotalIncome + Math.max(0, inf-10000)< INCOME_TARGET || expectedTotalIncome < expectedCurrentIncome * 21)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
