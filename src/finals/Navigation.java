@@ -65,7 +65,7 @@ public class Navigation {
     }
 
     public void navTo(MapLocation l) throws GameActionException {
-        System.out.println("Starting navigation: " + Clock.getBytecodesLeft());
+        //System.out.println("Starting navigation: " + Clock.getBytecodesLeft());
         // try to do more intelligent navigation within a 7x7 square centered at the current unit
         // NOTE: Right now, we only use the center 5x5 square; I don't think array initialization is a huge cost, though, and we do hope to accelerate this
         // TODO: Make this better and more bytecode efficient (probably just replace with Dijkstra)
@@ -96,7 +96,7 @@ public class Navigation {
                 && -3 <= robotLoc.y - currentLoc.y && robotLoc.y - currentLoc.y <= 3)
                 unoccupiedLocs[robotLoc.x - currentLoc.x + 3][robotLoc.y - currentLoc.y + 3] = false;
         }
-        System.out.println("Finished initialization: " + Clock.getBytecodesLeft());
+        //System.out.println("Finished initialization: " + Clock.getBytecodesLeft());
         int maxIterations = 2;
 
         // store some values to avoid repeated array lookups
@@ -163,6 +163,6 @@ public class Navigation {
         if (unoccupiedLocs[4][4] && distancesToTarget[4][4] < closestNeighbor) { closestNeighbor = distancesToTarget[4][4]; bestDir = Direction.NORTHEAST; }
         if (unoccupiedLocs[3][4] && distancesToTarget[3][4] < closestNeighbor) { closestNeighbor = distancesToTarget[3][4]; bestDir = Direction.NORTH; }
         if (bestDir != null && rc.canMove(bestDir)) rc.move(bestDir);
-        System.out.println("Finished navigation: " + Clock.getBytecodesLeft());
+        //System.out.println("Finished navigation: " + Clock.getBytecodesLeft());
     }
 }

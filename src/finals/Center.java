@@ -36,7 +36,7 @@ public class Center extends Robot {
             expectedCurrentIncome += slandererBuilds[j];
             expectedTotalIncome += i * slandererBuilds[j];
         }
-        System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
+        //System.out.println("income = "+expectedCurrentIncome+" total = "+expectedTotalIncome +" p "+polyCount+" sp "+smallPolyCount);
         readAllFlags();
         sendNonfriendlyHQ();
         while(lastSlandererRoundChecked + 300 < rc.getRoundNum()) {
@@ -192,7 +192,7 @@ public class Center extends Robot {
                     build(RobotType.POLITICIAN, smallPoly);
                 return;
             }
-            System.out.println("INCOME_TARGET "+INCOME_TARGET);
+            //System.out.println("INCOME_TARGET "+INCOME_TARGET);
             //this indicates that we are falling behind on income
             if(expectedTotalIncome < expectedCurrentIncome * 30 && (expectedTotalIncome + Math.max(0, inf-10000)< INCOME_TARGET || expectedTotalIncome < expectedCurrentIncome * 21)) {
                 build(RobotType.SLANDERER, Threshold.slandererThreshold(inf));
