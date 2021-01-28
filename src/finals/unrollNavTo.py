@@ -43,15 +43,105 @@ print("public void navTo (MapLocation destination) throws GameActionException {"
 if (debug): print("int initialBytecodeCount = Clock.getBytecodeNum();")
 if (debug): print('System.out.println("Intelligent navigation to " + destination);')
 print("MapLocation myLoc = rc.getLocation();")
-for x in range(n):
-  for y in range(n):
+# check corners first
+print("validLocs00 = rc.onTheMap(myLoc.translate(" + str(-radius) + ", " + str(-radius) + "));")
+print("validLocs0" + str(n-1) + "= rc.onTheMap(myLoc.translate(" + str(-radius) + ", " + str(radius) + "));")
+print("validLocs" + str(n-1) + "0 = rc.onTheMap(myLoc.translate(" + str(radius) + ", " + str(-radius) + "));")
+print("validLocs" + str(n-1) + str(n-1) + " = rc.onTheMap(myLoc.translate(" + str(radius) + ", " + str(radius) + "));")
+print("if (validLocs00) {")
+for x in range(radius+1):
+  for y in range(radius):
     strLoc = "loc" + str(x) + str(y)
     print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
-    print("validLocs" + str(x) + str(y) + " = rc.onTheMap(" + strLoc + ")", end = "")
     if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
-      print("&& !rc.isLocationOccupied(" + strLoc + ")", end = "")
-    print(";")
+      print("validLocs" + str(x) + str(y) + "= !rc.isLocationOccupied(" + strLoc + ");")
+      print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = true;")
+      print("passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("} else {")
+for x in range(radius+1):
+  for y in range(radius):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= rc.onTheMap(" + strLoc + ") && !rc.isLocationOccupied(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = rc.onTheMap(" + strLoc + ");")
     print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("}")
+
+print("if (validLocs0" + str(n-1) + ") {")
+for x in range(radius):
+  for y in range(radius, n):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= !rc.isLocationOccupied(" + strLoc + ");")
+      print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = true;")
+      print("passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("} else {")
+for x in range(radius):
+  for y in range(radius, n):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= rc.onTheMap(" + strLoc + ") && !rc.isLocationOccupied(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = rc.onTheMap(" + strLoc + ");")
+    print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("}")
+
+print("if (validLocs" + str(n-1) + str(n-1) + ") {")
+for x in range(radius, n):
+  for y in range(radius+1, n):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= !rc.isLocationOccupied(" + strLoc + ");")
+      print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = true;")
+      print("passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("} else {")
+for x in range(radius, n):
+  for y in range(radius+1, n):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= rc.onTheMap(" + strLoc + ") && !rc.isLocationOccupied(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = rc.onTheMap(" + strLoc + ");")
+    print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("}")
+
+print("if (validLocs" + str(n-1) + "0) {")
+for x in range(radius+1, n):
+  for y in range(radius+1):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= !rc.isLocationOccupied(" + strLoc + ");")
+      print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = true;")
+      print("passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("} else {")
+for x in range(radius+1, n):
+  for y in range(radius+1):
+    strLoc = "loc" + str(x) + str(y)
+    print(strLoc + " = new MapLocation(myLoc.x + " + str(x - radius) + ", myLoc.y + " + str(y - radius) + ");")
+    if ((x-radius <= 1 and x-radius >= -1 and y-radius <= 1 and y-radius >= -1) and not (x == radius and y == radius)):
+      print("validLocs" + str(x) + str(y) + "= rc.onTheMap(" + strLoc + ") && !rc.isLocationOccupied(" + strLoc + ");")
+    else:
+      print("validLocs" + str(x) + str(y) + " = rc.onTheMap(" + strLoc + ");")
+    print("passabilities" + str(x) + str(y) + "= Double.MAX_VALUE; if (validLocs" + str(x) + str(y) + ") passabilities" + str(x) + str(y) + " = 1.0/rc.sensePassability(" + strLoc + ");")
+print("}")
+
+print("validLocs" + str(radius) + str(radius) + " = true;")
+print("passabilities" + str(radius) + str(radius) + " = 1.0/rc.sensePassability(myLoc);")
 
 
 if (debug): print('System.out.println("Bytecodes used in checking location validity: " + (Clock.getBytecodeNum() - initialBytecodeCount));')
