@@ -43,7 +43,7 @@ public class Navigation {
         return false;
     }
     public void moveToward(MapLocation l) throws GameActionException {
-//        System.out.println("Navigating toward " + l);
+        //System.out.println("Navigating toward " + l);
         if(rc.getCooldownTurns()>=1) return;
         if(rc.getLocation().equals(l)) return;
         if(rc.getLocation().isAdjacentTo(l)) {
@@ -52,8 +52,8 @@ public class Navigation {
                 rc.move(d);
             return;
         }
-        if (Clock.getBytecodesLeft() < 12000) {
-//            System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
+        if (Clock.getBytecodesLeft() < 10000) {
+            //System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
             Direction d = rc.getLocation().directionTo(l);
             moveInDirection(d);
         } else {
