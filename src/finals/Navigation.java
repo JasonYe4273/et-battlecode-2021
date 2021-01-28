@@ -52,7 +52,7 @@ public class Navigation {
                 rc.move(d);
             return;
         }
-        if (Clock.getBytecodesLeft() < 10000) {
+        if (Clock.getBytecodesLeft() < 9000) {
             //System.out.println("Not using bytecode-intensive navigation: " + Clock.getBytecodesLeft());
             Direction d = rc.getLocation().directionTo(l);
             moveInDirection(d);
