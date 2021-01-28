@@ -160,7 +160,9 @@ public class Center extends Robot {
         int income =  rc.getInfluence() - lastInf;
         //if i am under attack by rakers, build a poly to defend
         if(enemyRStrength > 0 && enemyRStrength > myPStrength - GameConstants.EMPOWER_TAX) {
-            build(RobotType.POLITICIAN, Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength));
+            int valueOfBuild = Math.min(inf, GameConstants.EMPOWER_TAX + enemyRStrength - myPStrength);
+            if (valueOfBuild > 10) build(RobotType.POLITICIAN, Math.min(inf, valueOfBuild));
+            else build(RobotType.MUCKRAKER, 1);
             return;
         }
         //a small poly is for blowing up cheap rakers. build them in a variety of values
