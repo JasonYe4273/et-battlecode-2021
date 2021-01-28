@@ -264,6 +264,7 @@ public class Center extends Robot {
     boolean finishedFlagLoop = true;
     public void readAllFlags() throws GameActionException {
         int t0 = Clock.getBytecodeNum();
+        System.out.println(flagLoopIndex+" "+flagLoopEmpty+" "+finishedFlagLoop);
         if(finishedFlagLoop) {
             flagLoopEmpty = 0;
             flagLoopIndex = 0;
