@@ -473,10 +473,12 @@ public class Politician extends Robot {
                     y -= 1000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
                 } else {
                     //slanderer
+                    /*
                     if(r.location.distanceSquaredTo(rc.getLocation()) > 16) {
                         x += 2000 * (r.location.x - me.x)/ r.location.distanceSquaredTo(me);
                         y += 2000 * (r.location.y - me.y)/ r.location.distanceSquaredTo(me);
                     }
+                    */
                 }
             }
         }
