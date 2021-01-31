@@ -1,0 +1,19 @@
+body {
+    width: 75%;
+    max-width: 1000px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+img {
+  width: 100%;
+  height: auto;
+  max-width: 1000px;
+}
+
+.toc {
+	background: #AFEEEE;
+	font-family: candara;
+}
+
+.clear-floated    { clear: both; height: 1px; font-size: 1px; line-height: 1px; padding: 0; margin: 0; }
