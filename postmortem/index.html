@@ -14,7 +14,7 @@
 <section class="toc">
   <h2>Table of Contents</h2>
   <ol>
-    <li><a href="#premise">Premise of Competition</a><li>
+    <li><a href="#premise">Premise of Competition</a></li>
     <li><a href="#winning">Winning the Game</a></li>
     <li><a href="#vision">Vision and Communication</a></li>
     <li><a href="#navigation">Navigation and Bytecode Limitations</a></li>
@@ -29,16 +29,22 @@
 
 <h2><a name="premise"></a>Premise of Competition</h2>
 
-The theme of the 2021 battlecode competition is a political campaign between two sets of robots trying to win the election at all costs.  To accomplish this, teams try to accumulate political influence, which is stored in the various units and used to purchase new ones.  This year's competition features only four units:
+The theme of the 2021 battlecode competition is a political campaign between two sets of robots trying to win the election at all costs.  To accomplish this, teams try to accumulate political influence, which is stored in the various units and used to purchase new ones.  Unit costs are not fixed -- your team decides how much influence to spend on each unit spawned, and the influence spent determines that unit's conviction (its health), reflecting its loyalty to your team's cause.  This year's competition features only four units:
 <ul>
-  <li><b>Enlightenment Centers</b></li>: These are the headquarters of the political organization.  They are immovable buildings that are present from the beginning of the game, so they can be captured but never created or destroyed.  They generate a small amount of influence passively, and they spawn additional units.  At the beginning of the game, enlightenment centers can be neutral, in which case they take no actions until captured by a player.
-  <li><b>Politicians</b></li>: A unit's "health" is measured by its conviction, representing its loyalty to your cause.  A politician's conviction can be converted into a rousing speech that functions as an attack that deals damage evenly to all nearby units.  Nearby enlightenment centers (neutral or enemy), as well as rival politicians, can be converted to your cause if the strength of the attack exceeds their conviction, while enemy muckrakers and slanderers are destroyed.  As such, politicians are crucial both for unit-to-unit combat and for attacks on enlightenment centers.
-  <li>Muckrakers</li>
-  <li>Slanderers</li>
+  <li><b>Enlightenment Centers</b>: These are the headquarters of the political organization.  They are immovable buildings that are present from the beginning of the game, so they can be captured but never created or destroyed.  They generate a small amount of influence passively, and they spawn additional units.  At the beginning of the game, enlightenment centers can be neutral, in which case they take no actions until captured by a player.</li>
+  <li><b>Politicians</b>: A politician's conviction can be converted into a rousing speech that functions as an attack that deals damage evenly to all nearby units.  Nearby enlightenment centers (neutral or enemy), as well as rival politicians, can be converted to your cause if the strength of the attack exceeds their conviction, while enemy muckrakers and slanderers are destroyed.  As such, politicians are crucial both for unit-to-unit combat and for attacks on enlightenment centers.</li>
+  <li><b>Slanderers</b>: These are the main income-generating units of the game.  A slanderer's lies win over the citizenry, generating income for the Enlightenment Center that spawned it for fifty turns.  (The influence generated is 5% of the slanderer's cost for small-cost slanderers and then plateaus at 2% of their cost, so slanderers that cost about 1000 influence or less provide a very good return on investment.)  After producing this massive influence boost, slanderers are effectively useless for the next 250 turns, but 300 turns after creation they convert into politicians to reinforce your "army."</li>
+  <li><b>Muckrakers</b>: Slanderers would be completely overpowered were it not for the investigative journalism of muckrakers.  A muckraker that gets close to an enemy slanderer can expose its lies, instantly destroying the slanderer.  Furthermore, for fifty turns following this exposure, all politicians on the muckraker's team receive a buff to their attack proportional to the value of the exposed slanderer.  This bonus can stack (so if multiple slanderers are exposed within 50 turns, politicians can receive a much larger buff, giving a substantially more powerful attack).  As such, it is imperative to defend slanderers from muckraker attacks, and failing to do so will lose you not only your slanderers but also any battles with enemy politicians and (quite possibly) the game.</li>
 </ul>
+(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  The optimal strategy is therefore to build a combination of all three units so that muckrakers destroy enemy slanderers, slanderers produce income to finance your army, and polticians defend slanderers against enemy muckrakers.
 
 <h2><a name="winning"></a>Winning the Game </h2>
-
+The game can end in two ways:
+<ol>
+  <li>Complete annihilation of all units and capture of all enlightenment centers of one of the two teams results in immediate victory for the other team.</li>
+  <li>On each turn, each enlightenment center may bid some of its influence to win over the citizenry.  The enlightenment center with the highest bid spends that amount of influence to win one vote (and the losing team must pay half of its bid and gain nothing in return).  After 1500 turns, the game is declared to be over, and the team with the most votes wins.  (As a consequence, accumulating more than 751 votes is unnecessary and simply wastes influence.)</li>
+</ol>
+In practice, most games conclude via annihilation, but a significant fraction of games (about a quarter) are resolved through the election.  Determining how much to bid on each round without wasting too much influence is an important feature of the game.
 
 </body>
 </html>
