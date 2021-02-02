@@ -18,12 +18,12 @@
     <li><a href="#winning">Winning the Game</a></li>
     <li><a href="#vision">Vision and Communication</a></li>
     <li><a href="#navigation">Navigation and Bytecode Limitations</a></li>
+    <li><a href="#tactics">Tactics</a></li>
     <li><a href="#strategies">Strategies</a></li>
     <li><a href="#competitions">Competitions and Strategy Evolution</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
     <li><a href="#team">Team Name</a></li>
     <li><a href="#references">References</a></li>
-    
   </ol>
 </section>
 
@@ -36,7 +36,7 @@ The theme of the 2021 battlecode competition is a political campaign between two
   <li><b>Slanderers</b>: These are the main income-generating units of the game.  A slanderer's lies win over the citizenry, generating income for the Enlightenment Center that spawned it for fifty turns.  (The influence generated is 5% of the slanderer's cost for small-cost slanderers and then plateaus at 2% of their cost, so slanderers that cost about 1000 influence or less provide a very good return on investment.)  After producing this massive influence boost, slanderers are effectively useless for the next 250 turns, but 300 turns after creation they convert into politicians to reinforce your "army."</li>
   <li><b>Muckrakers</b>: Slanderers would be completely overpowered were it not for the investigative journalism of muckrakers.  A muckraker that gets close to an enemy slanderer can expose its lies, instantly destroying the slanderer.  Furthermore, for fifty turns following this exposure, all politicians on the muckraker's team receive a buff to their attack proportional to the value of the exposed slanderer.  This bonus can stack (so if multiple slanderers are exposed within 50 turns, politicians can receive a much larger buff, giving a substantially more powerful attack).  As such, it is imperative to defend slanderers from muckraker attacks, and failing to do so will lose you not only your slanderers but also any battles with enemy politicians and (quite possibly) the game.</li>
 </ul>
-(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  The optimal strategy is therefore to build a combination of all three units so that muckrakers destroy enemy slanderers, slanderers produce income to finance your army, and polticians defend slanderers against enemy muckrakers.
+(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  The optimal strategy is therefore to build a combination of all three units so that muckrakers destroy enemy slanderers, slanderers produce income to finance your army, and politicians defend slanderers against enemy muckrakers.
 
 <h2><a name="winning"></a>Winning the Game </h2>
 The game can end in two ways:
@@ -45,6 +45,33 @@ The game can end in two ways:
   <li>On each turn, each enlightenment center may bid some of its influence to win over the citizenry.  The enlightenment center with the highest bid spends that amount of influence to win one vote (and the losing team must pay half of its bid and gain nothing in return).  After 1500 turns, the game is declared to be over, and the team with the most votes wins.  (As a consequence, accumulating more than 751 votes is unnecessary and simply wastes influence.)</li>
 </ol>
 In practice, most games conclude via annihilation, but a significant fraction of games (about a quarter) are resolved through the election.  Determining how much to bid on each round without wasting too much influence is an important feature of the game.
+
+<h2><a name="vision"></a>Vision and Communication</h2>
+Units do not have visibility of the entire map; instead, they can only see things within about 5 tiles of them.  This year, robots do not even know the size and shape of the map unless they have explored enough to find the map's edges.  Additionally, all maps are offset by a large constant in both the x- and y-directions, so a robot's absolute location gives almost no information about its position relative to the map's edges.
+
+In order to gain information about the map that they have not personally seen, robots need to communicate with each other.  They do so by holding up a 24-bit color flag, which is stored in the last 32 bits of an <code>int</code>.  Units can read the flags of any nearby robots as well as enlightenment centers, and enlightenment centers can read the flags of any robot.  (While robots can in principle read enemy flags, these typically contain meaningless information without the enemy's source code, which is inaccessible to players.)
+
+Our team communicated three pieces of information via flags:
+<ol>
+  <li>Locations of nearby enemy muckrakers, in order to warn nearby slanderers to run away and nearby politicians to defend</li>
+  <li>Locations and strength of enemy and neutral enlightenment centers, to signal for politicians and muckrakers to attack</li>
+  <li>Edges of the map</li>
+</ol>
+
+In Battlecode, all maps are symmetric under either vertical reflection, horizontal reflection, or 180-degree rotation.  As a result, given the location of a friendly enlightenment center, knowledge of the map edges implies that a second enlightenment center (which is likely enemy-owned) must be at one of three possible locations.  In the absence of spotting another enlightenment center directly, this indirect approach can be used to find a suitable target to attack.
+
+Enlightenment centers, charged with the tasks of coordinating attacks (at least among the units they spawned) can read the flags of their units and relay information about enemy centers and map edges to their units.  In contrast, locations of enemy muckrakers is only intended for nearby units, so it can be relayed robot-to-robot to nearby clusters of politicians and slanderers.
+
+<h2><a name="navigation">Navigation and Bytecode Limitations</h2>
+Each tile on the map has a passability ranging from 0.1 to 1.  Performing any action while on a tile (including leaving the tile) incurs a cost inversely proportional to the passability.  This means that any (unoccupied) tile is in theory passable, some tiles slow units 10 times more than others.  When moving across the map, such tiles should be avoided if possible.
+
+The simplest navigation algorithm is one that, given a destination tile, moves in the direction of that destination, ignoring passability costs.  On maps with varying passability, this will drastically slow units down.
+
+An improvement is to use a local heuristic.  If the passability cost of moving straight toward a target is more than twice that of moving 45 degrees in either direction, then it's usually better to move 45 degrees away from the original target.
+
+Ideally, we would like to find the optimal path all the way to the target, but this is impossible for targets outside our robot's vision radius.  In addition, robots have computational limitations that make it impossible even to process all the information they do have access to.  In Java, computational effort can be quantified in terms of bytecode, which corresponds to the fundamental operations of the Java virtual machine (e.g. adding two numbers, setting a variable).  The main units of the game (politicians and muckrakers) are limited to 15,000 bytecode.  While this sounds like a large number of operations, it can be consumed quickly if one explores paths inefficiently.  (Slanderers have smaller limits but only need to perform the simple task of fleeing muckrakers.)
+
+One pathing algorithm is Dijkstra's algorithm.
 
 </body>
 </html>
