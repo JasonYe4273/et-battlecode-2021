@@ -52,23 +52,23 @@
 
 <p>Our overall strategy was one focused on generating large amounts of influence with slanderers, and leveraging that to eventually annihilate the opponent.</p>
 
-<h3><a href="strategy-ecs">Enlightenment Centers</h3>
+<h3><a href="strategy-ecs"></a>Enlightenment Centers</h3>
 
 <p>By default, our ECs build slanderers until we reach various income thresholds. As we build more slanderers, we also make sure to have a certain quota of politicians built to protect them from muckrakers. The only thing that takes precedent over building our income (besides obvious things like not building slanderers if muckrakers are around) is building one politician to attack each neutral EC, as unit spawns, and thus ECs are very important.</p>
 
 <p>If we have enough income, we will start building a mix of politicians and muckrakers of difference sizes in order to attack enemy ECs. The only other times we build muckrakers are if we are low on influence and saving up.</p>
 
-<h3><a href="strategy-comms">Communication</h3>
+<h3><a href="strategy-comms"></a>Communication</h3>
 
 <p>Because we are very dependent on slanderers, a big part of our communication is about enemy muckraker sightings. All of our units will signal any enemy muckrakers seen to nearby units using flags, and this information will be passed on. Slanderers use this information to run away from the nearest enemy muckraker, even beyond sight range; politicians use this information to hunt down enemy muckrakers to better protect our slanderers.</p>
 
 <p>We also use flags to communicate the locations of enemy and neutral ECs, as well as the edges of the map. Unlike enemy muckraker positions, this is communicated only to and from ECs, and not unit-to-unit.</p>
 
-<h3><a href="strategy-pols">Politicians</h3>
+<h3><a href="strategy-pols"></a>Politicians</h3>
 
 <p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p>
 
-<h3><a href="strategy-pathing">Pathfinding</h3>
+<h3><a href="strategy-pathing"></a>Pathfinding</h3>
 
 <p>The simplest navigation algorithm is one that, given a destination tile, moves in the direction of that destination, ignoring passability costs. This often isn't horrible, but on maps with varying passability, this can drastically slow units down.</p>
 
