@@ -17,17 +17,21 @@
     <li><a href="#intro">Introduction</a></li>
     <li><a href="#resources">Units and Resources</a></li>
     <li><a href="#strategy">Our Overall Strategy</a></li>
+    <ol>
+      <li><a href="#strategy-ecs">Enlightenment Centers</a></li>
+      <li><a href="#strategy-comms">Communication</a></li>
+      <li><a href="#strategy-pols">Politicians</a></li>
+      <li><a href="#strategy-pathing">Pathing</a></li>
+    </ol>
     <li><a href="#timeline">Our Timeline</a></li>
-    <li><a href="#navigation">Navigation and Bytecode Limitations</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
     <li><a href="#team">Team Name</a></li>
-    <li><a href="#references">References</a></li>
   </ol>
 </section>
 
 <h2><a name="intro"></a>Introduction</h2>
 
-<p>If you aren't familiar with Battlecode 2021, you can find the specs <a href="https://2021.battlecode.org/specs/specs.md.html">here</a>. We won't go into detail about the mechanics of the game, and instead talk more about strategy, especially our strategy.</p><br>
+<p>This is the postmortem of babyducks, the winning team of Battlecode 2021. If you aren't familiar with Battlecode 2021, you can find the specs <a href="https://2021.battlecode.org/specs/specs.md.html">here</a>. We won't go into detail about the mechanics of the game, and instead talk more about strategy, especially our strategy.</p><br>
 
 <h2><a name="resources"></a>Units and Resources</h2>
 
@@ -48,24 +52,39 @@
 
 <p>Our overall strategy was one focused on generating large amounts of influence with slanderers, and leveraging that to eventually annihilate the opponent.</p>
 
-<h3>Enlightenment Centers</h3>
+<h3><a href="strategy-ecs">Enlightenment Centers</h3>
 
 <p>By default, our ECs build slanderers until we reach various income thresholds. As we build more slanderers, we also make sure to have a certain quota of politicians built to protect them from muckrakers. The only thing that takes precedent over building our income (besides obvious things like not building slanderers if muckrakers are around) is building one politician to attack each neutral EC, as unit spawns, and thus ECs are very important.</p>
 
 <p>If we have enough income, we will start building a mix of politicians and muckrakers of difference sizes in order to attack enemy ECs. The only other times we build muckrakers are if we are low on influence and saving up.</p>
 
-<h3>Communication</h3>
+<h3><a href="strategy-comms">Communication</h3>
 
 <p>Because we are very dependent on slanderers, a big part of our communication is about enemy muckraker sightings. All of our units will signal any enemy muckrakers seen to nearby units using flags, and this information will be passed on. Slanderers use this information to run away from the nearest enemy muckraker, even beyond sight range; politicians use this information to hunt down enemy muckrakers to better protect our slanderers.</p>
 
 <p>We also use flags to communicate the locations of enemy and neutral ECs, as well as the edges of the map. Unlike enemy muckraker positions, this is communicated only to and from ECs, and not unit-to-unit.</p>
 
-<h3>Politicians</h3>
+<h3><a href="strategy-pols">Politicians</h3>
 
 <p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p>
 
-<h3>Pathfinding</h3>
+<h3><a href="strategy-pathing">Pathfinding</h3>
 
+<p>The simplest navigation algorithm is one that, given a destination tile, moves in the direction of that destination, ignoring passability costs. This often isn't horrible, but on maps with varying passability, this can drastically slow units down.</p>
+
+<p>An improvement is to use a local heuristic.  If the passability cost of moving straight toward a target is more than twice that of moving 45 degrees in either direction, then it's usually better to move 45 degrees away from the original target.</p>
+
+<p>Ideally, we would like to find the optimal path all the way to the target, but this is impossible for targets outside our robot's vision radius, and wouldn't be viable with the bytecode restrictions anyways.<!-- In addition, robots have computational limitations that make it impossible even to process all the information they do have access to. In Java, computational effort can be quantified in terms of bytecode, which corresponds to the fundamental operations of the Java virtual machine (e.g. adding two numbers, setting a variable). The main units of the game (politicians and muckrakers) are limited to 15,000 bytecode. While this sounds like a large number of operations, it can be consumed quickly if one explores paths inefficiently. (Slanderers have smaller limits but only need to perform the simple task of fleeing muckrakers.) --></p>
+
+<p>One pathing algorithm is Dijkstra's algorithm.<!--  [TODO Anthony you should talk about your pathfinding] --></p><br>
+
+<h2><a href="timeline"></a>Our Timeline</h2>
+
+<p>So how did we end up here?</p><br>
+
+<h2><a name="resources"></a>Team Name</h2>
+
+<p>We're called the babyducks because that's the mascot of the MIT Independent Living Group we're all part of, Epsilon Theta!</p>
 
 <!-- <p>The theme of the 2021 battlecode competition is a political campaign between two sets of robots trying to win the election at all costs.  To accomplish this, teams try to accumulate political influence, which is stored in the various units and used to purchase new ones.  Unit costs are not fixed -- your team decides how much influence to spend on each unit spawned, and the influence spent determines that unit's conviction (its health), reflecting its loyalty to your team's cause.  This year's competition features only four units:</p>
 <ul>
@@ -102,13 +121,7 @@
 <h2><a name="navigation">Navigation and Bytecode Limitations</h2>
 <p>Each tile on the map has a passability ranging from 0.1 to 1.  Performing any action while on a tile (including leaving the tile) incurs a cost inversely proportional to the passability.  This means that any (unoccupied) tile is in theory passable, some tiles slow units 10 times more than others.  When moving across the map, such tiles should be avoided if possible.</p><br>
 
-<p>The simplest navigation algorithm is one that, given a destination tile, moves in the direction of that destination, ignoring passability costs.  On maps with varying passability, this will drastically slow units down.</p><br>
-
-<p>An improvement is to use a local heuristic.  If the passability cost of moving straight toward a target is more than twice that of moving 45 degrees in either direction, then it's usually better to move 45 degrees away from the original target.</p><br>
-
-<p>Ideally, we would like to find the optimal path all the way to the target, but this is impossible for targets outside our robot's vision radius.  In addition, robots have computational limitations that make it impossible even to process all the information they do have access to.  In Java, computational effort can be quantified in terms of bytecode, which corresponds to the fundamental operations of the Java virtual machine (e.g. adding two numbers, setting a variable).  The main units of the game (politicians and muckrakers) are limited to 15,000 bytecode.  While this sounds like a large number of operations, it can be consumed quickly if one explores paths inefficiently.  (Slanderers have smaller limits but only need to perform the simple task of fleeing muckrakers.)</p><br>
-
-<p>One pathing algorithm is Dijkstra's algorithm.</p><br> -->
+ -->
 
 </body>
 </html>
