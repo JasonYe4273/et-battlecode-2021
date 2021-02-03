@@ -32,38 +32,38 @@ If you aren't familiar with Battlecode 2021, you can find the specs <a href="htt
 
 <h2><a name="resources"></a>Units and Resources</h2>
 
-<p>As is usual, the four units this year &mdash; <p>(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers &mdash; form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  So, it is hard to win using only one type of unit, and the most effective strategies will build a combination of all three units &mdash; muckrakers to destroy enemy slanderers, slanderers to produce income to finance your army, and politicians to defend slanderers against enemy muckrakers and attack ECs.</p><br>
+<p>As is usual, the four units this year &mdash; (Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers &mdash; form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  So, it is hard to win using only one type of unit, and the most effective strategies will build a combination of all three units &mdash; muckrakers to destroy enemy slanderers, slanderers to produce income to finance your army, and politicians to defend slanderers against enemy muckrakers and attack ECs.</p>
 
-<p>The obvious resource this year is influence. However, there is another very important, very limited resource: unit spawns. Because you cannot build more ECs, and the only way of obtaining more is by capturing either neutral or enemy ECs, unit spawns have a hard cap, and thus are very valuable. One EC will have a hard time beating five enemy ECs even if it has 10 times the influence.</p><br>
+<p>The obvious resource this year is influence. However, there is another very important, very limited resource: unit spawns. Because you cannot build more ECs, and the only way of obtaining more is by capturing either neutral or enemy ECs, unit spawns have a hard cap, and thus are very valuable. One EC will have a hard time beating five enemy ECs even if it has 10 times the influence.</p>
 
 <p>Looking at the units with these resources in mind:</p>
 <ul>
   <li><b>Slanderers</b>, obviously, produce a lot of influence. This was initially exponential, but is now (basically) linear after nerfs, with the influence generated capped at size 949. However, they cost units, in that they don't do anything else until they turn into politicians after 300 turns. Plus, they are very vulnerable to enemy muckrakers, and so require extra units and influence to be invested into protecting them.</li>
   <li><b>Politicians</b> are mostly influence negative, as a tax of 10 is subtracted when they empower, and even more influence is lost if you overkill an enemy unit. The only exception is when you have a buff. Their advantage, then, is entirely in that they are very unit positive. It isn't difficult to kill several enemy units with one politician, and capturing ECs with politicians is the only way to increase your unit spawns.</li>
   <li><b>Muckrakers</b> are a strange case. If one ever exposes a slanderer, it is immediately one of your best units, being both very influence positive and unit positive, even if you don't use the buff. But otherwise, small muckrakers are often unit negative (as they get killed in multiples by enemy politicians), and large muckrakers are often influence negative (as they have 70% the conviction for the same amount of influence).</li>
-</ul><br>
+</ul>
 
-Votes also exist. However, at least at the top of the leaderboard, they weren't very important. Most games ended by annihilation, and almost all of the others had a huge difference in influence and units at the end (usually in the form of just a couple leftover units on one team). I believe exactly one game in the finals did not fit either of those. So, early voting usually just meant wasted influence. You had to have some reasonable voting to win long games where you're up on influence, but didn't need anything too aggressive or fancy.
+<p>Votes also exist. However, at least at the top of the leaderboard, they weren't very important. Most games ended by annihilation, and almost all of the others had a huge difference in influence and units at the end (usually in the form of just a couple leftover units on one team). I believe exactly one game in the finals did not fit either of those. So, early voting usually just meant wasted influence. You had to have some reasonable voting to win long games where you're up on influence, but didn't need anything too aggressive or fancy.</p>
 
 <h2><a href="strategy"></a>Our Overall Strategy</h2>
 
-<p>Our overall strategy was one focused on generating large amounts of influence with slanderers, and leveraging that to eventually annihilate the opponent.</p><br>
+<p>Our overall strategy was one focused on generating large amounts of influence with slanderers, and leveraging that to eventually annihilate the opponent.</p>
 
 <h3>Enlightenment Centers</h3>
 
-<p>By default, our ECs build slanderers until we reach various income thresholds. As we build more slanderers, we also make sure to have a certain quota of politicians built to protect them from muckrakers. The only thing that takes precedent over building our income (besides obvious things like not building slanderers if muckrakers are around) is building one politician to attack each neutral EC, as unit spawns, and thus ECs are very important.</p><br>
+<p>By default, our ECs build slanderers until we reach various income thresholds. As we build more slanderers, we also make sure to have a certain quota of politicians built to protect them from muckrakers. The only thing that takes precedent over building our income (besides obvious things like not building slanderers if muckrakers are around) is building one politician to attack each neutral EC, as unit spawns, and thus ECs are very important.</p>
 
-<p>If we have enough income, we will start building a mix of politicians and muckrakers of difference sizes in order to attack enemy ECs. The only other times we build muckrakers are if we are low on influence and saving up.</p><br>
+<p>If we have enough income, we will start building a mix of politicians and muckrakers of difference sizes in order to attack enemy ECs. The only other times we build muckrakers are if we are low on influence and saving up.</p>
 
 <h3>Communication</h3>
 
-<p>Because we are very dependent on slanderers, a big part of our communication is about enemy muckraker sightings. All of our units will signal any enemy muckrakers seen to nearby units using flags, and this information will be passed on. Slanderers use this information to run away from the nearest enemy muckraker, even beyond sight range; politicians use this information to hunt down enemy muckrakers to better protect our slanderers.</p><br>
+<p>Because we are very dependent on slanderers, a big part of our communication is about enemy muckraker sightings. All of our units will signal any enemy muckrakers seen to nearby units using flags, and this information will be passed on. Slanderers use this information to run away from the nearest enemy muckraker, even beyond sight range; politicians use this information to hunt down enemy muckrakers to better protect our slanderers.</p>
 
-<p>We also use flags to communicate the locations of enemy and neutral ECs, as well as the edges of the map. Unlike enemy muckraker positions, this is communicated only to and from ECs, and not unit-to-unit.</p><br>
+<p>We also use flags to communicate the locations of enemy and neutral ECs, as well as the edges of the map. Unlike enemy muckraker positions, this is communicated only to and from ECs, and not unit-to-unit.</p>
 
 <h3>Politicians</h3>
 
-<p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p><br>
+<p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p>
 
 <h3>Pathfinding</h3>
 
