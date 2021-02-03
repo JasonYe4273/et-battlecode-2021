@@ -17,13 +17,19 @@
     <li><a href="#intro">Introduction</a></li>
     <li><a href="#resources">Units and Resources</a></li>
     <li><a href="#strategy">Our Overall Strategy</a></li>
-    <ol>
+    <ul>
       <li><a href="#strategy-ecs">Enlightenment Centers</a></li>
       <li><a href="#strategy-comms">Communication</a></li>
       <li><a href="#strategy-pols">Politicians</a></li>
       <li><a href="#strategy-pathing">Pathing</a></li>
-    </ol>
+    </ul>
     <li><a href="#timeline">Our Timeline</a></li>
+    <ol>
+      <li><a href="#timeline-week1">First Week + Sprint 1</a></li>
+      <li><a href="#timeline-week2">Second Week + Sprint 2</a></li>
+      <li><a href="#timeline-week3">Third Week + Quals</a></li>
+      <li><a href="#timeline-week4">Last Week + Finals</a></li>
+    </ol>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
     <li><a href="#team">Team Name</a></li>
   </ol>
@@ -68,6 +74,8 @@
 
 <p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p>
 
+<p>Our politicians generally hover near our base to try protect it, but if they don't see an enemy in 10 turns, they will instead charge either the nearest muckraker (as determined through communications), or the enemy base. This helps make sure our politicians don't spend too long guarding in places enemy muckrakers aren't attacking. And charging the enemy base also helps with defense, as muckrakers are likely to be coming in the opposite direction.</p>
+
 <h3><a name="strategy-pathing"></a>Pathfinding</h3>
 
 <p>The simplest navigation algorithm is one that, given a destination tile, moves in the direction of that destination, ignoring passability costs. This often isn't horrible, but on maps with varying passability, this can drastically slow units down.</p>
@@ -81,6 +89,44 @@
 <h2><a name="timeline"></a>Our Timeline</h2>
 
 <p>So how did we end up here?</p><br>
+
+<h3><a name="timeline-week1"></a>First Week + Sprint 1</h3>
+
+<p>We started out with two of us writing two separate bots &mdash; one that focused on rushing with muckrakers, and one that focused on slanderer economy &mdash; and tested both against each other extensively to improve both. Having a good rush bot to test against greatly helped us develop our defense (most notably including enemy muckraker positions in our comms), causing us to become one of the first teams at the top of the leaderboard with a slanderer-based strategy.</p>
+
+<p>Others soon figured out how to defend as well, and going into sprint 1, we had bad matchups against Super Cow Powers and Producing Perfection. Thankfully, they faced each other in semifinals, allowing us to get a pretty easy second place.</p>
+
+<h3><a name="timeline-week2"></a>Second Week + Sprint 2</h3>
+
+<p>After Sprint 1, several spec changes occurred, most notably making slanderers no longer exponential. But despite that, slanderer strategies continued to dominate the leaderboard.</p>
+
+<p>One of the largest takeaways we had from Sprint 1 was the importance of taking neutral ECs. This was amplified by the spec-violating 0 HP neutral ECs in Sprint 1 maps, but we realized that, even accounting for that, a lot of the games we were losing were due to not being aggressive enough at capturing neutrals.</p>
+
+<p>Another tactic that came to prominence immediately following Sprint 1 were high-conviction muckrakers, or "buffrakers". A lot of teams had assumed that most muckrakers would be very small, and buffrakers preyed on that assumption. And even if they were accounted for, they were still good mixed in with small muckrakers for being harder to defend against.</p>
+
+<p>So, we spent this week improving our neutral captures, implementing buffrakers, fixing bugs, and tuning various knobs with spawn order. When Sprint 2 rolled around, we didn't have too high hopes, as we hadn't been doing too well against the new top of the leaderboard. But through some luck and upsets, we again made it to finals, and again lost to Super Cow Powers.</p>
+
+<h3><a name="timeline-week3"></a>Third Week + Quals</h3>
+
+<p>After Sprint 2, we still weren't happy with how slowly we were taking neutral ECs. So, for quals, we fleshed out our enemy/neutral EC communications, and worked on more aggressively scouting and spawning politicians to take neutral ECs when found. We also noticed that our complete lack of pathfinding was starting to hurt us, and so implemented some basic heuristics, as detailed <a href="#strategy-pathing">above</a>.</p>
+
+<p>Some of the biggest changes, however, were in our politicians. We implemented the metric mentioned <a href="#strategy-pols">above</a> for determining when a politician should empower, and made politicians generally more aggressive. Whereas before, a lot of slanderers-turned-politicians would hover around our base, "defending", now they would switch to attacking if they hadn't seen an enemy recently. This greatly helped our ability to turn an influence advantage into a unit advantage, and push through defenses.</p>
+
+<p>Part of that change making politicians more aggressive was driven by the spec change that happened late in the week. It greatly nerfed buffs by making them linear instead of exponential, and prevented buff from affecting self-empowering. This didn't affect us too much, as we hadn't been abusing self-empowering nearly as much as other teams such as Nikola. But now that losing a couple slanderers was merely very bad instead of an instant game loss, we decided to be less airtight with our slanderer protection.</p>
+
+<p>As we ended in the top 8 ranked teams when Quals came, we had good seeding, and qualified relatively easily through the winners' bracket.</p>
+
+<h3><a name="timeline-week4"></a>Finals</h3>
+
+<p>Between Quals and Finals, most of our work was in improving our muckrakers, which we had mostly neglected until now, making them more effective at scouting and attacking. We also kept tuning our build order, overhauling it a bit to better take our income and units into account.</p>
+
+<p>The first match of Finals, we lost to wololo, the only team in finals who used a primarily muckraker-based rush strategy. But somehow, we managed to makie it all the way through loser's bracket, and beat Producing Perfection twice in grand finals to take 1st place.</p>
+
+<p>A pretty significant factor in our wins was the new set of maps: Finals used the only maps ever made with low EC passability, and just generally had fairly slow maps. This helped immensely with our slanderer-focused strategy, making it much harder to win with early aggression.</p>
+
+<p>As always in Battlecode, maps win games.</p>
+
+<h2><a name="acknowledgements"></a>Acknowledgements</h2>
 
 <h2><a name="team"></a>Team Name</h2>
 
