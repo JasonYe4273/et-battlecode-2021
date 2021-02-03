@@ -14,39 +14,51 @@
 <section class="toc">
   <h2>Table of Contents</h2>
   <ol>
-    <li><a href="#premise">Premise of Competition</a></li>
-    <li><a href="#winning">Winning the Game</a></li>
-    <li><a href="#vision">Vision and Communication</a></li>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#resources">Units and Resources</a></li>
+    <li><a href="#strategy">Our Strategy</a></li>
+    <li><a href="#timeline">Our Timeline</a></li>
     <li><a href="#navigation">Navigation and Bytecode Limitations</a></li>
-    <li><a href="#tactics">Tactics</a></li>
-    <li><a href="#strategies">Strategies</a></li>
-    <li><a href="#competitions">Competitions and Strategy Evolution</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
     <li><a href="#team">Team Name</a></li>
     <li><a href="#references">References</a></li>
   </ol>
 </section>
 
-<h2><a name="premise"></a>Premise of Competition</h2>
+<h2><a name="intro"></a>Introduction</h2>
 
-<p>The theme of the 2021 battlecode competition is a political campaign between two sets of robots trying to win the election at all costs.  To accomplish this, teams try to accumulate political influence, which is stored in the various units and used to purchase new ones.  Unit costs are not fixed -- your team decides how much influence to spend on each unit spawned, and the influence spent determines that unit's conviction (its health), reflecting its loyalty to your team's cause.  This year's competition features only four units:</p>
+If you aren't familiar with Battlecode 2021, you can find the specs <a href="https://2021.battlecode.org/specs/specs.md.html">here</a>. We won't go into detail about the mechanics of the game, and instead talk more about strategy, especially our strategy.
+
+<h2><a name="resources"></a>Units and Resources</h2>
+
+<p>As is usual, the four units this year &mdash; <p>(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers &mdash; form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  So, it is hard to win using only one type of unit, and the most effective strategies will build a combination of all three units &mdash; muckrakers to destroy enemy slanderers, slanderers to produce income to finance your army, and politicians to defend slanderers against enemy muckrakers and attack ECs.</p><br>
+
+<p>The obvious resource this year is influence. However, there is another very important, very limited resource: unit spawns. Because you cannot build more ECs, and the only way of obtaining more is by capturing either neutral or enemy ECs, unit spawns have a hard cap, and thus are very valuable. One EC will have a hard time beating five enemy ECs even if it has 10 times the influence.</p><br>
+
+<p>Looking at the units with these resources in mind, we can see the following:</p>
+<ul>
+  <li><b>Slanderers</b>, obviously, produce a lot of influence. This was initially exponential, but is now (basically) linear after nerfs, with the influence generated capped at size 949. However, they cost units, in that they don't do anything else until they turn into politicians after 300 turns. Plus, they are very vulnerable to enemy muckrakers, and so require extra units and influence to be invested into protecting them.</li>
+  <li><b>Politicians</b> are mostly influence negative, as a tax of 10 is subtracted when they empower, and even more influence is lost if you overkill an enemy unit. The only exception is when you have a buff. Their advantage, then, is entirely in that they are very unit positive. It isn't difficult to kill several enemy units with one politician, and capturing ECs with politicians is the only way to increase your unit spawns.</li>
+  <li><b>Muckrakers</b> are a strange case. If one ever exposes a slanderer, it is immediately one of your best units, being both very influence positive and unit positive, even if you don't use the buff. But otherwise, small muckrakers are often unit negative (as they get killed in multiples by enemy politicians), and large muckrakers are often influence negative (as they have 70% the conviction for the same amount of influence).</li>
+</ul><br>
+
+<!-- <p>The theme of the 2021 battlecode competition is a political campaign between two sets of robots trying to win the election at all costs.  To accomplish this, teams try to accumulate political influence, which is stored in the various units and used to purchase new ones.  Unit costs are not fixed -- your team decides how much influence to spend on each unit spawned, and the influence spent determines that unit's conviction (its health), reflecting its loyalty to your team's cause.  This year's competition features only four units:</p>
 <ul>
   <li><b>Enlightenment Centers</b>: These are the headquarters of the political organization.  They are immovable buildings that are present from the beginning of the game, so they can be captured but never created or destroyed.  They generate a small amount of influence passively, and they spawn additional units.  At the beginning of the game, enlightenment centers can be neutral, in which case they take no actions until captured by a player.</li>
   <li><b>Politicians</b>: A politician's conviction can be converted into a rousing speech that functions as an attack that deals damage evenly to all nearby units.  Nearby enlightenment centers (neutral or enemy), as well as rival politicians, can be converted to your cause if the strength of the attack exceeds their conviction, while enemy muckrakers and slanderers are destroyed.  As such, politicians are crucial both for unit-to-unit combat and for attacks on enlightenment centers.</li>
   <li><b>Slanderers</b>: These are the main income-generating units of the game.  A slanderer's lies win over the citizenry, generating income for the Enlightenment Center that spawned it for fifty turns.  (The influence generated is 5% of the slanderer's cost for small-cost slanderers and then plateaus at 2% of their cost, so slanderers that cost about 1000 influence or less provide a very good return on investment.)  After producing this massive influence boost, slanderers are effectively useless for the next 250 turns, but 300 turns after creation they convert into politicians to reinforce your "army."</li>
   <li><b>Muckrakers</b>: Slanderers would be completely overpowered were it not for the investigative journalism of muckrakers.  A muckraker that gets close to an enemy slanderer can expose its lies, instantly destroying the slanderer.  Furthermore, for fifty turns following this exposure, all politicians on the muckraker's team receive a buff to their attack proportional to the value of the exposed slanderer.  This bonus can stack (so if multiple slanderers are exposed within 50 turns, politicians can receive a much larger buff, giving a substantially more powerful attack).  As such, it is imperative to defend slanderers from muckraker attacks, and failing to do so will lose you not only your slanderers but also any battles with enemy politicians and (quite possibly) the game.</li>
-</ul>
-<p>(Muck)<b>r</b>akers, <b>p</b>oliticians, and <b>s</b>landerers form an RPS (rock-paper-scissors) triangle: politians beat rakers, which beat slanderers, which beat politicians.  The optimal strategy is therefore to build a combination of all three units so that muckrakers destroy enemy slanderers, slanderers produce income to finance your army, and politicians defend slanderers against enemy muckrakers.</p><br>
+</ul><br> -->
 
-<h2><a name="winning"></a>Winning the Game </h2>
+<!-- <h2><a name="winning"></a>Winning the Game </h2>
 <p>The game can end in two ways:</p>
 <ol>
   <li>Complete annihilation of all units and capture of all enlightenment centers of one of the two teams results in immediate victory for the other team.</li>
   <li>On each turn, each enlightenment center may bid some of its influence to win over the citizenry.  The enlightenment center with the highest bid spends that amount of influence to win one vote (and the losing team must pay half of its bid and gain nothing in return).  After 1500 turns, the game is declared to be over, and the team with the most votes wins.  (As a consequence, accumulating more than 751 votes is unnecessary and simply wastes influence.)</li>
-</ol>
-<p>In practice, most games conclude via annihilation, but a significant fraction of games (about a quarter) are resolved through the election.  Determining how much to bid on each round without wasting too much influence is an important feature of the game.</p><br>
+</ol><br>
+<p>In practice, most games conclude via annihilation, but a significant fraction of games (about a quarter) are resolved through the election.  Determining how much to bid on each round without wasting too much influence is an important feature of the game.</p><br> -->
 
-<h2><a name="vision"></a>Vision and Communication</h2>
+<!-- <h2><a name="vision"></a>Vision and Communication</h2>
 <p>Units do not have visibility of the entire map; instead, they can only see things within about 5 tiles of them.  This year, robots do not even know the size and shape of the map unless they have explored enough to find the map's edges.  Additionally, all maps are offset by a large constant in both the x- and y-directions, so a robot's absolute location gives almost no information about its position relative to the map's edges.</p><br>
 
 <p>In order to gain information about the map that they have not personally seen, robots need to communicate with each other.  They do so by holding up a 24-bit color flag, which is stored in the last 32 bits of an <code>int</code>.  Units can read the flags of any nearby robots as well as enlightenment centers, and enlightenment centers can read the flags of any robot.  (While robots can in principle read enemy flags, these typically contain meaningless information without the enemy's source code, which is inaccessible to players.)</p><br>
@@ -56,7 +68,7 @@
   <li>Locations of nearby enemy muckrakers, in order to warn nearby slanderers to run away and nearby politicians to defend</li>
   <li>Locations and strength of enemy and neutral enlightenment centers, to signal for politicians and muckrakers to attack</li>
   <li>Edges of the map</li>
-</ol>
+</ol><br>
 
 <p>In Battlecode, all maps are symmetric under either vertical reflection, horizontal reflection, or 180-degree rotation.  As a result, given the location of a friendly enlightenment center, knowledge of the map edges implies that a second enlightenment center (which is likely enemy-owned) must be at one of three possible locations.  In the absence of spotting another enlightenment center directly, this indirect approach can be used to find a suitable target to attack.</p><br>
 
@@ -71,7 +83,7 @@
 
 <p>Ideally, we would like to find the optimal path all the way to the target, but this is impossible for targets outside our robot's vision radius.  In addition, robots have computational limitations that make it impossible even to process all the information they do have access to.  In Java, computational effort can be quantified in terms of bytecode, which corresponds to the fundamental operations of the Java virtual machine (e.g. adding two numbers, setting a variable).  The main units of the game (politicians and muckrakers) are limited to 15,000 bytecode.  While this sounds like a large number of operations, it can be consumed quickly if one explores paths inefficiently.  (Slanderers have smaller limits but only need to perform the simple task of fleeing muckrakers.)</p><br>
 
-<p>One pathing algorithm is Dijkstra's algorithm.</p><br>
+<p>One pathing algorithm is Dijkstra's algorithm.</p><br> -->
 
 </body>
 </html>
