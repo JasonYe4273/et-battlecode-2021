@@ -71,6 +71,8 @@ There is another very important, very limited resource: unit spawns.  An enlight
 
 <p>If we have enough income, we will start building a mix of politicians and muckrakers of difference sizes in order to attack enemy ECs. The only other times we build muckrakers are if we are low on influence and saving up.</p>
 
+<p> Some maps are more defensive, and rewared building to much higher income targets, while other maps reward smaller income and focusing on attacking with politicans and muckrakers earlier. We use our alive politicans as a simple way to dynamically approximate how high of an income we want. If we have more living politicians, that indicates they aren't exploding and taking longer to reach the enemy, so this map is probably more defensive and we adjust our target income up further.</p> 
+
 <h3><a name="strategy-pols"></a>Politicians</h3>
 
 <p>As both influence and unit spawns are important resources, we decided to take both into account to determine when our politicians empower. We ended up using the metric of <code>100*(kills-2) + (influenceDrained - convictionSpent)</code>, where <code>kills</code> counts the number of enemies killed (counting muckrakers twice and ECs ten times), and <code>influenceDrained</code> counts the influence worth of the conviction affected. Our politicians would empower only if this metric was positive (outside of special cases such as protecting nearby slanderers). This roughly boils down to prioritizing multiple kills, especially ones with muckrakers, but not to the point of killing two tiny muckrakers with one huge politician.</p>
@@ -158,6 +160,8 @@ Additionally, Bellman-Ford is a simpler algorithm, so it is easier to optimize w
 <h3><a name="timeline-week4"></a>Finals</h3>
 
 <p>Between Quals and Finals, most of our work was in improving our muckrakers, which we had mostly neglected until now, making them more effective at scouting and attacking. We also kept tuning our build order, overhauling it a bit to better take our income and units into account.</p>
+
+<p>The biggest change between Quals and Finals was the overhaul of the build order. The main motivation for this is our previous strategy would have us spend essentially all of our influence on 400 cost attacking units once an enemy EC was discovered. However, on defensive maps this would lead to us running out of money and eventually getting overwhelmed in the mid game. The new build order allowed us to continue building income on these maps, and ended up being very good in Finals which had many defensive maps. </p>
 
 <p>The first match of Finals, we lost to wololo, the only team in finals who used a primarily muckraker-based rush strategy. But somehow, we managed to makie it all the way through loser's bracket, and beat Producing Perfection twice in grand finals to take 1st place.</p>
 
